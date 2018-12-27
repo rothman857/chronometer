@@ -1,5 +1,9 @@
 #!/usr/bin/python3
+<<<<<<< HEAD
 # yet another master edit
+=======
+# test branch edit
+>>>>>>> testing
 import datetime
 import time
 import os
