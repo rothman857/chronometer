@@ -6,6 +6,7 @@ import string
 from myColors import colors
 from pytz import timezone
 
+
 dbg = False
 
 STATIC=0
@@ -211,5 +212,3 @@ while True:
 	print(screen,end="")
 	if dbg:
 		time.sleep(1)
-	else:
-		time.sleep(1/60)
