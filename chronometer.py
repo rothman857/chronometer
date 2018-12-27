@@ -201,8 +201,8 @@ while True:
 		else:
 			isWorkHours1 = False
 
-		timeStr0 = highlight[isWorkHours0] + time0.strftime("%H:%M %b %d")+themes[themeIndex][1]
-		timeStr1 = highlight[isWorkHours1] + time1.strftime("%H:%M %b %d")+themes[themeIndex][1]
+		timeStr0 = highlight[isWorkHours0] + time0.strftime("%H:%M:%S %b %d")+themes[themeIndex][1]
+		timeStr1 = highlight[isWorkHours1] + time1.strftime("%H:%M:%S %b %d")+themes[themeIndex][1]
 		screen += (" {0:>9}: {1:15} | ").format(timeZoneList[i][0],timeStr0)
 		screen += (" {0:>9}: {1:15}").format(timeZoneList[i+1][0],timeStr1)
 		screen += "\n"
