@@ -1,7 +1,4 @@
 #!/usr/bin/python3
-
-# yet another master edit
-
 import datetime
 import time
 import os
@@ -61,8 +58,6 @@ themes =[[colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
 		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
 		 [colors.bg.black,colors.fg.lightgreen,colors.fg.red,colors.fg.white]]
 		 
-
-#name = " " + chr(0x2665) + " Lori Lollis " + chr(0x2665) + " "
 name = " Roth Fralick "
 
 dbgyear		= 2019
@@ -98,8 +93,6 @@ rows, columns = os.popen('stty size', 'r').read().split()
 rows = int(rows)
 columns = int(columns)
 
-
-
 def resetCursor():
 	print("\033[0;0H", end="")
 
@@ -117,9 +110,6 @@ while True:
 	if(dbg):
 		now = (datetime.datetime.now()-dbgstart) + \
 			  datetime.datetime(dbgyear,dbgmonth,dbgday,dbghour,dbgminute,dbgsecond)
-	
-	
-
 	screen = ""
 	output = ""
 	resetCursor()
@@ -180,10 +170,6 @@ while True:
 			if (nextDate-now).total_seconds()<0:
 				nextDate = getRelativeDate(dateList[i][2],dateList[i][3],dateList[i][4],now.year+1)
 	
-		#screen += 	" {0:<13} ({1:^10}) | {2: <25}\n".format(
-						#dateList[i][0],nextDate.strftime("%a %b %d"),\
-						#str(nextDate-now).split(".")[0])
-	
 	DST =  [["DST Begins",	getRelativeDate(2,0,3,now.year).replace(hour=2)],
 			["DST Ends",	getRelativeDate(1,0,11,now.year).replace(hour=2)]]
 		
@@ -197,9 +183,6 @@ while True:
 			nextDate = getRelativeDate(2,0,3,now.year).replace(hour=2)
 		else:
 			nextDate = getRelativeDate(2,0,3,now.year+1).replace(hour=2)
-	#screen += 	" {0:<13} {1:<10} | {2: <25}\n".format(
-	#					DST[isDaylightSavings][0],nextDate.strftime("%a %b %d"),\
-	#					str(nextDate-now).split(".")[0])
 	screen += " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
 				" (" + str(nextDate-now).split(".")[0] + ")\n\n"
 		
@@ -216,25 +199,13 @@ while True:
 			isWorkHours1 = True
 		else:
 			isWorkHours1 = False
-		debug("weekday", time0.weekday())
-		debug("hour", time0.hour)
-		debug("isWorkHours0", isWorkHours0)
-		#debug("isWorkHours1", isWorkHours1)
-	
-	
+
 		timeStr0 = highlight[isWorkHours0] + time0.strftime("%I:%M %p %b %d")+themes[themeIndex][1]
 		timeStr1 = highlight[isWorkHours1] + time1.strftime("%I:%M %p %b %d")+themes[themeIndex][1]
-		
-		#+ " "*(len(highlight[isWorkHours0]) + len(highlight[isWorkHours1]) + len(colors.reset.all) + len(colors.reset.all))
-		
 		screen += (" {0:>9}: {1:15} | ").format(timeZoneList[i][0],timeStr0)
 		screen += (" {0:>9}: {1:15}").format(timeZoneList[i+1][0],timeStr1)
-		#screen += " "*2*(len(highlight[isWorkHours0]) + len(highlight[isWorkHours1]) + len(colors.reset.all) + len(colors.reset.all)) + 
 		screen += "\n"
 		
-	#draw a frame
-	
-	
 	screen += "\n" * (rows-screen.count("\n")-3)
 
 	print(screen,end="")
