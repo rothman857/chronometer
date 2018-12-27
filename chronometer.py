@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-##THIS IS A TEST
 import datetime
 import time
 import os
