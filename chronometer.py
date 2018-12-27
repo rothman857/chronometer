@@ -6,6 +6,7 @@ import string
 from myColors import colors
 from pytz import timezone
 
+
 dbg = False
 
 STATIC=0
