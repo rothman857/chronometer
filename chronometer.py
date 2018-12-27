@@ -211,5 +211,3 @@ while True:
 	print(screen,end="")
 	if dbg:
 		time.sleep(1)
-	else:
-		time.sleep(1/60)
