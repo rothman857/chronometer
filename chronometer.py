@@ -46,23 +46,23 @@ timeZoneList = [["GMT",			timezone("GMT")],
 				["UK",			timezone("Europe/London")]
 				]
 				
-themes =[[colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.lightgreen,colors.fg.red,colors.fg.white]]
+themes =[[colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # JAN
+		 [colors.bg.black,colors.fg.white,colors.fg.lightred,colors.fg.lightred], # FEB
+		 [colors.bg.black,colors.fg.lightgreen,colors.fg.green,colors.fg.lightgreen], # MAR
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # APR
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # MAY
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # JUN
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # JUL
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # AUG
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # SEP
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # OCT
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # NOV
+		 [colors.bg.black,colors.fg.lightgreen,colors.fg.red,colors.fg.white]] # DEC
 		 
 name = " Roth Fralick "
 
 dbgyear		= 2019
-dbgmonth	= 12
+dbgmonth	= 3
 dbgday		= 5
 dbghour		= 5
 dbgminute	= 5
@@ -185,7 +185,9 @@ while True:
 		else:
 			nextDate = getRelativeDate(2,0,3,now.year+1).replace(hour=2)
 	screen += " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
-				" (" + str(nextDate-now).split(".")[0] + ")\n\n"
+				" (" + str(nextDate-now).split(".")[0] + ")\n"
+				
+	screen += vBarDown * columns + "\n"
 		
 	for i in range(0,len(timeZoneList),2):
 		time0 = datetime.datetime.now(timeZoneList[i][1])
@@ -207,8 +209,8 @@ while True:
 		screen += (" {0:>9}: {1:15}").format(timeZoneList[i+1][0],timeStr1)
 		screen += "\n"
 		
-	screen += "\n" * (rows-screen.count("\n")-1)
-
+	screen += "\n" * (rows-screen.count("\n")-2)
+	screen += vBarUp * columns + "\n"
 	screen += hBar * int((columns-len(name))/2) + name + hBar * (columns - int((columns-len(name))/2) - len(name))
 	
 	print(screen,end="")
