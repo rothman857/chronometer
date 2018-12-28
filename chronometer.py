@@ -185,9 +185,9 @@ while True:
 		else:
 			nextDate = getRelativeDate(2,0,3,now.year+1).replace(hour=2)
 	screen += " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
-				" (" + str(nextDate-now).split(".")[0] + ")\n"
+				" (" + str(nextDate-now).split(".")[0] + ")\n\n"
 				
-	screen += vBarDown * columns + "\n"
+	#screen += vBarDown * columns + "\n"
 		
 	for i in range(0,len(timeZoneList),2):
 		time0 = datetime.datetime.now(timeZoneList[i][1])
@@ -210,7 +210,7 @@ while True:
 		screen += "\n"
 		
 	screen += "\n" * (rows-screen.count("\n")-2)
-	screen += vBarUp * columns + "\n"
+	#screen += vBarUp * columns + "\n"
 	screen += hBar * int((columns-len(name))/2) + name + hBar * (columns - int((columns-len(name))/2) - len(name))
 	
 	print(screen,end="")
