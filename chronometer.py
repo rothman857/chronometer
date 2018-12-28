@@ -62,7 +62,7 @@ themes =[[colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
 name = " Roth Fralick "
 
 dbgyear		= 2019
-dbgmonth	= 5
+dbgmonth	= 12
 dbgday		= 5
 dbghour		= 5
 dbgminute	= 5
@@ -207,8 +207,10 @@ while True:
 		screen += (" {0:>9}: {1:15}").format(timeZoneList[i+1][0],timeStr1)
 		screen += "\n"
 		
-	screen += "\n" * (rows-screen.count("\n")-3)
+	screen += "\n" * (rows-screen.count("\n")-1)
 
+	screen += hBar * int((columns-len(name))/2) + name + hBar * (columns - int((columns-len(name))/2) - len(name))
+	
 	print(screen,end="")
 	if dbg:
 		time.sleep(1)
