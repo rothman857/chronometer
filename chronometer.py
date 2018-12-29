@@ -32,11 +32,11 @@ dateList = 	[
 			["Thanksgiving",	RELATIVE,3,4,11]
 			]
 			
-timeZoneList = [["GMT",			timezone("GMT")],
-				["Eastern",		timezone("US/Eastern")],
+timeZoneList = [["Eastern",		timezone("US/Eastern")],
 				["Central",		timezone("US/Central")],
 				["Mountain",	timezone("US/Mountain")],
 				["Pacific",		timezone("US/Pacific")],
+				["GMT",			timezone("GMT")],
 				["Australia",	timezone("Australia/Sydney")],
 				["Germany",		timezone("Europe/Berlin")],
 				["Hong Kong",	timezone("Asia/Hong_Kong")],
@@ -44,6 +44,7 @@ timeZoneList = [["GMT",			timezone("GMT")],
 				["Japan",		timezone("Asia/Tokyo")],
 				["Singapore",	timezone("Singapore")],
 				["UK",			timezone("Europe/London")]
+				
 				]
 				
 themes =[[colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # JAN
@@ -207,7 +208,7 @@ while True:
 		screen += highlight[isWorkHours1] + (" {0:>9}: {1:15}").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
 		screen += "\n"
 		
-	screen += "\n" * (rows-screen.count("\n")-2)
+	screen += "\n" * (rows-screen.count("\n")-1)
 	screen += hBar * int((columns-len(name))/2) + name + hBar * (columns - int((columns-len(name))/2) - len(name))
 	
 	print(screen,end="")
