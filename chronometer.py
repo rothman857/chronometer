@@ -125,7 +125,7 @@ while True:
 	
 	vBar = themes[themeIndex][2] + chr(0x2551) + themes[themeIndex][1]
 	hBar = themes[themeIndex][2] + chr(0x2550) + themes[themeIndex][1]
-	vBarUp = themes[themeIndex][2] + chr(0x203e) + themes[themeIndex][1]
+	vBarUp = themes[themeIndex][2] + chr(0x00af) + themes[themeIndex][1]
 	vBarDown = themes[themeIndex][2] + "_" + themes[themeIndex][1]
 	llCorner = themes[themeIndex][2] + chr(0x0255A) + themes[themeIndex][1]
 	lrCorner = themes[themeIndex][2] + chr(0x0255D) + themes[themeIndex][1]
