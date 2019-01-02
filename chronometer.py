@@ -188,7 +188,12 @@ while True:
 	screen += " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
 				" (" + str(nextDate-now).split(".")[0] + ")\n"
 
-	screen += " UNIX Epoch Time: {:.6f} \n\n".format(datetime.datetime.utcnow().timestamp()) 
+	screen += " UNIX Epoch Time: {:.6f}    \n".format(datetime.datetime.utcnow().timestamp())
+	dayPercentComplete = timeTable[DAY][VALUE] - int(timeTable[DAY][VALUE])
+	metricHour = int(dayPercentComplete*10)
+	metricMinute = int(dayPercentComplete*1000) % 100
+	metricSecond = int(dayPercentComplete*100000) % 100
+	screen += " Metric Time: {0:02.0f}:{1:02.0f}:{2:02.0f}\n\n".format(metricHour,metricMinute,metricSecond)
 		
 	for i in range(0,len(timeZoneList),2):
 		time0 = datetime.datetime.now(timeZoneList[i][1])
