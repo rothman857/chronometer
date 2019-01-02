@@ -32,11 +32,11 @@ dateList = 	[
 			["Thanksgiving",	RELATIVE,3,4,11]
 			]
 			
-timeZoneList = [["GMT",			timezone("GMT")],
-				["Eastern",		timezone("US/Eastern")],
+timeZoneList = [["Eastern",		timezone("US/Eastern")],
 				["Central",		timezone("US/Central")],
 				["Mountain",	timezone("US/Mountain")],
 				["Pacific",		timezone("US/Pacific")],
+				["GMT",			timezone("GMT")],
 				["Australia",	timezone("Australia/Sydney")],
 				["Germany",		timezone("Europe/Berlin")],
 				["Hong Kong",	timezone("Asia/Hong_Kong")],
@@ -44,25 +44,26 @@ timeZoneList = [["GMT",			timezone("GMT")],
 				["Japan",		timezone("Asia/Tokyo")],
 				["Singapore",	timezone("Singapore")],
 				["UK",			timezone("Europe/London")]
+				
 				]
 				
-themes =[[colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan],
-		 [colors.bg.black,colors.fg.lightgreen,colors.fg.red,colors.fg.white]]
+themes =[[colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # JAN
+		 [colors.bg.black,colors.fg.white,colors.fg.lightred,colors.fg.lightred], # FEB
+		 [colors.bg.black,colors.fg.lightgreen,colors.fg.green,colors.fg.lightgreen], # MAR
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # APR
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # MAY
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # JUN
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # JUL
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # AUG
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # SEP
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # OCT
+		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # NOV
+		 [colors.bg.black,colors.fg.lightgreen,colors.fg.red,colors.fg.white]] # DEC
 		 
 name = " Roth Fralick "
 
 dbgyear		= 2019
-dbgmonth	= 5
+dbgmonth	= 3
 dbgday		= 5
 dbghour		= 5
 dbgminute	= 5
@@ -201,14 +202,15 @@ while True:
 		else:
 			isWorkHours1 = False
 
-		timeStr0 = highlight[isWorkHours0] + time0.strftime("%H:%M:%S %b %d")+themes[themeIndex][1]
-		timeStr1 = highlight[isWorkHours1] + time1.strftime("%H:%M:%S %b %d")+themes[themeIndex][1]
-		screen += (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0)
-		screen += (" {0:>9}: {1:15}").format(timeZoneList[i+1][0],timeStr1)
+		timeStr0 = time0.strftime("%I:%M %p %b %d")
+		timeStr1 = time1.strftime("%I:%M %p %b %d")
+		screen += highlight[isWorkHours0] + (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0) + themes[themeIndex][1]
+		screen += highlight[isWorkHours1] + (" {0:>9}: {1:15}").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
 		screen += "\n"
 		
-	screen += "\n" * (rows-screen.count("\n")-3)
-
+	screen += "\n" * (rows-screen.count("\n")-1)
+	screen += hBar * int((columns-len(name))/2) + name + hBar * (columns - int((columns-len(name))/2) - len(name))
+	
 	print(screen,end="")
 	if dbg:
 		time.sleep(1)
