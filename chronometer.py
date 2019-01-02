@@ -106,6 +106,7 @@ def drawProgressBar(width,min,max,value):
 	return (chr(0x2550) * level + " " * (width-level))
 
 os.system("clear")
+os.system("setterm -cursor off")
 while True:
 
 	now = datetime.datetime.now()
