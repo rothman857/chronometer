@@ -192,8 +192,9 @@ while True:
 	dayPercentComplete = timeTable[DAY][VALUE] - int(timeTable[DAY][VALUE])
 	metricHour = int(dayPercentComplete*10)
 	metricMinute = int(dayPercentComplete*1000) % 100
-	metricSecond = int(dayPercentComplete*100000) % 100
-	screen += " Metric Time: {0:02.0f}:{1:02.0f}:{2:02.0f}\n\n".format(metricHour,metricMinute,metricSecond)
+	metricSecond = (dayPercentComplete*100000) % 100
+	metricuSecond = int(dayPercentComplete*10000000000000) % 100
+	screen += "     Metric Time:   {0:02.0f}:{1:02.0f}:{2:09.6f}\n\n".format(metricHour,metricMinute,metricSecond,metricuSecond)
 		
 	for i in range(0,len(timeZoneList),2):
 		time0 = datetime.datetime.now(timeZoneList[i][1])
