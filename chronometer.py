@@ -186,7 +186,9 @@ while True:
 		else:
 			nextDate = getRelativeDate(2,0,3,now.year+1).replace(hour=2)
 	screen += " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
-				" (" + str(nextDate-now).split(".")[0] + ")\n\n"
+				" (" + str(nextDate-now).split(".")[0] + ")\n"
+
+	screen += " Current UNIX Epoch Time: {:.6f} \n\n".format(datetime.datetime.utcnow().timestamp()) 
 		
 	for i in range(0,len(timeZoneList),2):
 		time0 = datetime.datetime.now(timeZoneList[i][1])
