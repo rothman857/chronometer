@@ -195,7 +195,8 @@ while True:
 	metricMinute = int(dayPercentComplete*1000) % 100
 	metricSecond = (dayPercentComplete*100000) % 100
 	metricuSecond = int(dayPercentComplete*10000000000000) % 100
-	screen += "     Metric Time:   {0:02.0f}:{1:02.0f}:{2:09.6f}\n\n".format(metricHour,metricMinute,metricSecond,metricuSecond)
+	screen += "     Metric Time:   {0:02.0f}:{1:02.0f}:{2:09.6f}\n".format(metricHour,metricMinute,metricSecond,metricuSecond)
+	screen += vBarDown * columns + "\n"
 		
 	for i in range(0,len(timeZoneList),2):
 		time0 = datetime.datetime.now(timeZoneList[i][1])
@@ -216,6 +217,8 @@ while True:
 		screen += highlight[isWorkHours0] + (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0) + themes[themeIndex][1]
 		screen += highlight[isWorkHours1] + (" {0:>9}: {1:15}").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
 		screen += "\n"
+		
+	screen += vBarUp * columns + "\n"
 		
 	screen += "\n" * (rows-screen.count("\n")-1)
 	screen += hBar * int((columns-len(name))/2) + name + hBar * (columns - int((columns-len(name))/2) - len(name))
