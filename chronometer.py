@@ -2,6 +2,7 @@
 import datetime
 import time
 import os
+import sys
 import string
 from myColors import colors
 from pytz import timezone
@@ -108,127 +109,131 @@ def drawProgressBar(width,min,max,value):
 os.system("clear")
 os.system("setterm -cursor off")
 while True:
+	try:
+		now = datetime.datetime.now()
+		if(dbg):
+			now = (datetime.datetime.now()-dbgstart) + \
+				  datetime.datetime(dbgyear,dbgmonth,dbgday,dbghour,dbgminute,dbgsecond)
+		screen = ""
+		output = ""
+		resetCursor()
 
-	now = datetime.datetime.now()
-	if(dbg):
-		now = (datetime.datetime.now()-dbgstart) + \
-			  datetime.datetime(dbgyear,dbgmonth,dbgday,dbghour,dbgminute,dbgsecond)
-	screen = ""
-	output = ""
-	resetCursor()
-
-	uSecond = now.microsecond/1000000
-	
-	
-	themeIndex = now.month - 1
-	highlight = [themes[themeIndex][1], themes[themeIndex][3]]
-	print(themes[themeIndex][0],end="")
-	
-	vBar = themes[themeIndex][2] + chr(0x2551) + themes[themeIndex][1]
-	hBar = themes[themeIndex][2] + chr(0x2550) + themes[themeIndex][1]
-	vBarUp = themes[themeIndex][2] + chr(0x00af) + themes[themeIndex][1]
-	vBarDown = themes[themeIndex][2] + "_" + themes[themeIndex][1]
-	llCorner = themes[themeIndex][2] + chr(0x0255A) + themes[themeIndex][1]
-	lrCorner = themes[themeIndex][2] + chr(0x0255D) + themes[themeIndex][1]
-	ulCorner = themes[themeIndex][2] + chr(0x02554) + themes[themeIndex][1]
-	urCorner = themes[themeIndex][2] + chr(0x02557) + themes[themeIndex][1]
-	
-	hourBinary 	 = "         {:06b}".format(now.hour).replace("0","-").replace("1","+")
-	minuteBinary = "                {:06b}".format(now.minute).replace("0","-").replace("1","+")
-	secondBinary = "                {:06b}".format(now.second).replace("0","-").replace("1","+")
-	
-	if (now.month ==12):
-		daysThisMonth = 31
-	else:
-		daysThisMonth = (datetime.datetime(now.year,now.month+1,1)- \
-			datetime.datetime(now.year,now.month,1)).days
-	
-	dayOfYear = (now - datetime.datetime(now.year,1,1)).days
-	daysThisYear = (datetime.datetime(now.year+1,1,1) - datetime.datetime(now.year,1,1)).days
-
-	timeTable[SECOND][VALUE]	= now.second + uSecond
-	timeTable[MINUTE][VALUE]	= now.minute + timeTable[SECOND][VALUE]/60
-	timeTable[HOUR][VALUE]		= now.hour + timeTable[MINUTE][VALUE]/60
-	timeTable[DAY][VALUE]		= now.day + timeTable[HOUR][VALUE]/24
-	timeTable[MONTH][VALUE]		= now.month + (timeTable[DAY][VALUE]-1)/daysThisMonth
-	timeTable[YEAR][VALUE]		= now.year + (dayOfYear + timeTable[DAY][VALUE] - int(
-									timeTable[DAY][VALUE]))/daysThisYear
-	timeTable[CENTURY][VALUE]	= timeTable[YEAR][VALUE]/100 + 1
-
-	screen += ("{: ^" + str(columns) +"}\n").format(now.strftime("%I:%M:%S %p - %A %B %d, %Y"))
-
-	screen += vBarDown * columns + "\n"
-
-	for i in range(7):
-		percentValue = int(100*(timeTable[i][VALUE] - int(timeTable[i][VALUE])))
-		screen +=  (" {0:>7} "+vBar+"{1:>15."+str(timeTable[i][PRECISION]) +"f}|{2:}|{3:02}% \n").format(
-			timeTable[i][LABEL],timeTable[i][VALUE],drawProgressBar(
-				columns-31,0,100,percentValue),percentValue)
-
-	screen += vBarUp * columns + "\n"
-
-	for i in range(len(dateList)):
-		if dateList[i][1] == STATIC:
-			nextDate = datetime.datetime(now.year,dateList[i][2],dateList[i][3])
-			if (nextDate-now).total_seconds()<0:
-				nextDate = datetime.datetime(now.year+1,dateList[i][2],dateList[i][3])
-		else:
-			nextDate = getRelativeDate(dateList[i][2],dateList[i][3],dateList[i][4],now.year)
-			if (nextDate-now).total_seconds()<0:
-				nextDate = getRelativeDate(dateList[i][2],dateList[i][3],dateList[i][4],now.year+1)
-	
-	DST =  [["DST Begins",	getRelativeDate(2,0,3,now.year).replace(hour=2)],
-			["DST Ends",	getRelativeDate(1,0,11,now.year).replace(hour=2)]]
+		uSecond = now.microsecond/1000000
 		
-						
-	if ((now - (DST[0][1])).total_seconds() > 0) & (((DST[1][1]) - now).total_seconds() > 0):
-		isDaylightSavings = True
-		nextDate = DST[1][1].replace(hour=2)
-	else:
-		isDaylightSavings = False
-		if ((now - DST[0][1]).total_seconds() < 0):
-			nextDate = getRelativeDate(2,0,3,now.year).replace(hour=2)
-		else:
-			nextDate = getRelativeDate(2,0,3,now.year+1).replace(hour=2)
-	screen += " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
-				" (" + str(nextDate-now).split(".")[0] + ") "+hourBinary+"\n"
-
-	screen += (" UNIX Epoch Time: {:.6f} "+minuteBinary+"\n").format(datetime.datetime.utcnow().timestamp())
-	
-	
-	dayPercentComplete = timeTable[DAY][VALUE] - int(timeTable[DAY][VALUE])
-	metricHour = int(dayPercentComplete*10)
-	metricMinute = int(dayPercentComplete*1000) % 100
-	metricSecond = (dayPercentComplete*100000) % 100
-	metricuSecond = int(dayPercentComplete*10000000000000) % 100
-	screen += ("     Metric Time:   {0:02.0f}:{1:02.0f}:{2:09.6f} "+secondBinary+"\n").format(metricHour,metricMinute,metricSecond,metricuSecond)
-	screen += vBarDown * columns + "\n"
 		
-	for i in range(0,len(timeZoneList),2):
-		time0 = datetime.datetime.now(timeZoneList[i][1])
-		time1 = datetime.datetime.now(timeZoneList[i+1][1])
-	
-		if (time0.weekday() < 5 and time0.hour > 8 and time0.hour < 17):
-			isWorkHours0 = True
+		themeIndex = now.month - 1
+		highlight = [themes[themeIndex][1], themes[themeIndex][3]]
+		print(themes[themeIndex][0],end="")
+		
+		vBar = themes[themeIndex][2] + chr(0x2551) + themes[themeIndex][1]
+		hBar = themes[themeIndex][2] + chr(0x2550) + themes[themeIndex][1]
+		vBarUp = themes[themeIndex][2] + chr(0x00af) + themes[themeIndex][1]
+		vBarDown = themes[themeIndex][2] + "_" + themes[themeIndex][1]
+		llCorner = themes[themeIndex][2] + chr(0x0255A) + themes[themeIndex][1]
+		lrCorner = themes[themeIndex][2] + chr(0x0255D) + themes[themeIndex][1]
+		ulCorner = themes[themeIndex][2] + chr(0x02554) + themes[themeIndex][1]
+		urCorner = themes[themeIndex][2] + chr(0x02557) + themes[themeIndex][1]
+		
+		hourBinary 	 = "         {:06b}".format(now.hour).replace("0","-").replace("1","+")
+		minuteBinary = "                {:06b}".format(now.minute).replace("0","-").replace("1","+")
+		secondBinary = "                {:06b}".format(now.second).replace("0","-").replace("1","+")
+		
+		if (now.month ==12):
+			daysThisMonth = 31
 		else:
-			isWorkHours0 = False
+			daysThisMonth = (datetime.datetime(now.year,now.month+1,1)- \
+				datetime.datetime(now.year,now.month,1)).days
+		
+		dayOfYear = (now - datetime.datetime(now.year,1,1)).days
+		daysThisYear = (datetime.datetime(now.year+1,1,1) - datetime.datetime(now.year,1,1)).days
+
+		timeTable[SECOND][VALUE]	= now.second + uSecond
+		timeTable[MINUTE][VALUE]	= now.minute + timeTable[SECOND][VALUE]/60
+		timeTable[HOUR][VALUE]		= now.hour + timeTable[MINUTE][VALUE]/60
+		timeTable[DAY][VALUE]		= now.day + timeTable[HOUR][VALUE]/24
+		timeTable[MONTH][VALUE]		= now.month + (timeTable[DAY][VALUE]-1)/daysThisMonth
+		timeTable[YEAR][VALUE]		= now.year + (dayOfYear + timeTable[DAY][VALUE] - int(
+										timeTable[DAY][VALUE]))/daysThisYear
+		timeTable[CENTURY][VALUE]	= timeTable[YEAR][VALUE]/100 + 1
+
+		screen += ("{: ^" + str(columns) +"}\n").format(now.strftime("%I:%M:%S %p - %A %B %d, %Y"))
+
+		screen += vBarDown * columns + "\n"
+
+		for i in range(7):
+			percentValue = int(100*(timeTable[i][VALUE] - int(timeTable[i][VALUE])))
+			screen +=  (" {0:>7} "+vBar+"{1:>15."+str(timeTable[i][PRECISION]) +"f}|{2:}|{3:02}% \n").format(
+				timeTable[i][LABEL],timeTable[i][VALUE],drawProgressBar(
+					columns-31,0,100,percentValue),percentValue)
+
+		screen += vBarUp * columns + "\n"
+
+		for i in range(len(dateList)):
+			if dateList[i][1] == STATIC:
+				nextDate = datetime.datetime(now.year,dateList[i][2],dateList[i][3])
+				if (nextDate-now).total_seconds()<0:
+					nextDate = datetime.datetime(now.year+1,dateList[i][2],dateList[i][3])
+			else:
+				nextDate = getRelativeDate(dateList[i][2],dateList[i][3],dateList[i][4],now.year)
+				if (nextDate-now).total_seconds()<0:
+					nextDate = getRelativeDate(dateList[i][2],dateList[i][3],dateList[i][4],now.year+1)
+		
+		DST =  [["DST Begins",	getRelativeDate(2,0,3,now.year).replace(hour=2)],
+				["DST Ends",	getRelativeDate(1,0,11,now.year).replace(hour=2)]]
 			
-		if (time1.weekday() < 5 and time1.hour > 8 and time1.hour < 17):
-			isWorkHours1 = True
+							
+		if ((now - (DST[0][1])).total_seconds() > 0) & (((DST[1][1]) - now).total_seconds() > 0):
+			isDaylightSavings = True
+			nextDate = DST[1][1].replace(hour=2)
 		else:
-			isWorkHours1 = False
+			isDaylightSavings = False
+			if ((now - DST[0][1]).total_seconds() < 0):
+				nextDate = getRelativeDate(2,0,3,now.year).replace(hour=2)
+			else:
+				nextDate = getRelativeDate(2,0,3,now.year+1).replace(hour=2)
+		screen += " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
+					" (" + str(nextDate-now).split(".")[0] + ") "+hourBinary+"\n"
 
-		timeStr0 = time0.strftime("%I:%M %p %b %d")
-		timeStr1 = time1.strftime("%I:%M %p %b %d")
-		screen += highlight[isWorkHours0] + (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0) + themes[themeIndex][1]
-		screen += highlight[isWorkHours1] + (" {0:>9}: {1:15}").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
-		screen += "\n"
+		screen += (" UNIX Epoch Time: {:.6f} "+minuteBinary+"\n").format(datetime.datetime.utcnow().timestamp())
 		
-	screen += vBarUp * columns + "\n"
 		
-	screen += "\n" * (rows-screen.count("\n")-1)
-	screen += hBar * int((columns-len(name))/2) + name + hBar * (columns - int((columns-len(name))/2) - len(name))
-	
-	print(screen,end="")
-	if dbg:
-		time.sleep(1)
+		dayPercentComplete = timeTable[DAY][VALUE] - int(timeTable[DAY][VALUE])
+		metricHour = int(dayPercentComplete*10)
+		metricMinute = int(dayPercentComplete*1000) % 100
+		metricSecond = (dayPercentComplete*100000) % 100
+		metricuSecond = int(dayPercentComplete*10000000000000) % 100
+		screen += ("     Metric Time:   {0:02.0f}:{1:02.0f}:{2:09.6f} "+secondBinary+"\n").format(metricHour,metricMinute,metricSecond,metricuSecond)
+		screen += vBarDown * columns + "\n"
+			
+		for i in range(0,len(timeZoneList),2):
+			time0 = datetime.datetime.now(timeZoneList[i][1])
+			time1 = datetime.datetime.now(timeZoneList[i+1][1])
+		
+			if (time0.weekday() < 5 and time0.hour > 8 and time0.hour < 17):
+				isWorkHours0 = True
+			else:
+				isWorkHours0 = False
+				
+			if (time1.weekday() < 5 and time1.hour > 8 and time1.hour < 17):
+				isWorkHours1 = True
+			else:
+				isWorkHours1 = False
+
+			timeStr0 = time0.strftime("%I:%M %p %b %d")
+			timeStr1 = time1.strftime("%I:%M %p %b %d")
+			screen += highlight[isWorkHours0] + (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0) + themes[themeIndex][1]
+			screen += highlight[isWorkHours1] + (" {0:>9}: {1:15}").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
+			screen += "\n"
+			
+		screen += vBarUp * columns + "\n"
+			
+		screen += "\n" * (rows-screen.count("\n")-1)
+		screen += hBar * int((columns-len(name))/2) + name + hBar * (columns - int((columns-len(name))/2) - len(name))
+		
+		print(screen,end="")
+		if dbg:
+			time.sleep(1)
+	except KeyboardInterrupt:
+		os.system("clear")
+		os.system("setterm -cursor on")
+		sys.exit(0)
