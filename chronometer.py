@@ -63,11 +63,11 @@ themes =[[colors.bg.black,colors.fg.white,colors.fg.lightblue,colors.fg.cyan], #
 name = " Roth Fralick "
 
 dbgyear		= 2019
-dbgmonth	= 3
-dbgday		= 5
-dbghour		= 5
-dbgminute	= 5
-dbgsecond	= 5
+dbgmonth	= 11
+dbgday		= 29
+dbghour		= 15
+dbgminute	= 59
+dbgsecond	= 50
 dbgstart	= datetime.datetime.now()
 
 SECOND  = 0
@@ -187,7 +187,7 @@ while True:
 		else:
 			nextDate = getRelativeDate(2,0,3,now.year+1).replace(hour=2)
 	screen += " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
-				" (" + str(nextDate-now).split(".")[0] + ")\n"
+				" (" + str(nextDate-now).split(".")[0] + ")     \n"
 
 	screen += " UNIX Epoch Time: {:.6f}    \n".format(datetime.datetime.utcnow().timestamp())
 	dayPercentComplete = timeTable[DAY][VALUE] - int(timeTable[DAY][VALUE])
