@@ -133,6 +133,10 @@ while True:
 	ulCorner = themes[themeIndex][2] + chr(0x02554) + themes[themeIndex][1]
 	urCorner = themes[themeIndex][2] + chr(0x02557) + themes[themeIndex][1]
 	
+	hourBinary 	 = "         {:06b}".format(now.hour).replace("0","-").replace("1","+")
+	minuteBinary = "                {:06b}".format(now.minute).replace("0","-").replace("1","+")
+	secondBinary = "                {:06b}".format(now.second).replace("0","-").replace("1","+")
+	
 	if (now.month ==12):
 		daysThisMonth = 31
 	else:
@@ -187,15 +191,17 @@ while True:
 		else:
 			nextDate = getRelativeDate(2,0,3,now.year+1).replace(hour=2)
 	screen += " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
-				" (" + str(nextDate-now).split(".")[0] + ")     \n"
+				" (" + str(nextDate-now).split(".")[0] + ") "+hourBinary+"\n"
 
-	screen += " UNIX Epoch Time: {:.6f}    \n".format(datetime.datetime.utcnow().timestamp())
+	screen += (" UNIX Epoch Time: {:.6f} "+minuteBinary+"\n").format(datetime.datetime.utcnow().timestamp())
+	
+	
 	dayPercentComplete = timeTable[DAY][VALUE] - int(timeTable[DAY][VALUE])
 	metricHour = int(dayPercentComplete*10)
 	metricMinute = int(dayPercentComplete*1000) % 100
 	metricSecond = (dayPercentComplete*100000) % 100
 	metricuSecond = int(dayPercentComplete*10000000000000) % 100
-	screen += "     Metric Time:   {0:02.0f}:{1:02.0f}:{2:09.6f}   \n".format(metricHour,metricMinute,metricSecond,metricuSecond)
+	screen += ("     Metric Time:   {0:02.0f}:{1:02.0f}:{2:09.6f} "+secondBinary+"\n").format(metricHour,metricMinute,metricSecond,metricuSecond)
 	screen += vBarDown * columns + "\n"
 		
 	for i in range(0,len(timeZoneList),2):
