@@ -195,7 +195,7 @@ while True:
 	metricMinute = int(dayPercentComplete*1000) % 100
 	metricSecond = (dayPercentComplete*100000) % 100
 	metricuSecond = int(dayPercentComplete*10000000000000) % 100
-	screen += "     Metric Time:   {0:02.0f}:{1:02.0f}:{2:09.6f}\n".format(metricHour,metricMinute,metricSecond,metricuSecond)
+	screen += "     Metric Time:   {0:02.0f}:{1:02.0f}:{2:09.6f}   \n".format(metricHour,metricMinute,metricSecond,metricuSecond)
 	screen += vBarDown * columns + "\n"
 		
 	for i in range(0,len(timeZoneList),2):
