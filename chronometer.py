@@ -8,7 +8,7 @@ from myColors import colors
 from pytz import timezone
 
 
-dbg = False
+dbg = True
 
 STATIC=0
 RELATIVE=1
@@ -48,13 +48,13 @@ timeZoneList = [["Eastern",		timezone("US/Eastern")],
 				
 				]
 				
-themes =[[colors.bg.black,colors.fg.white,colors.fg.lightblue,colors.fg.cyan], # JAN
-		 [colors.bg.black,colors.fg.white,colors.fg.lightred,colors.fg.lightred], # FEB
-		 [colors.bg.black,colors.fg.lightgreen,colors.fg.green,colors.fg.lightgreen], # MAR
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # APR
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # MAY
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # JUN
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # JUL
+themes =[[colors.bg.black,colors.fg.white,colors.fg.lightblue,colors.fg.lightred], # JAN
+		 [colors.bg.black,colors.fg.magenta,colors.fg.lightblue,colors.fg.yellow], # FEB
+		 [colors.bg.black,colors.fg.white,colors.fg.lightblue,colors.fg.cyan], # MAR
+		 [colors.bg.black,colors.fg.lightred,colors.fg.yellow,colors.fg.lightyellow], # APR
+		 [colors.bg.black,colors.fg.lightyellow,colors.fg.lightred,colors.fg.lightgreen], # MAY
+		 [colors.bg.black,colors.fg.white,colors.fg.lightblue,colors.fg.cyan], # JUN
+		 [colors.bg.black,colors.fg.white,colors.fg.lightred,colors.fg.lightblue], # JUL
 		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # AUG
 		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # SEP
 		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # OCT
@@ -64,11 +64,11 @@ themes =[[colors.bg.black,colors.fg.white,colors.fg.lightblue,colors.fg.cyan], #
 name = " Roth Fralick "
 
 dbgyear		= 2019
-dbgmonth	= 11
-dbgday		= 29
-dbghour		= 15
-dbgminute	= 59
-dbgsecond	= 50
+dbgmonth	= 7
+dbgday		= 1
+dbghour		= 0
+dbgminute	= 0
+dbgsecond	= 0
 dbgstart	= datetime.datetime.now()
 
 SECOND  = 0
@@ -236,4 +236,5 @@ while True:
 	except KeyboardInterrupt:
 		os.system("clear")
 		os.system("setterm -cursor on")
+		print(colors.reset.all,end="")
 		sys.exit(0)
