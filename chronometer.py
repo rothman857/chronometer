@@ -206,7 +206,7 @@ while True:
 				
 		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + " \n"
 
-		unixStr = (" UNIX: {0}").format(int(datetime.datetime.utcnow().timestamp()))
+		unixStr = ("UNIX: {0}").format(int(datetime.datetime.utcnow().timestamp()))
 		
 		dayPercentComplete = timeTable[DAY][VALUE] - int(timeTable[DAY][VALUE])
 		metricHour = int(dayPercentComplete*10)
