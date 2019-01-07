@@ -197,7 +197,7 @@ while True:
 				
 		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + " \n"
 
-		unixStr = (" UNIX Epoch Time: {:.6f}").format(datetime.datetime.utcnow().timestamp())
+		unixStr = (" UNIX: {:.6f}").format(datetime.datetime.utcnow().timestamp())
 		
 		screen += unixStr + " "*(columns - len(unixStr + minuteBinary) - 2) + minuteBinary + " \n"
 		
@@ -207,7 +207,7 @@ while True:
 		metricMinute = int(dayPercentComplete*1000) % 100
 		metricSecond = (dayPercentComplete*100000) % 100
 		metricuSecond = int(dayPercentComplete*10000000000000) % 100
-		metricStr = ("     Metric Time:   {0:02.0f}:{1:02.0f}:{2:09.6f}").format(metricHour,metricMinute,metricSecond,metricuSecond)
+		metricStr = (" Metric: {0:02.0f}:{1:02.0f}:{2:09.6f}").format(metricHour,metricMinute,metricSecond,metricuSecond)
 		
 		screen += metricStr + " "*(columns - len(metricStr + secondBinary) - 2) + secondBinary + " \n"
 		screen += vBarDown * columns + "\n"
