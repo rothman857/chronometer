@@ -195,11 +195,11 @@ while True:
 		dstStr = " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
 					" (" + str(nextDate-now).split(".")[0] + ")"
 				
-		screen += dstStr + " "*(columns - len(dstStr) - 8) + hourBinary + " \n"
+		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + " \n"
 
-		unixStr = (" UNIX Epoch Time: {:.6f}").format(datetime.datetime.utcnow().timestamp())
+		unixStr = (" UNIX: {:.6f}").format(datetime.datetime.utcnow().timestamp())
 		
-		screen += unixStr + " "*(columns - len(unixStr) - 8) + minuteBinary + " \n"
+		screen += unixStr + " "*(columns - len(unixStr + minuteBinary) - 2) + minuteBinary + " \n"
 		
 		
 		dayPercentComplete = timeTable[DAY][VALUE] - int(timeTable[DAY][VALUE])
@@ -207,9 +207,9 @@ while True:
 		metricMinute = int(dayPercentComplete*1000) % 100
 		metricSecond = (dayPercentComplete*100000) % 100
 		metricuSecond = int(dayPercentComplete*10000000000000) % 100
-		metricStr = ("     Metric Time:   {0:02.0f}:{1:02.0f}:{2:09.6f}").format(metricHour,metricMinute,metricSecond,metricuSecond)
+		metricStr = (" Metric: {0:02.0f}:{1:02.0f}:{2:09.6f}").format(metricHour,metricMinute,metricSecond,metricuSecond)
 		
-		screen += metricStr + " "*(columns - len(metricStr) - 8) + secondBinary + " \n"
+		screen += metricStr + " "*(columns - len(metricStr + secondBinary) - 2) + secondBinary + " \n"
 		screen += vBarDown * columns + "\n"
 			
 		for i in range(0,len(timeZoneList),2):
