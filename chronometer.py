@@ -4,6 +4,7 @@ import time
 import os
 import sys
 import string
+import ephem
 from myColors import colors
 from pytz import timezone
 
@@ -21,6 +22,14 @@ def getRelativeDate(ordinal,weekday,month,year):
 	firstday = (datetime.datetime(year,month,1).weekday() + 1)%7
 	firstSunday = (7 - firstday) % 7 + 1
 	return datetime.datetime(year,month,firstSunday + weekday + 7*(ordinal-1))
+	
+def solartime(observer, sun=ephem.Sun()):
+	sun.compute(observer)
+	# sidereal time == ra (right ascension) is the highest point (noon)
+	hour_angle = observer.sidereal_time() - sun.ra
+	return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
+	
+city = ephem.city("Atlanta")
 
 dateList = 	[
 			["Roth's B'day",	STATIC,10,20],
@@ -197,19 +206,22 @@ while True:
 				
 		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + " \n"
 
-		unixStr = (" UNIX: {:.6f}").format(datetime.datetime.utcnow().timestamp())
-		
-		screen += unixStr + " "*(columns - len(unixStr + minuteBinary) - 2) + minuteBinary + " \n"
-		
+		unixStr = (" UNIX: {0}").format(int(datetime.datetime.utcnow().timestamp()))
 		
 		dayPercentComplete = timeTable[DAY][VALUE] - int(timeTable[DAY][VALUE])
 		metricHour = int(dayPercentComplete*10)
 		metricMinute = int(dayPercentComplete*1000) % 100
 		metricSecond = (dayPercentComplete*100000) % 100
 		metricuSecond = int(dayPercentComplete*10000000000000) % 100
-		metricStr = (" Metric: {0:02.0f}:{1:02.0f}:{2:09.6f}").format(metricHour,metricMinute,metricSecond,metricuSecond)
+		metricStr = (" Metric: {0:02.0f}:{1:02.0f}:{2:02}").format(metricHour,metricMinute,int(metricSecond))
 		
-		screen += metricStr + " "*(columns - len(metricStr + secondBinary) - 2) + secondBinary + " \n"
+		screen += metricStr + " | " + unixStr + " "*(columns - len(metricStr + unixStr+ minuteBinary) - 5) + minuteBinary + " \n"
+		city = ephem.city("Atlanta")
+		#city.date = now
+		
+		solarStr = "  Solar: {0}".format(solartime(city)).split(".")[0]
+		screen += solarStr + " " * (columns-len(solarStr + secondBinary)-2) + secondBinary + "\n"
+		
 		screen += vBarDown * columns + "\n"
 			
 		for i in range(0,len(timeZoneList),2):
