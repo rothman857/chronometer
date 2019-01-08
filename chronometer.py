@@ -224,6 +224,11 @@ while True:
 		
 		screen += solarStr +" | "+ lstStr + " " * (columns-len(solarStr + lstStr + secondBinary)-5) + secondBinary + "\n"
 		
+		hexStrTmp = "{:>04}: ".format(hex(int(65536 * dayPercentComplete)).split("x")[1]).upper()
+		hexStr = hexStrTmp[0] + "_" + hexStrTmp[1:3] + "_" + hexStrTmp[3]
+		
+		screen += "    Hex:   " + hexStr + " |\n"
+		
 		screen += vBarDown * columns + "\n"
 			
 		for i in range(0,len(timeZoneList),2):
