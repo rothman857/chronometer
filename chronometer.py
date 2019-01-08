@@ -230,7 +230,7 @@ while True:
 		netMinute = int((netValue % 3600)/60)
 		netSecond = int(netValue % 60)
 		
-		netStr = " NET:  {0:>02}°{1:>02}\"{2:>02}\'".format(netHour,netMinute,netSecond)
+		netStr = " NET:  {0:>02}°{1:>02}\'{2:>02}\"".format(netHour,netMinute,netSecond)
 		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + "  \n"
 		screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr+ minuteBinary) - 5) + minuteBinary + "  \n"
 		screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + secondBinary)-5) + secondBinary + "  \n"
