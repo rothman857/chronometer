@@ -120,6 +120,7 @@ os.system("setterm -cursor off")
 while True:
 	try:
 		now = datetime.datetime.now()
+		utcnow = datetime.datetime.utcnow()
 		if(dbg):
 			now = (datetime.datetime.now()-dbgstart) + \
 				  datetime.datetime(dbgyear,dbgmonth,dbgday,dbghour,dbgminute,dbgsecond)
@@ -209,6 +210,7 @@ while True:
 		unixStr = ("UNIX: {0}").format(int(datetime.datetime.utcnow().timestamp()))
 		
 		dayPercentComplete = timeTable[DAY][VALUE] - int(timeTable[DAY][VALUE])
+		dayPercentCompleteUTC = (utcnow.hour*3600 + utcnow.minute*60 + utcnow.second + utcnow.microsecond/1000000)/86400
 		metricHour = int(dayPercentComplete*10)
 		metricMinute = int(dayPercentComplete*1000) % 100
 		metricSecond = (dayPercentComplete*100000) % 100
@@ -223,7 +225,7 @@ while True:
 		hexStrTmp = "{:>04}: ".format(hex(int(65536 * dayPercentComplete)).split("x")[1]).upper()
 		hexStr = "    Hex:   " + hexStrTmp[0] + "_" + hexStrTmp[1:3] + "_" + hexStrTmp[3]
 		
-		netValue =  1296000 * dayPercentComplete
+		netValue =  1296000 * dayPercentCompleteUTC
 		netHour = int(netValue/3600)
 		netMinute = int((netValue % 3600)/60)
 		netSecond = int(netValue % 60)
