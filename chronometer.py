@@ -75,9 +75,9 @@ name = " Roth Fralick "
 dbgyear		= 2019
 dbgmonth	= 7
 dbgday		= 1
-dbghour		= 0
-dbgminute	= 0
-dbgsecond	= 0
+dbghour		= 11
+dbgminute	= 59
+dbgsecond	= 55
 dbgstart	= datetime.datetime.now()
 
 SECOND  = 0
@@ -204,7 +204,7 @@ while True:
 		dstStr = " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
 					" (" + str(nextDate-now).split(".")[0] + ")"
 				
-		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + " \n"
+		
 
 		unixStr = ("UNIX: {0}").format(int(datetime.datetime.utcnow().timestamp()))
 		
@@ -215,20 +215,24 @@ while True:
 		metricuSecond = int(dayPercentComplete*10000000000000) % 100
 		metricStr = (" Metric: {0:02.0f}:{1:02.0f}:{2:02}").format(metricHour,metricMinute,int(metricSecond))
 		
-		screen += metricStr + " | " + unixStr + " "*(columns - len(metricStr + unixStr+ minuteBinary) - 5) + minuteBinary + " \n"
 		city = ephem.city("Atlanta")
-		#city.date = now
 		
 		solarStr = "  Solar: {0}".format(solartime(city)).split(".")[0]
 		lstStr = " LST: {0}".format(city.sidereal_time()).split(".")[0]
 		
-		screen += solarStr +" | "+ lstStr + " " * (columns-len(solarStr + lstStr + secondBinary)-5) + secondBinary + "\n"
-		
 		hexStrTmp = "{:>04}: ".format(hex(int(65536 * dayPercentComplete)).split("x")[1]).upper()
 		hexStr = hexStrTmp[0] + "_" + hexStrTmp[1:3] + "_" + hexStrTmp[3]
 		
-		screen += "    Hex:   " + hexStr + " |\n"
+		setValue =  1296000 * dayPercentComplete
+		setHour = int(setValue/3600)
+		setMinute = int((setValue % 3600)/60)
+		setSecond = int(setValue % 60)
 		
+		setStr = " SET: {0:>02}°{1:>02}\"{2:>02}\'".format(setHour,setMinute,setSecond)
+		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + " \n"
+		screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr+ minuteBinary) - 5) + minuteBinary + " \n"
+		screen += solarStr +" "+vBar+" "+ setStr + " " * (columns-len(solarStr + setStr + secondBinary)-5) + secondBinary + "\n"
+		screen += "    Hex:   " + hexStr + " "+vBar+" " +lstStr+"\n"
 		screen += vBarDown * columns + "\n"
 			
 		for i in range(0,len(timeZoneList),2):
@@ -258,7 +262,7 @@ while True:
 		
 		print(screen,end="")
 		if dbg:
-			time.sleep(1)
+			time.sleep(.1)
 	except KeyboardInterrupt:
 		os.system("clear")
 		os.system("setterm -cursor on")
