@@ -75,9 +75,9 @@ name = " Roth Fralick "
 dbgyear		= 2019
 dbgmonth	= 7
 dbgday		= 1
-dbghour		= 0
-dbgminute	= 0
-dbgsecond	= 0
+dbghour		= 11
+dbgminute	= 59
+dbgsecond	= 55
 dbgstart	= datetime.datetime.now()
 
 SECOND  = 0
@@ -204,7 +204,7 @@ while True:
 		dstStr = " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
 					" (" + str(nextDate-now).split(".")[0] + ")"
 				
-		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + " \n"
+		
 
 		unixStr = ("UNIX: {0}").format(int(datetime.datetime.utcnow().timestamp()))
 		
@@ -215,14 +215,25 @@ while True:
 		metricuSecond = int(dayPercentComplete*10000000000000) % 100
 		metricStr = (" Metric: {0:02.0f}:{1:02.0f}:{2:02}").format(metricHour,metricMinute,int(metricSecond))
 		
-		screen += metricStr + " | " + unixStr + " "*(columns - len(metricStr + unixStr+ minuteBinary) - 5) + minuteBinary + " \n"
 		city = ephem.city("Atlanta")
-		#city.date = now
 		
 		solarStr = "  Solar: {0}".format(solartime(city)).split(".")[0]
-		screen += solarStr + " " * (columns-len(solarStr + secondBinary)-2) + secondBinary + "\n"
+		lstStr = " LST: {0}".format(city.sidereal_time()).split(".")[0]
 		
-		screen += vBarDown * columns + "\n"
+		hexStrTmp = "{:>04}: ".format(hex(int(65536 * dayPercentComplete)).split("x")[1]).upper()
+		hexStr = "    Hex:   " + hexStrTmp[0] + "_" + hexStrTmp[1:3] + "_" + hexStrTmp[3]
+		
+		netValue =  1296000 * dayPercentComplete
+		netHour = int(netValue/3600)
+		netMinute = int((netValue % 3600)/60)
+		netSecond = int(netValue % 60)
+		
+		netStr = " NET: {0:>02}°{1:>02}\"{2:>02}\'".format(netHour,netMinute,netSecond)
+		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + "  \n"
+		screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr+ minuteBinary) - 5) + minuteBinary + "  \n"
+		screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + secondBinary)-5) + secondBinary + "  \n"
+		screen += hexStr + " "+vBar+" " +lstStr+ " " * (columns-(len(hexStr + lstStr) + 3)) + "\n"
+		screen += vBarDown * columns + ""
 			
 		for i in range(0,len(timeZoneList),2):
 			time0 = datetime.datetime.now(timeZoneList[i][1])
@@ -241,17 +252,14 @@ while True:
 			timeStr0 = time0.strftime("%I:%M %p %b %d")
 			timeStr1 = time1.strftime("%I:%M %p %b %d")
 			screen += highlight[isWorkHours0] + (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0) + themes[themeIndex][1]
-			screen += highlight[isWorkHours1] + (" {0:>9}: {1:15}").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
+			screen += highlight[isWorkHours1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
 			screen += "\n"
 			
-		screen += vBarUp * columns + "\n"
-			
-		screen += "\n" * (rows-screen.count("\n")-1)
-		screen += hBar * int((columns-len(name))/2) + name + hBar * (columns - int((columns-len(name))/2) - len(name))
+		screen += vBarUp * columns
 		
 		print(screen,end="")
 		if dbg:
-			time.sleep(1)
+			time.sleep(.5)
 	except KeyboardInterrupt:
 		os.system("clear")
 		os.system("setterm -cursor on")
