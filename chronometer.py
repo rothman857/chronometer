@@ -220,7 +220,9 @@ while True:
 		#city.date = now
 		
 		solarStr = "  Solar: {0}".format(solartime(city)).split(".")[0]
-		screen += solarStr + " " * (columns-len(solarStr + secondBinary)-2) + secondBinary + "\n"
+		lstStr = " LST: {0}".format(city.sidereal_time()).split(".")[0]
+		
+		screen += solarStr +" | "+ lstStr + " " * (columns-len(solarStr + lstStr + secondBinary)-5) + secondBinary + "\n"
 		
 		screen += vBarDown * columns + "\n"
 			
