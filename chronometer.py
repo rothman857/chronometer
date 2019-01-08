@@ -218,7 +218,7 @@ while True:
 		city = ephem.city("Atlanta")
 		
 		solarStr = "  Solar: {0}".format(solartime(city)).split(".")[0]
-		lstStr = " LST: {0}".format(city.sidereal_time()).split(".")[0]
+		lstStr = " LST:  {0}".format(city.sidereal_time()).split(".")[0]
 		
 		hexStrTmp = "{:>04}: ".format(hex(int(65536 * dayPercentComplete)).split("x")[1]).upper()
 		hexStr = "    Hex:   " + hexStrTmp[0] + "_" + hexStrTmp[1:3] + "_" + hexStrTmp[3]
