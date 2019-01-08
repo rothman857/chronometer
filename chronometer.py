@@ -218,7 +218,7 @@ while True:
 		city = ephem.city("Atlanta")
 		
 		solarStr = "  Solar: {0}".format(solartime(city)).split(".")[0]
-		lstStr = " LST:  {0}".format(city.sidereal_time()).split(".")[0]
+		lstStr = " LST:   {0}".format(city.sidereal_time()).split(".")[0]
 		
 		hexStrTmp = "{:>04}: ".format(hex(int(65536 * dayPercentComplete)).split("x")[1]).upper()
 		hexStr = "    Hex:   " + hexStrTmp[0] + "_" + hexStrTmp[1:3] + "_" + hexStrTmp[3]
@@ -228,7 +228,7 @@ while True:
 		netMinute = int((netValue % 3600)/60)
 		netSecond = int(netValue % 60)
 		
-		netStr = " NET: {0:>02}°{1:>02}\"{2:>02}\'".format(netHour,netMinute,netSecond)
+		netStr = " NET:  {0:>02}°{1:>02}\"{2:>02}\'".format(netHour,netMinute,netSecond)
 		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + "  \n"
 		screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr+ minuteBinary) - 5) + minuteBinary + "  \n"
 		screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + secondBinary)-5) + secondBinary + "  \n"
