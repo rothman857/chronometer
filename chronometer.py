@@ -247,7 +247,7 @@ while True:
 		screen += vBarUp * columns + "\n"
 			
 		screen += "\n" * (rows-screen.count("\n")-1)
-		screen += hBar * int((columns-len(name))/2) + name + hBar * (columns - int((columns-len(name))/2) - len(name))
+		#screen += hBar * int((columns-len(name))/2) + name + hBar * (columns - int((columns-len(name))/2) - len(name))
 		
 		print(screen,end="")
 		if dbg:
