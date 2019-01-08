@@ -221,7 +221,7 @@ while True:
 		lstStr = " LST: {0}".format(city.sidereal_time()).split(".")[0]
 		
 		hexStrTmp = "{:>04}: ".format(hex(int(65536 * dayPercentComplete)).split("x")[1]).upper()
-		hexStr = hexStrTmp[0] + "_" + hexStrTmp[1:3] + "_" + hexStrTmp[3]
+		hexStr = "    Hex:   " + hexStrTmp[0] + "_" + hexStrTmp[1:3] + "_" + hexStrTmp[3]
 		
 		setValue =  1296000 * dayPercentComplete
 		setHour = int(setValue/3600)
@@ -229,11 +229,11 @@ while True:
 		setSecond = int(setValue % 60)
 		
 		setStr = " SET: {0:>02}°{1:>02}\"{2:>02}\'".format(setHour,setMinute,setSecond)
-		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + " \n"
-		screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr+ minuteBinary) - 5) + minuteBinary + " \n"
-		screen += solarStr +" "+vBar+" "+ setStr + " " * (columns-len(solarStr + setStr + secondBinary)-5) + secondBinary + "\n"
-		screen += "    Hex:   " + hexStr + " "+vBar+" " +lstStr+"\n"
-		screen += vBarDown * columns + "\n"
+		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + "  \n"
+		screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr+ minuteBinary) - 5) + minuteBinary + "  \n"
+		screen += solarStr +" "+vBar+" "+ setStr + " " * (columns-len(solarStr + setStr + secondBinary)-5) + secondBinary + "  \n"
+		screen += hexStr + " "+vBar+" " +lstStr+ " " * (columns-(len(hexStr + lstStr) + 3)) + "\n"
+		screen += vBarDown * columns + ""
 			
 		for i in range(0,len(timeZoneList),2):
 			time0 = datetime.datetime.now(timeZoneList[i][1])
@@ -252,17 +252,14 @@ while True:
 			timeStr0 = time0.strftime("%I:%M %p %b %d")
 			timeStr1 = time1.strftime("%I:%M %p %b %d")
 			screen += highlight[isWorkHours0] + (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0) + themes[themeIndex][1]
-			screen += highlight[isWorkHours1] + (" {0:>9}: {1:15}").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
+			screen += highlight[isWorkHours1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
 			screen += "\n"
 			
-		screen += vBarUp * columns + "\n"
-			
-		screen += "\n" * (rows-screen.count("\n")-1)
-		#screen += hBar * int((columns-len(name))/2) + name + hBar * (columns - int((columns-len(name))/2) - len(name))
+		screen += vBarUp * columns
 		
 		print(screen,end="")
 		if dbg:
-			time.sleep(.1)
+			time.sleep(.5)
 	except KeyboardInterrupt:
 		os.system("clear")
 		os.system("setterm -cursor on")
