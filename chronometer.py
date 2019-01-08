@@ -223,15 +223,15 @@ while True:
 		hexStrTmp = "{:>04}: ".format(hex(int(65536 * dayPercentComplete)).split("x")[1]).upper()
 		hexStr = "    Hex:   " + hexStrTmp[0] + "_" + hexStrTmp[1:3] + "_" + hexStrTmp[3]
 		
-		setValue =  1296000 * dayPercentComplete
-		setHour = int(setValue/3600)
-		setMinute = int((setValue % 3600)/60)
-		setSecond = int(setValue % 60)
+		netValue =  1296000 * dayPercentComplete
+		netHour = int(netValue/3600)
+		netMinute = int((netValue % 3600)/60)
+		netSecond = int(netValue % 60)
 		
-		setStr = " SET: {0:>02}°{1:>02}\"{2:>02}\'".format(setHour,setMinute,setSecond)
+		netStr = " NET: {0:>02}°{1:>02}\"{2:>02}\'".format(netHour,netMinute,netSecond)
 		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + "  \n"
 		screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr+ minuteBinary) - 5) + minuteBinary + "  \n"
-		screen += solarStr +" "+vBar+" "+ setStr + " " * (columns-len(solarStr + setStr + secondBinary)-5) + secondBinary + "  \n"
+		screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + secondBinary)-5) + secondBinary + "  \n"
 		screen += hexStr + " "+vBar+" " +lstStr+ " " * (columns-(len(hexStr + lstStr) + 3)) + "\n"
 		screen += vBarDown * columns + ""
 			
