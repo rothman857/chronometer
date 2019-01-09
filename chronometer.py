@@ -244,18 +244,6 @@ while True:
 			time0 = datetime.datetime.now(timeZoneList[i][1])
 			time1 = datetime.datetime.now(timeZoneList[i+1][1])
 		
-			# if (time0.weekday() < 5 and time0.hour > 8 and time0.hour < 17):
-				# isWorkHours0 = True
-			# else:
-				# isWorkHours0 = False
-				
-			# if (time1.weekday() < 5 and time1.hour > 8 and time1.hour < 17):
-				# isWorkHours1 = True
-			# else:
-				# isWorkHours1 = False
-				
-				
-				
 			if (time0.weekday() < 5):
 				if (time0.hour > 8 and time0.hour < 17):
 					flash0 = True
@@ -271,8 +259,6 @@ while True:
 					flash1 = (int(uSecond*10)< 1 )
 				else: 
 					flash1 = False
-				
-			
 
 			timeStr0 = time0.strftime("%I:%M %p %b %d")
 			timeStr1 = time1.strftime("%I:%M %p %b %d")
