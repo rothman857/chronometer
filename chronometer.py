@@ -219,7 +219,9 @@ while True:
 		
 		city = ephem.city("Atlanta")
 		
-		solarStr = "  Solar: {0}".format(solartime(city)).split(".")[0]
+		solarStrTmp = str(solartime(city)).split(".")[0]
+		solarStr = "  Solar: {0:>08}".format(solarStrTmp)		
+
 		lstStrTmp = str(city.sidereal_time()).split(".")[0]
 		lstStr = "    LST: {0:>08}".format(lstStrTmp)
 		
