@@ -243,7 +243,7 @@ while True:
 		for i in range(0,len(timeZoneList),2):
 			time0 = datetime.datetime.now(timeZoneList[i][1])
 			time1 = datetime.datetime.now(timeZoneList[i+1][1])
-		
+
 			if (time0.weekday() < 5):
 				if (time0.hour > 8 and time0.hour < 17):
 					flash0 = True
@@ -251,7 +251,7 @@ while True:
 					flash0 = (int(uSecond * 10) < 5 )
 				else: 
 					flash0 = False
-					
+
 			if (time1.weekday() < 5):
 				if (time1.hour > 8 and time1.hour < 17):
 					flash1 = True
@@ -265,9 +265,9 @@ while True:
 			screen += highlight[flash0] + (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0) + themes[themeIndex][1]
 			screen += highlight[flash1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
 			screen += "\n"
-			
+
 		screen += vBarUp * columns
-		
+
 		print(screen,end="")
 		if dbg:
 			time.sleep(.5)
