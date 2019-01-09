@@ -248,7 +248,7 @@ while True:
 				if (time0.hour > 8 and time0.hour < 17):
 					flash0 = True
 				elif (time0.hour == 8 or time0.hour == 17):
-					flash0 = (int(uSecond*10) < 1 )
+					flash0 = (int(uSecond * 10) < 5 )
 				else: 
 					flash0 = False
 					
@@ -256,7 +256,7 @@ while True:
 				if (time1.hour > 8 and time1.hour < 17):
 					flash1 = True
 				elif (time1.hour == 8 or time1.hour == 17):
-					flash1 = (int(uSecond*10)< 1 )
+					flash1 = (int(uSecond * 10 )< 5 )
 				else: 
 					flash1 = False
 
