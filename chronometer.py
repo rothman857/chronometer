@@ -220,21 +220,22 @@ while True:
 		city = ephem.city("Atlanta")
 		
 		solarStr = "  Solar: {0}".format(solartime(city)).split(".")[0]
-		lstStr = " LST:   {0}".format(city.sidereal_time()).split(".")[0]
+		lstStrTmp = str(city.sidereal_time()).split(".")[0]
+		lstStr = "    LST: {0:>08}".format(lstStrTmp)
 		
 		hexStrTmp = "{:>04}: ".format(hex(int(65536 * dayPercentComplete)).split("x")[1]).upper()
-		hexStr = "    Hex:   " + hexStrTmp[0] + "_" + hexStrTmp[1:3] + "_" + hexStrTmp[3]
+		hexStr = " Hex: " + hexStrTmp[0] + "_" + hexStrTmp[1:3] + "_" + hexStrTmp[3]
 		
 		netValue =  1296000 * dayPercentCompleteUTC
 		netHour = int(netValue/3600)
 		netMinute = int((netValue % 3600)/60)
 		netSecond = int(netValue % 60)
 		
-		netStr = " NET:  {0:>02}°{1:>02}\'{2:>02}\"".format(netHour,netMinute,netSecond)
+		netStr = " NET: {0:>02}°{1:>02}\'{2:>02}\"".format(netHour,netMinute,netSecond)
 		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + "  \n"
 		screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr+ minuteBinary) - 5) + minuteBinary + "  \n"
 		screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + secondBinary)-5) + secondBinary + "  \n"
-		screen += hexStr + " "+vBar+" " +lstStr+ " " * (columns-(len(hexStr + lstStr) + 3)) + "\n"
+		screen += lstStr + " "+vBar+" " +hexStr+ " " * (columns-(len(lstStr + hexStr) + 3)) + "\n"
 		screen += vBarDown * columns + ""
 			
 		for i in range(0,len(timeZoneList),2):
