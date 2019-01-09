@@ -144,10 +144,28 @@ while True:
 		ulCorner = themes[themeIndex][2] + chr(0x02554) + themes[themeIndex][1]
 		urCorner = themes[themeIndex][2] + chr(0x02557) + themes[themeIndex][1]
 		
-		hourBinary 	 = "{:06b}".format(now.hour).replace("0","-").replace("1","+")
-		minuteBinary = "{:06b}".format(now.minute).replace("0","-").replace("1","+")
-		secondBinary = "{:06b}".format(now.second).replace("0","-").replace("1","+")
+		binary0 = chr(0x25a1)
+		binary1 = chr(0x25a0)
 		
+		#hourBinary 	 = "{:06b}".format(now.hour).replace("0",binary0).replace("1",binary1)
+		#minuteBinary = "{:06b}".format(now.minute).replace("0",binary0).replace("1",binary1)
+		#secondBinary = "{:06b}".format(now.second).replace("0",binary0).replace("1",binary1)
+		
+		hourBinary0   = "{:>04b}".format(int(now.hour/10))
+		hourBinary1   = "{:>04b}".format(int(now.hour%10))
+		minuteBinary0 = "{:>04b}".format(int(now.minute/10))
+		minuteBinary1 = "{:>04b}".format(int(now.minute%10))
+		secondBinary0 = "{:>04b}".format(int(now.second/10))
+		secondBinary1 = "{:>04b}".format(int(now.second%10))
+		
+		bClockMat = [hourBinary0,hourBinary1,minuteBinary0,minuteBinary1,secondBinary0,secondBinary1]
+		bClockMatT = [*zip(*bClockMat)]
+		bClockdisp = ['','','','']
+		
+		for i,row in enumerate(bClockMatT):
+			bClockdisp[i] = ''.join(row).replace("0"," "+binary0).replace("1"," "+binary1)
+		
+		debug("binary display",bClockdisp)
 		if (now.month ==12):
 			daysThisMonth = 31
 		else:
@@ -234,10 +252,10 @@ while True:
 		netSecond = int(netValue % 60)
 		
 		netStr = " NET: {0:>02}°{1:>02}\'{2:>02}\"".format(netHour,netMinute,netSecond)
-		screen += dstStr + " "*(columns - len(dstStr + hourBinary) - 2) + hourBinary + "  \n"
-		screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr+ minuteBinary) - 5) + minuteBinary + "  \n"
-		screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + secondBinary)-5) + secondBinary + "  \n"
-		screen += lstStr + " "+vBar+" " +hexStr+ " " * (columns-(len(lstStr + hexStr) + 3)) + "\n"
+		screen += dstStr + " "*(columns - len(dstStr + bClockdisp[0]) - 4) + bClockdisp[0]+ "  \n"
+		screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr + bClockdisp[1]) - 7)  + bClockdisp[1]+ "\n"
+		screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + bClockdisp[2]) - 7) + bClockdisp[2] + "  \n"
+		screen += lstStr + " "+vBar+" " +hexStr+ " " * (columns-(len(lstStr + hexStr + bClockdisp[3]) + 7 )) + bClockdisp[3] + "\n"
 		screen += vBarDown * columns + ""
 			
 		for i in range(0,len(timeZoneList),2):
@@ -270,7 +288,7 @@ while True:
 
 		print(screen,end="")
 		if dbg:
-			time.sleep(.5)
+			time.sleep(1)
 	except KeyboardInterrupt:
 		os.system("clear")
 		os.system("setterm -cursor on")
