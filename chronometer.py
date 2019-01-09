@@ -244,20 +244,40 @@ while True:
 			time0 = datetime.datetime.now(timeZoneList[i][1])
 			time1 = datetime.datetime.now(timeZoneList[i+1][1])
 		
-			if (time0.weekday() < 5 and time0.hour > 8 and time0.hour < 17):
-				isWorkHours0 = True
-			else:
-				isWorkHours0 = False
+			# if (time0.weekday() < 5 and time0.hour > 8 and time0.hour < 17):
+				# isWorkHours0 = True
+			# else:
+				# isWorkHours0 = False
 				
-			if (time1.weekday() < 5 and time1.hour > 8 and time1.hour < 17):
-				isWorkHours1 = True
-			else:
-				isWorkHours1 = False
+			# if (time1.weekday() < 5 and time1.hour > 8 and time1.hour < 17):
+				# isWorkHours1 = True
+			# else:
+				# isWorkHours1 = False
+				
+				
+				
+			if (time0.weekday() < 5):
+				if (time0.hour > 8 and time0.hour < 17):
+					flash0 = True
+				elif (time0.hour == 8 or time0.hour == 17):
+					flash0 = (int(uSecond*10)<3)
+				else: 
+					flash0 = False
+					
+			if (time1.weekday() < 5):
+				if (time1.hour > 8 and time1.hour < 17):
+					flash1 = True
+				elif (time1.hour == 8 or time1.hour == 17):
+					flash1 = (int(uSecond*10)<3)
+				else: 
+					flash1 = False
+				
+			
 
 			timeStr0 = time0.strftime("%I:%M %p %b %d")
 			timeStr1 = time1.strftime("%I:%M %p %b %d")
-			screen += highlight[isWorkHours0] + (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0) + themes[themeIndex][1]
-			screen += highlight[isWorkHours1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
+			screen += highlight[flash0] + (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0) + themes[themeIndex][1]
+			screen += highlight[flash1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
 			screen += "\n"
 			
 		screen += vBarUp * columns
