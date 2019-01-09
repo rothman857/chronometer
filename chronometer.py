@@ -144,8 +144,8 @@ while True:
 		ulCorner = themes[themeIndex][2] + chr(0x02554) + themes[themeIndex][1]
 		urCorner = themes[themeIndex][2] + chr(0x02557) + themes[themeIndex][1]
 		
-		binary0 = chr(0x25cb)
-		binary1 = chr(0x25cf)
+		binary0 = chr(0x25cf)
+		binary1 = chr(0x25cb)
 		
 		#hourBinary 	 = "{:06b}".format(now.hour).replace("0",binary0).replace("1",binary1)
 		#minuteBinary = "{:06b}".format(now.minute).replace("0",binary0).replace("1",binary1)
