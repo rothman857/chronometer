@@ -58,7 +58,7 @@ timeZoneList = [["Eastern",		timezone("US/Eastern")],
 				]
 				
 themes =[[colors.bg.black,colors.fg.white,colors.fg.lightblue,colors.fg.cyan], # JAN
-		 [colors.bg.black,colors.fg.lightyellow,colors.fg.white,colors.fg.lightblue], # FEB
+		 [colors.bg.black,colors.fg.lightyellow,colors.fg.white,colors.fg.cyan], # FEB
 		 [colors.bg.black,colors.fg.white,colors.fg.lightblue,colors.fg.cyan], # MAR
 		 [colors.bg.black,colors.fg.lightred,colors.fg.yellow,colors.fg.lightyellow], # APR
 		 [colors.bg.black,colors.fg.lightyellow,colors.fg.lightred,colors.fg.lightgreen], # MAY
