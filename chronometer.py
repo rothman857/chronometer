@@ -57,18 +57,7 @@ timeZoneList = [["Eastern",		timezone("US/Eastern")],
 				
 				]
 				
-themes =[[colors.bg.black,colors.fg.white,colors.fg.lightblue,colors.fg.cyan], # JAN
-		 [colors.bg.black,colors.fg.lightyellow,colors.fg.white,colors.fg.cyan], # FEB
-		 [colors.bg.black,colors.fg.white,colors.fg.lightblue,colors.fg.cyan], # MAR
-		 [colors.bg.black,colors.fg.lightred,colors.fg.yellow,colors.fg.lightyellow], # APR
-		 [colors.bg.black,colors.fg.lightyellow,colors.fg.lightred,colors.fg.lightgreen], # MAY
-		 [colors.bg.black,colors.fg.white,colors.fg.lightblue,colors.fg.cyan], # JUN
-		 [colors.bg.black,colors.fg.white,colors.fg.lightred,colors.fg.lightblue], # JUL
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # AUG
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # SEP
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # OCT
-		 [colors.bg.black,colors.fg.white,colors.fg.lightgray,colors.fg.cyan], # NOV
-		 [colors.bg.black,colors.fg.lightgreen,colors.fg.red,colors.fg.white]] # DEC
+themes =[colors.bg.black,colors.fg.white,colors.fg.lightblue,colors.fg.cyan]
 		 
 name = " Roth Fralick "
 
@@ -131,18 +120,17 @@ while True:
 		uSecond = now.microsecond/1000000
 		
 		
-		themeIndex = now.month - 1
-		highlight = [themes[themeIndex][1], themes[themeIndex][3]]
-		print(themes[themeIndex][0],end="")
+		highlight = [themes[1], themes[3]]
+		print(themes[0],end="")
 		
-		vBar = themes[themeIndex][2] + chr(0x2551) + themes[themeIndex][1]
-		hBar = themes[themeIndex][2] + chr(0x2550) + themes[themeIndex][1]
-		vBarUp = themes[themeIndex][2] + chr(0x00af) + themes[themeIndex][1]
-		vBarDown = themes[themeIndex][2] + "_" + themes[themeIndex][1]
-		llCorner = themes[themeIndex][2] + chr(0x0255A) + themes[themeIndex][1]
-		lrCorner = themes[themeIndex][2] + chr(0x0255D) + themes[themeIndex][1]
-		ulCorner = themes[themeIndex][2] + chr(0x02554) + themes[themeIndex][1]
-		urCorner = themes[themeIndex][2] + chr(0x02557) + themes[themeIndex][1]
+		vBar = themes[2] + chr(0x2551) + themes[1]
+		hBar = themes[2] + chr(0x2550) + themes[1]
+		vBarUp = themes[2] + chr(0x00af) + themes[1]
+		vBarDown = themes[2] + "_" + themes[1]
+		llCorner = themes[2] + chr(0x0255A) + themes[1]
+		lrCorner = themes[2] + chr(0x0255D) + themes[1]
+		ulCorner = themes[2] + chr(0x02554) + themes[1]
+		urCorner = themes[2] + chr(0x02557) + themes[1]
 		
 		binary0 = chr(0x25cf)
 		binary1 = chr(0x25cb)
@@ -280,8 +268,8 @@ while True:
 
 			timeStr0 = time0.strftime("%I:%M %p %b %d")
 			timeStr1 = time1.strftime("%I:%M %p %b %d")
-			screen += highlight[flash0] + (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0) + themes[themeIndex][1]
-			screen += highlight[flash1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + themes[themeIndex][1]
+			screen += highlight[flash0] + (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0) + themes[1]
+			screen += highlight[flash1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + themes[1]
 			screen += "\n"
 
 		screen += vBarUp * columns
