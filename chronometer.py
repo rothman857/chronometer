@@ -135,10 +135,6 @@ while True:
         binary0 = chr(0x25cf)
         binary1 = chr(0x25cb)
         
-        #hourBinary      = "{:06b}".format(now.hour).replace("0",binary0).replace("1",binary1)
-        #minuteBinary = "{:06b}".format(now.minute).replace("0",binary0).replace("1",binary1)
-        #secondBinary = "{:06b}".format(now.second).replace("0",binary0).replace("1",binary1)
-        
         hourBinary0   = "{:>04b}".format(int(now.hour/10))
         hourBinary1   = "{:>04b}".format(int(now.hour%10))
         minuteBinary0 = "{:>04b}".format(int(now.minute/10))
