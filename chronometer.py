@@ -57,7 +57,7 @@ timeZoneList = [["Eastern",        timezone("US/Eastern")],
                 
                 ]
                 
-themes =[colors.bg.black, colors.fg.white, colors.fg.lightblue, colors.fg.lightgray]
+themes =[colors.bg.black, colors.fg.white, colors.fg.lightblue, colors.bg.default, colors.bg.blue]
          
 name = " Roth Fralick "
 
@@ -120,7 +120,7 @@ while True:
         uSecond = now.microsecond/1000000
         
         
-        highlight = [themes[3], themes[1]]
+        highlight = [themes[3], themes[4]]
         print(themes[0],end="")
         
         vBar = themes[2] + chr(0x2551) + themes[1]
