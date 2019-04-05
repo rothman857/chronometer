@@ -266,7 +266,7 @@ while True:
 
             timeStr0 = time0.strftime("%I:%M %p %b %d")
             timeStr1 = time1.strftime("%I:%M %p %b %d")
-            screen += highlight[flash0] + (" {0:>9}: {1:15}  "+vBar+" ").format(timeZoneList[i][0],timeStr0) + themes[1]
+            screen += highlight[flash0] + (" {0:>9}: {1:15}  ").format(timeZoneList[i][0],timeStr0) + colors.reset.all + vBar
             screen += highlight[flash1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + themes[1]
             screen += "\n"
 
