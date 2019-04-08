@@ -57,7 +57,7 @@ timeZoneList = [["Eastern",        timezone("US/Eastern")],
                 
                 ]
                 
-themes =[colors.bg.black, colors.fg.white, colors.fg.lightblue, colors.bg.default, colors.bg.blue]
+themes =[colors.bg.black, colors.fg.white, colors.fg.lightblue, colors.bg.black, colors.bg.lightblue]
          
 name = " Roth Fralick "
 
@@ -135,10 +135,6 @@ while True:
         binary0 = chr(0x25cf)
         binary1 = chr(0x25cb)
         
-        #hourBinary      = "{:06b}".format(now.hour).replace("0",binary0).replace("1",binary1)
-        #minuteBinary = "{:06b}".format(now.minute).replace("0",binary0).replace("1",binary1)
-        #secondBinary = "{:06b}".format(now.second).replace("0",binary0).replace("1",binary1)
-        
         hourBinary0   = "{:>04b}".format(int(now.hour/10))
         hourBinary1   = "{:>04b}".format(int(now.hour%10))
         minuteBinary0 = "{:>04b}".format(int(now.minute/10))
@@ -153,7 +149,6 @@ while True:
         for i,row in enumerate(bClockMatT):
             bClockdisp[i] = ''.join(row).replace("0"," "+binary0).replace("1"," "+binary1)
         
-        debug("binary display",bClockdisp)
         if (now.month ==12):
             daysThisMonth = 31
         else:
@@ -266,8 +261,8 @@ while True:
 
             timeStr0 = time0.strftime("%I:%M %p %b %d")
             timeStr1 = time1.strftime("%I:%M %p %b %d")
-            screen += highlight[flash0] + (" {0:>9}: {1:15}  ").format(timeZoneList[i][0],timeStr0) + colors.reset.all + vBar
-            screen += highlight[flash1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + themes[1] + colors.reset.all
+            screen += highlight[flash0] + (" {0:>9}: {1:15}  ").format(timeZoneList[i][0],timeStr0) + highlight[0] + vBar
+            screen += highlight[flash1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + highlight[0]
             screen += "\n"
 
         screen += vBarUp * columns
