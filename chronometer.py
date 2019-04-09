@@ -102,7 +102,8 @@ def color(bg,fg):
 
 def drawProgressBar(width,min,max,value):
     level = int(width * (value-min)/(max-min) + .999999999999)
-    return (chr(0x2550) * level + " " * (width-level))
+    #return (chr(0x2550) * level + (colors.fg.darkgray + chr(0x2500) + colors.reset.all) * (width-level))
+    return (chr(0x2550) * level + colors.fg.darkgray + (chr(0x2500) * (width-level)) + colors.reset.all)
 
 os.system("clear")
 os.system("setterm -cursor off")
