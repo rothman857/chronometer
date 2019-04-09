@@ -168,10 +168,12 @@ while True:
                                         timeTable[DAY][VALUE]))/daysThisYear
         timeTable[CENTURY][VALUE]    = timeTable[YEAR][VALUE]/100 + 1
 
+        screen += themes[4]
         screen += ("{: ^" + str(columns) +"}\n").format(now.strftime("%I:%M:%S %p - %A %B %d, %Y"))
-
+        
         screen += vBarDown * columns + "\n"
-
+        screen += colors.reset.all
+        
         for i in range(7):
             percentValue = int(100*(timeTable[i][VALUE] - int(timeTable[i][VALUE])))
             screen +=  (" {0:>7} "+vBar+"{1:>15."+str(timeTable[i][PRECISION]) +"f}"+ vBar1 +"{2:}"+ vBar1 +"{3:02}% \n").format(
