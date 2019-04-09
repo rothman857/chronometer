@@ -244,7 +244,9 @@ while True:
         screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + bClockdisp[2]) - 7) + bClockdisp[2] + "  \n"
         screen += lstStr + " "+vBar+" " +hexStr+ " " * (columns-(len(lstStr + hexStr + bClockdisp[3]) + 7 )) + bClockdisp[3] + "\n"
         screen += vBarDown * columns + ""
-            
+        screen += "\n"
+
+        # Output each of the timezones
         for i in range(0,len(timeZoneList),2):
             time0 = datetime.datetime.now(timeZoneList[i][1])
             time1 = datetime.datetime.now(timeZoneList[i+1][1])
