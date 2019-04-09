@@ -57,7 +57,7 @@ timeZoneList = [["Eastern",        timezone("US/Eastern")],
                 
                 ]
                 
-themes =[colors.bg.black, colors.fg.white, colors.fg.lightblue, colors.bg.default, colors.bg.blue]
+themes =[colors.bg.black, colors.fg.white, colors.fg.lightblue, colors.bg.black, colors.bg.lightblue]
          
 name = " Roth Fralick "
 
@@ -124,6 +124,7 @@ while True:
         print(themes[0],end="")
         
         vBar = themes[2] + chr(0x2551) + themes[1]
+        vBar1 = themes[2] + chr(0x2502) + themes[1]
         hBar = themes[2] + chr(0x2550) + themes[1]
         vBarUp = themes[2] + chr(0x00af) + themes[1]
         vBarDown = themes[2] + "_" + themes[1]
@@ -149,7 +150,6 @@ while True:
         for i,row in enumerate(bClockMatT):
             bClockdisp[i] = ''.join(row).replace("0"," "+binary0).replace("1"," "+binary1)
         
-        debug("binary display",bClockdisp)
         if (now.month ==12):
             daysThisMonth = 31
         else:
@@ -174,7 +174,7 @@ while True:
 
         for i in range(7):
             percentValue = int(100*(timeTable[i][VALUE] - int(timeTable[i][VALUE])))
-            screen +=  (" {0:>7} "+vBar+"{1:>15."+str(timeTable[i][PRECISION]) +"f}|{2:}|{3:02}% \n").format(
+            screen +=  (" {0:>7} "+vBar+"{1:>15."+str(timeTable[i][PRECISION]) +"f}"+ vBar1 +"{2:}"+ vBar1 +"{3:02}% \n").format(
                 timeTable[i][LABEL],timeTable[i][VALUE],drawProgressBar(
                     columns-31,0,100,percentValue),percentValue)
 
@@ -262,8 +262,8 @@ while True:
 
             timeStr0 = time0.strftime("%I:%M %p %b %d")
             timeStr1 = time1.strftime("%I:%M %p %b %d")
-            screen += highlight[flash0] + (" {0:>9}: {1:15}  ").format(timeZoneList[i][0],timeStr0) + colors.reset.all + vBar
-            screen += highlight[flash1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + themes[1]
+            screen += highlight[flash0] + (" {0:>9}: {1:15}  ").format(timeZoneList[i][0],timeStr0) + highlight[0] + vBar
+            screen += highlight[flash1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + highlight[0]
             screen += "\n"
 
         screen += vBarUp * columns
