@@ -252,7 +252,14 @@ while True:
             spacer = " " * (columns - 59)
             screen += spacer + "\n"
 
+        # Draw the bar under the timezones
         screen += vBarUp * columns
+        # Switch to the header color theme
+        screen += themes[4]
+
+        # Append blank lines to fill out the bottom of the screen
+        for i in range(22,rows):
+            screen += vBarUp * columns
 
         print(screen,end="")
         if dbg:
