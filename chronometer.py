@@ -248,7 +248,9 @@ while True:
             timeStr1 = time1.strftime("%I:%M %p %b %d")
             screen += highlight[flash0] + (" {0:>9}: {1:15}  ").format(timeZoneList[i][0],timeStr0) + highlight[0] + vBar
             screen += highlight[flash1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + highlight[0]
-            screen += "\n"
+            # Each Timezone column is 29 chars, and the bar is 1 = 59
+            spacer = " " * (columns - 59)
+            screen += spacer + "\n"
 
         screen += vBarUp * columns
 
