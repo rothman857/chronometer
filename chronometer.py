@@ -156,7 +156,7 @@ while True:
         timeTable[MONTH][VALUE]        = now.month + (timeTable[DAY][VALUE]-1)/daysThisMonth
         timeTable[YEAR][VALUE]        = now.year + (dayOfYear + timeTable[DAY][VALUE] - int(
                                         timeTable[DAY][VALUE]))/daysThisYear
-        timeTable[CENTURY][VALUE]    = timeTable[YEAR][VALUE]/100 + 1
+        timeTable[CENTURY][VALUE]    = (timeTable[YEAR][VALUE]-1)/100 + 1
 
         screen += themes[4]
         screen += ("{: ^" + str(columns) +"}\n").format(now.strftime("%I:%M:%S %p - %A %B %d, %Y"))
