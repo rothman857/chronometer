@@ -163,8 +163,7 @@ while True:
         screen += themes[4]
         screen += ("{: ^" + str(columns) +"}\n").format(now.strftime("%I:%M:%S %p - %A %B %d, %Y"))
         
-        screen += vBarDown * columns + "\n"
-        screen += colors.reset.all
+        screen += vBarDown * columns + themes[0] + themes[1] + "\n"
         
         for i in range(7):
             percentValue = int(100*(timeTable[i][VALUE] - int(timeTable[i][VALUE])))
