@@ -165,9 +165,9 @@ while True:
         
         for i in range(7):
             percentValue = int(100*(timeTable[i][VALUE] - int(timeTable[i][VALUE])))
-            screen +=  (" {0:>7} "+vBar+"{1:>15."+str(timeTable[i][PRECISION]) +"f}"+ vBar1 +"{2:}"+ vBar1 +"{3:02}% \n").format(
+            screen +=  (" {0:>7} "+vBar+" {1:>15."+str(timeTable[i][PRECISION]) +"f}"+ vBar1 +"{2:}"+ vBar1 +"{3:02}% \n").format(
                 timeTable[i][LABEL],timeTable[i][VALUE],drawProgressBar(
-                    columns-31,0,100,percentValue),percentValue)
+                    columns-32,0,100,percentValue),percentValue)
 
         screen += vBarUp * columns + "\n"
 
