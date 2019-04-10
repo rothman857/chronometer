@@ -31,16 +31,7 @@ def solartime(observer, sun=ephem.Sun()):
     
 city = ephem.city("Atlanta")
 
-dateList =     [
-            ["Roth's B'day",    STATIC,10,20],
-            ["Lori's B'day",    STATIC,6,28],
-            ["Anniversary",        STATIC,10,5],
-            ["Cinco de Mayo",    STATIC,5,5],
-            ["July 4th",        STATIC,7,4],
-            ["Labor Day",        RELATIVE,1,1,9],
-            ["New Year's",        STATIC,1,1],
-            ["Thanksgiving",    RELATIVE,3,4,11]
-            ]
+
             
 timeZoneList = [["Eastern",        timezone("US/Eastern")],
                 ["Central",        timezone("US/Central")],
@@ -172,8 +163,7 @@ while True:
         screen += themes[4]
         screen += ("{: ^" + str(columns) +"}\n").format(now.strftime("%I:%M:%S %p - %A %B %d, %Y"))
         
-        screen += vBarDown * columns + "\n"
-        screen += colors.reset.all
+        screen += vBarDown * columns + themes[0] + themes[1] + "\n"
         
         for i in range(7):
             percentValue = int(100*(timeTable[i][VALUE] - int(timeTable[i][VALUE])))
@@ -183,15 +173,6 @@ while True:
 
         screen += vBarUp * columns + "\n"
 
-        for i in range(len(dateList)):
-            if dateList[i][1] == STATIC:
-                nextDate = datetime.datetime(now.year,dateList[i][2],dateList[i][3])
-                if (nextDate-now).total_seconds()<0:
-                    nextDate = datetime.datetime(now.year+1,dateList[i][2],dateList[i][3])
-            else:
-                nextDate = getRelativeDate(dateList[i][2],dateList[i][3],dateList[i][4],now.year)
-                if (nextDate-now).total_seconds()<0:
-                    nextDate = getRelativeDate(dateList[i][2],dateList[i][3],dateList[i][4],now.year+1)
         
         DST =  [["DST Begins",    getRelativeDate(2,0,3,now.year).replace(hour=2)],
                 ["DST Ends",    getRelativeDate(1,0,11,now.year).replace(hour=2)]]
