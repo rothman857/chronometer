@@ -220,10 +220,10 @@ while True:
         netSecond = int(netValue % 60)
         
         netStr = " NET: {0:>02}°{1:>02}\'{2:>02}\"".format(netHour,netMinute,netSecond)
-        screen += dstStr + " "*(columns - len(dstStr + bClockdisp[0]) - 4) + bClockdisp[0]+ "  \n"
-        screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr + bClockdisp[1]) - 7)  + bClockdisp[1]+ "\n"
-        screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + bClockdisp[2]) - 7) + bClockdisp[2] + "  \n"
-        screen += lstStr + " "+vBar+" " +hexStr+ " " * (columns-(len(lstStr + hexStr + bClockdisp[3]) + 7 )) + bClockdisp[3] + "\n"
+        screen += dstStr + " "*(columns - len(dstStr + bClockdisp[0]) - 4) + bClockdisp[0]+ "    \n"
+        screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr + bClockdisp[1]) - 7)  + bClockdisp[1]+ "    \n"
+        screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + bClockdisp[2]) - 7) + bClockdisp[2] + "    \n"
+        screen += lstStr + " "+vBar+" " +hexStr+ " " * (columns-(len(lstStr + hexStr + bClockdisp[3]) + 7 )) + bClockdisp[3] + "    \n"
         screen += vBarDown * columns + ""
             
         for i in range(0,len(timeZoneList),2):
