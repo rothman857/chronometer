@@ -79,9 +79,8 @@ timeTable =[["Second",    0,    6],
             ["Year",    0,    10],
             ["Century",    0,    10]]
 
-rows, columns = os.popen('stty size', 'r').read().split()
-rows = int(rows)
-columns = int(columns)
+rows    = os.get_terminal_size().lines
+columns = os.get_terminal_size().columns
 
 def resetCursor():
     print("\033[0;0H", end="")
@@ -98,6 +97,9 @@ os.system("clear")
 os.system("setterm -cursor off")
 while True:
     try:
+        rows    = os.get_terminal_size().lines
+        columns = os.get_terminal_size().columns
+
         now = datetime.datetime.now()
         utcnow = datetime.datetime.utcnow()
         if(dbg):
