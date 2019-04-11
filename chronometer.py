@@ -79,9 +79,6 @@ timeTable =[["Second",    0,    6],
             ["Year",    0,    10],
             ["Century",    0,    10]]
 
-rows    = os.get_terminal_size().lines
-columns = os.get_terminal_size().columns
-
 def resetCursor():
     print("\033[0;0H", end="")
 
@@ -97,7 +94,11 @@ os.system("clear")
 os.system("setterm -cursor off")
 while True:
     try:
+
         time.sleep(0.05);
+
+        rows    = os.get_terminal_size().lines
+        columns = os.get_terminal_size().columns
 
         now = datetime.datetime.now()
         utcnow = datetime.datetime.utcnow()
@@ -219,10 +220,10 @@ while True:
         netSecond = int(netValue % 60)
         
         netStr = " NET: {0:>02}°{1:>02}\'{2:>02}\"".format(netHour,netMinute,netSecond)
-        screen += dstStr + " "*(columns - len(dstStr + bClockdisp[0]) - 4) + bClockdisp[0]+ "  \n"
-        screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr + bClockdisp[1]) - 7)  + bClockdisp[1]+ "\n"
-        screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + bClockdisp[2]) - 7) + bClockdisp[2] + "  \n"
-        screen += lstStr + " "+vBar+" " +hexStr+ " " * (columns-(len(lstStr + hexStr + bClockdisp[3]) + 7 )) + bClockdisp[3] + "\n"
+        screen += dstStr + " "*(columns - len(dstStr + bClockdisp[0]) - 4) + bClockdisp[0]+ "    \n"
+        screen += metricStr + " "+vBar+" " + unixStr + " "*(columns - len(metricStr + unixStr + bClockdisp[1]) - 7)  + bClockdisp[1]+ "    \n"
+        screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + bClockdisp[2]) - 7) + bClockdisp[2] + "    \n"
+        screen += lstStr + " "+vBar+" " +hexStr+ " " * (columns-(len(lstStr + hexStr + bClockdisp[3]) + 7 )) + bClockdisp[3] + "    \n"
         screen += vBarDown * columns + ""
             
         for i in range(0,len(timeZoneList),2):
@@ -247,9 +248,18 @@ while True:
             timeStr1 = time1.strftime("%I:%M %p %b %d")
             screen += highlight[flash0] + (" {0:>9}: {1:15}  ").format(timeZoneList[i][0],timeStr0) + highlight[0] + vBar
             screen += highlight[flash1] + (" {0:>9}: {1:15}  ").format(timeZoneList[i+1][0],timeStr1) + highlight[0]
-            screen += "\n"
+            # Each Timezone column is 29 chars, and the bar is 1 = 59
+            spacer = " " * (columns - 59)
+            screen += spacer + "\n"
 
+        # Draw the bar under the timezones
         screen += vBarUp * columns
+        # Switch to the header color theme
+        screen += themes[3]
+
+        # Append blank lines to fill out the bottom of the screen
+        for i in range(22,rows):
+            screen += " " * columns
 
         print(screen,end="")
         if dbg:
