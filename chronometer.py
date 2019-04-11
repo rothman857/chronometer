@@ -95,7 +95,7 @@ os.system("setterm -cursor off")
 while True:
     try:
 
-        time.sleep(0.05);
+        time.sleep(0.0167);
 
         rows    = os.get_terminal_size().lines
         columns = os.get_terminal_size().columns
