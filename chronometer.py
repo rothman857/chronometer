@@ -98,6 +98,8 @@ os.system("clear")
 os.system("setterm -cursor off")
 while True:
     try:
+        time.sleep(0.05);
+
         now = datetime.datetime.now()
         utcnow = datetime.datetime.utcnow()
         if(dbg):
