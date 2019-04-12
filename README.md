@@ -8,7 +8,7 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
 
 ### Notes:
 
-In order to get the display to work with this code, you need to set the resolution to 480x320, and set the console font to VGA
+In order to get the display to work with this code, you need to set the resolution to 480x320, and set the console font to VGA 8x14.
 
 ### Required Python modules:
 
