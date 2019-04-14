@@ -264,7 +264,7 @@ def main():
             # Draw the bar under the timezones
             #screen += vBarUp * columns
             NTPStr = "NTP ID: "+ NTPID + " | Delay: " + NTPDLY + " | Offset: " + NTPOFF
-            screen += themes[4] + ("{0:>" + str(columns) + "}").format(NTPStr)
+            screen += themes[4] + ("{0:^" + str(columns) + "}").format(NTPStr)
             
             # Switch to the header color theme
             screen += themes[3]
