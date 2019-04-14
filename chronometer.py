@@ -73,9 +73,9 @@ PRECISION=2
 global NTPDLY
 global NTPOFF
 global NTPID
-NTPDLY = ""
-NTPOFF = ""
-NTPID = ""
+NTPOFF = "---"
+NTPDLY = "---"
+NTPID = "---"
 
             #Label,value,precision
 timeTable =[["Second",    0,    6],
@@ -316,5 +316,6 @@ if __name__ == "__main__":
     
     t1.start()
     t2.start()
+    
     
 
