@@ -14,5 +14,6 @@ In order to get the display to work with this code, you need to set the resoluti
 
 * `ephem`
 * `pytz`
+* `ntplib`
 
 Modules can be install using `pip install [module]` or from your distros repositories.
