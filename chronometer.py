@@ -7,14 +7,41 @@ import string
 import ephem
 import ntplib
 import threading
+import random
+import xml.etree.ElementTree as ET
 from myColors import colors
 from pytz import timezone
 
 
 dbg = False
+random.seed()
 
 STATIC=0
 RELATIVE=1
+timeZoneList = []
+ntp_server_list = []
+
+tree = ET.parse('config.xml')
+root = tree.getroot()
+for child in root:
+    if child.tag == "location":
+        print("Location: " + child.text)
+        city = ephem.city(child.text)
+        
+    if child.tag == "timezones":
+        for tz in child:
+            print(tz.get("code") + ": " + tz.text)
+            timeZoneList.append([tz.text, timezone(tz.get("code"))])     
+            
+    if child.tag == "ntp_servers":
+        for server in child:
+            print(server.text)
+            ntp_server_list.append(server.text)
+
+print(timeZoneList)
+print(ntp_server_list)
+
+input("Press Enter to continue...")
 
 def debug(text,var):
     if dbg:
@@ -30,23 +57,6 @@ def solartime(observer, sun=ephem.Sun()):
     # sidereal time == ra (right ascension) is the highest point (noon)
     hour_angle = observer.sidereal_time() - sun.ra
     return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
-    
-city = ephem.city("Atlanta")
-       
-timeZoneList = [["Eastern",        timezone("US/Eastern")],
-                ["Central",        timezone("US/Central")],
-                ["Mountain",    timezone("US/Mountain")],
-                ["Pacific",        timezone("US/Pacific")],
-                ["GMT",            timezone("GMT")],
-                ["Australia",    timezone("Australia/Sydney")],
-                ["Germany",        timezone("Europe/Berlin")],
-                ["Hong Kong",    timezone("Asia/Hong_Kong")],
-                ["India",        timezone("Asia/Kolkata")],
-                ["Japan",        timezone("Asia/Tokyo")],
-                ["Singapore",    timezone("Singapore")],
-                ["UK",            timezone("Europe/London")]
-                
-                ]
                 
 themes =[colors.bg.black, colors.fg.white, colors.fg.lightblue, colors.bg.black, colors.bg.lightblue]
          
@@ -292,17 +302,18 @@ def ntpDaemon():
     while(True):
         try:
             client = ntplib.NTPClient()
-            response = client.request('time.nist.gov')
+            server = random.choice(ntp_server_list)
+            response = client.request(server)
             os.system('date ' + time.strftime('%m%d%H%M%Y.%S',time.localtime(response.tx_time)) + ">/dev/null 2>&1")
             
             NTPOFF = float(response.offset)
             NTPDLY = float(response.root_delay)
             NTPSTR = response.stratum
-            NTPID = ntplib.ref_id_to_text(response.ref_id)
+            NTPID = server
+            #NTPID = ntplib.ref_id_to_text(response.ref_id)
         except:
             NTPID = "---"
-        time.sleep(15)
-
+        time.sleep(3600)
         
 if __name__ == "__main__":
     t = threading.Thread(target = ntpDaemon)
