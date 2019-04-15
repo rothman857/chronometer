@@ -73,8 +73,8 @@ PRECISION=2
 global NTPDLY
 global NTPOFF
 global NTPID
-NTPOFF = "---"
-NTPDLY = "---"
+NTPOFF = 0
+NTPDLY = 0
 NTPID = "---"
 
             #Label,value,precision
@@ -262,10 +262,8 @@ def main():
                 screen += spacer + "\n"
 
             # Draw the bar under the timezones
-            #screen += vBarUp * columns
             NTPStrL = "NTP: "+ NTPID
-            NTPStrR = "Delay: " + NTPDLY + " | Offset: " + NTPOFF
-            #screen += themes[4] + ("{0:<" + str(columns) + "}").format(NTPStrL, NTPStrR)
+            NTPStrR = "Delay: {0:6.4f} | Offset:{1: 6.4f}".format(NTPDLY, round(NTPOFF,4))
             screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)) * " ") + NTPStrR
             
             # Switch to the header color theme
@@ -295,14 +293,14 @@ def ntpDaemon():
             offset = response.offset
             delay = response.root_delay
             os.system('date ' + time.strftime('%m%d%H%M%Y.%S',time.localtime(response.tx_time)) + ">/dev/null 2>&1")
-            NTPOFF = str(round(offset,4))
-            NTPDLY = str(round(delay,4))
+            NTPOFF = float(offset)
+            NTPDLY = float(delay)
             NTPID = ntplib.ref_id_to_text(response.ref_id)
         except:
-            NTPOFF = "---"
-            NTPDLY = "---"
+            NTPOFF = 0
+            NTPDLY = 0
             NTPID = "---"
-        time.sleep(10)
+        time.sleep(15)
 
         
 if __name__ == "__main__":
