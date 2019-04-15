@@ -277,9 +277,19 @@ def main():
             if dbg:
                 time.sleep(1)
                 
-        except:
-            print("Something happened")
+        except KeyboardInterrupt:
+            os.system("setterm -cursor on")
+            print("testing")
+            time.sleep(10)
+            return
+            # print("Interrupted")
+            # os.system("clear")
+            # os.system("setterm -cursor on")
+            # print(colors.reset.all,end="")
+            # sys.exit(0)
 
+
+            
 def ntpManager():
 
     global NTPDLY
@@ -310,11 +320,6 @@ if __name__ == "__main__":
     
     t1.start()
     t2.start()
-    
-    os.system("clear")
-    os.system("setterm -cursor on")
-    print(colors.reset.all,end="")
-    sys.exit(0)
-    
+
     
 
