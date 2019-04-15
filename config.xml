@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<clock>
+	<location>Atlanta</location>
+	<timezones>
+		<tz code='US/Eastern'>Home</tz>
+		<tz code='GMT'>GMT</tz>
+	</timezones>
+	<ntp_servers>
+		<server>time.nist.gov</server>
+		<server>pool.ntp.org</server>
+	</ntp_servers>
+</clock>
