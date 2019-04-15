@@ -297,8 +297,6 @@ def ntpDaemon():
             NTPDLY = float(delay)
             NTPID = ntplib.ref_id_to_text(response.ref_id)
         except:
-            NTPOFF = 0
-            NTPDLY = 0
             NTPID = "---"
         time.sleep(15)
 
