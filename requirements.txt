@@ -1,2 +1,4 @@
-ephem
-pytz
+ephem==3.7.6.0
+ntplib==0.3.3
+pkg-resources==0.0.0
+pytz==2019.1

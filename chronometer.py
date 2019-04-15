@@ -263,8 +263,10 @@ def main():
 
             # Draw the bar under the timezones
             #screen += vBarUp * columns
-            NTPStr = "NTP ID: "+ NTPID + " | Delay: " + NTPDLY + " | Offset: " + NTPOFF
-            screen += themes[4] + ("{0:^" + str(columns) + "}").format(NTPStr)
+            NTPStrL = "NTP: "+ NTPID
+            NTPStrR = "Delay: " + NTPDLY + " | Offset: " + NTPOFF
+            #screen += themes[4] + ("{0:<" + str(columns) + "}").format(NTPStrL, NTPStrR)
+            screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)) * " ") + NTPStrR
             
             # Switch to the header color theme
             screen += themes[3]
@@ -278,19 +280,9 @@ def main():
                 time.sleep(1)
                 
         except KeyboardInterrupt:
-            os.system("setterm -cursor on")
-            print("testing")
-            time.sleep(10)
             return
-            # print("Interrupted")
-            # os.system("clear")
-            # os.system("setterm -cursor on")
-            # print(colors.reset.all,end="")
-            # sys.exit(0)
-
-
             
-def ntpManager():
+def ntpDaemon():
 
     global NTPDLY
     global NTPOFF
@@ -314,12 +306,16 @@ def ntpManager():
 
         
 if __name__ == "__main__":
-
-    t1 = threading.Thread(target = main)
-    t2 = threading.Thread(target = ntpManager)
+    t = threading.Thread(target = ntpDaemon)
+    t.setDaemon(True)
+    t.start()
     
-    t1.start()
-    t2.start()
+    main()
+    
+    os.system("clear")
+    os.system("setterm -cursor on")
+    print(colors.reset.all,end="")
+
 
     
 
