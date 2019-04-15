@@ -72,9 +72,11 @@ PRECISION=2
 
 global NTPDLY
 global NTPOFF
+global NTPSTR
 global NTPID
 NTPOFF = 0
 NTPDLY = 0
+NTPSTR = "-"
 NTPID = "---"
 
             #Label,value,precision
@@ -263,7 +265,7 @@ def main():
 
             # Draw the bar under the timezones
             NTPStrL = "NTP: "+ NTPID
-            NTPStrR = "Delay: {0:6.4f} | Offset:{1: 6.4f}".format(NTPDLY, round(NTPOFF,4))
+            NTPStrR = "STR: {0:1} | DLY: {1:6.4f} | OFF:{2: 6.4f}".format(NTPSTR, NTPDLY, round(NTPOFF,4))
             screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)) * " ") + NTPStrR
             
             # Switch to the header color theme
@@ -284,17 +286,18 @@ def ntpDaemon():
 
     global NTPDLY
     global NTPOFF
+    global NTPSTR
     global NTPID
     
     while(True):
         try:
             client = ntplib.NTPClient()
             response = client.request('time.nist.gov')
-            offset = response.offset
-            delay = response.root_delay
             os.system('date ' + time.strftime('%m%d%H%M%Y.%S',time.localtime(response.tx_time)) + ">/dev/null 2>&1")
-            NTPOFF = float(offset)
-            NTPDLY = float(delay)
+            
+            NTPOFF = float(response.offset)
+            NTPDLY = float(response.root_delay)
+            NTPSTR = response.stratum
             NTPID = ntplib.ref_id_to_text(response.ref_id)
         except:
             NTPID = "---"
