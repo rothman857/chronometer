@@ -7,6 +7,8 @@ import string
 import ephem
 import ntplib
 import threading
+import subprocess
+import re
 from myColors import colors
 from pytz import timezone
 
@@ -291,14 +293,34 @@ def ntpDaemon():
     
     while(True):
         try:
-            client = ntplib.NTPClient()
-            response = client.request('time.nist.gov')
-            os.system('date ' + time.strftime('%m%d%H%M%Y.%S',time.localtime(response.tx_time)) + ">/dev/null 2>&1")
+            ntpq = subprocess.run(['ntpq', '-p'], stdout=subprocess.PIPE)
+            ntpq = ntpq.stdout.decode('utf-8')
+            print(ntpq)
+            current_server = re.search(r"\*.+", ntpq)
+            #print("found string")
+            #print(current_server.group())
+            #print("string to list")
+            ntpStats = re.split("\s*",current_server.group())
+            #print(ntpStats)
+
+            NTPOFF = float(ntpStats[8])
+            NTPDLY = float(ntpStats[7])
+            NTPSTR = ntpStats[2]
+            NTPID = ntpStats[0][1:]
             
-            NTPOFF = float(response.offset)
-            NTPDLY = float(response.root_delay)
-            NTPSTR = response.stratum
-            NTPID = ntplib.ref_id_to_text(response.ref_id)
+            #print(NTPOFF)
+            #print(NTPDLY)
+            #print(NTPSTR)
+            #print(NTPID)
+            
+            
+            
+            
+            
+            #NTPOFF = float(response.offset)
+            #NTPDLY = float(response.root_delay)
+            #NTPSTR = response.stratum
+            #NTPID = ntplib.ref_id_to_text(response.ref_id)
         except:
             NTPID = "---"
         time.sleep(15)
@@ -310,6 +332,7 @@ if __name__ == "__main__":
     t.start()
     
     main()
+    #ntpDaemon()
     
     os.system("clear")
     os.system("setterm -cursor on")
