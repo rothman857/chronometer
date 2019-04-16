@@ -294,7 +294,7 @@ def ntpDaemon():
     while(True):
         try:
             ntpq = subprocess.check_output(['ntpq', '-p'])
-            ntpq = ntpq.stdout.decode('utf-8')          
+            ntpq = ntpq.decode('utf-8')          
             current_server = re.search(r"\*.+", ntpq)
 
             if(current_server):
