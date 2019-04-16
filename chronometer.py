@@ -294,37 +294,20 @@ def ntpDaemon():
     while(True):
         try:
             ntpq = subprocess.run(['ntpq', '-p'], stdout=subprocess.PIPE)
-            ntpq = ntpq.stdout.decode('utf-8')
-            
+            ntpq = ntpq.stdout.decode('utf-8')          
             current_server = re.search(r"\*.+", ntpq)
-            
-            
-            
-            ntpStats = re.split("\s*",current_server.group())
-            
 
-            NTPOFF = float(ntpStats[8])
-            NTPDLY = float(ntpStats[7])
-            NTPSTR = ntpStats[2]
-            NTPID = ntpStats[0][1:]
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            #NTPOFF = float(response.offset)
-            #NTPDLY = float(response.root_delay)
-            #NTPSTR = response.stratum
-            #NTPID = ntplib.ref_id_to_text(response.ref_id)
+            if(current_server):
+                ntpStats = re.split("\s*",current_server.group())
+
+                NTPOFF = float(ntpStats[8])
+                NTPDLY = float(ntpStats[7])
+                NTPSTR = ntpStats[2]
+                NTPID = ntpStats[0][1:]
+
         except:
             NTPID = "---"
         time.sleep(15)
-
         
 if __name__ == "__main__":
     t = threading.Thread(target = ntpDaemon)
