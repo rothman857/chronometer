@@ -266,7 +266,7 @@ def main():
                 screen += spacer + "\n"
 
             # Draw the bar under the timezones
-            NTPStrL = "NTP: "+ NTPID
+            NTPStrL = "NTP: "+ NTPID[:16]
             NTPStrR = "STR: {0:1} | DLY: {1:6.4f} | OFF:{2: 6.4f}".format(NTPSTR, NTPDLY, round(NTPOFF,4))
             screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)-1) * " ") + NTPStrR
             
