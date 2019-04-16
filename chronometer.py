@@ -293,7 +293,7 @@ def ntpDaemon():
     
     while(True):
         try:
-            ntpq = subprocess.run(['ntpq', '-p'], stdout=subprocess.PIPE)
+            ntpq = subprocess.check_output(['ntpq', '-p'])
             ntpq = ntpq.stdout.decode('utf-8')          
             current_server = re.search(r"\*.+", ntpq)
 
@@ -304,18 +304,21 @@ def ntpDaemon():
                 NTPDLY = float(ntpStats[7])
                 NTPSTR = ntpStats[2]
                 NTPID = ntpStats[0][1:]
+                
+                
 
-        except:
+        except Exception as e:
             NTPID = "---"
+            print(e)
         time.sleep(15)
         
 if __name__ == "__main__":
-    t = threading.Thread(target = ntpDaemon)
-    t.setDaemon(True)
-    t.start()
+    #t = threading.Thread(target = ntpDaemon)
+    #t.setDaemon(True)
+    #t.start()
     
-    main()
-    #ntpDaemon()
+    #main()
+    ntpDaemon()
     
     os.system("clear")
     os.system("setterm -cursor on")
