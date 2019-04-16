@@ -290,19 +290,33 @@ def ntpDaemon():
     global NTPSTR
     global NTPID
     
+    pattern = re.compile(
+        "\*([\w+\-\.() ]+)\s+([\d\.]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([-\d\.]+)\s+([\d\.]+)"
+    )
+    
     while(True):
         try:
-            ntpq = subprocess.run(['ntpq', '-p'], stdout = subprocess.PIPE)
-            ntpq = ntpq.stdout.decode('utf-8')          
-            current_server = re.search(r"\*.+", ntpq)
-
+            ntpq = subprocess.run(['ntpq', '-pw'], stdout = subprocess.PIPE)
+            ntpq = ntpq.stdout.decode('utf-8')   
+            #print(ntpq)
+            #input()
+            #current_server = re.search(r"\*.+", ntpq)
+            current_server = pattern.search(ntpq)
+            #print(current_server.group(1))
+            #input()
+            
+            #for i in range(0,10):
+            #    print(current_server.group(i))
+            
+            #input()
+            
             if(current_server):
                 ntpStats = re.split("\s+",current_server.group())
 
-                NTPOFF = float(ntpStats[8])
-                NTPDLY = float(ntpStats[7])
-                NTPSTR = ntpStats[2]
-                NTPID = ntpStats[0][1:]
+                NTPOFF  = float(current_server.group(9))
+                NTPDLY  = float(current_server.group(8))
+                NTPSTR  = current_server.group(3)
+                NTPID   = current_server.group(1)
 
         except Exception as e:
             NTPID = "---"
@@ -315,6 +329,7 @@ if __name__ == "__main__":
     t.start()
     
     main()
+    #ntpDaemon()
     
     os.system("clear")
     os.system("setterm -cursor on")
