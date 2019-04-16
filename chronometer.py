@@ -12,7 +12,6 @@ import re
 from myColors import colors
 from pytz import timezone
 
-
 dbg = False
 
 STATIC=0
@@ -293,19 +292,17 @@ def ntpDaemon():
     
     while(True):
         try:
-            ntpq = subprocess.check_output(['ntpq', '-p'])
-            ntpq = ntpq.decode('utf-8')          
+            ntpq = subprocess.run(['ntpq', '-p'], stdout = subprocess.PIPE)
+            ntpq = ntpq.stdout.decode('utf-8')          
             current_server = re.search(r"\*.+", ntpq)
 
             if(current_server):
-                ntpStats = re.split("\s*",current_server.group())
+                ntpStats = re.split("\s+",current_server.group())
 
                 NTPOFF = float(ntpStats[8])
                 NTPDLY = float(ntpStats[7])
                 NTPSTR = ntpStats[2]
                 NTPID = ntpStats[0][1:]
-                
-                
 
         except Exception as e:
             NTPID = "---"
@@ -313,12 +310,11 @@ def ntpDaemon():
         time.sleep(15)
         
 if __name__ == "__main__":
-    #t = threading.Thread(target = ntpDaemon)
-    #t.setDaemon(True)
-    #t.start()
+    t = threading.Thread(target = ntpDaemon)
+    t.setDaemon(True)
+    t.start()
     
-    #main()
-    ntpDaemon()
+    main()
     
     os.system("clear")
     os.system("setterm -cursor on")
