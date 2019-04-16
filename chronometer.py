@@ -8,6 +8,7 @@ import ephem
 import ntplib
 import threading
 import random
+import logging
 import xml.etree.ElementTree as ET
 from myColors import colors
 from pytz import timezone
@@ -15,6 +16,8 @@ from pytz import timezone
 
 dbg = False
 random.seed()
+logging.basicConfig(filename='chronometer.log',level=logging.DEBUG)
+
 
 STATIC=0
 RELATIVE=1
@@ -291,15 +294,15 @@ def ntpDaemon():
             client = ntplib.NTPClient()
             server = random.choice(ntp_server_list)
             response = client.request(server)
-            os.system('date ' + time.strftime('%m%d%H%M%Y.%S',time.localtime(response.tx_time)) + ">/dev/null 2>&1")
-            
+            os.system("sudo date -s '{0}'  > /dev/null 2>&1".format(time.ctime(response.tx_time)))
             NTPOFF = float(response.offset)
             NTPDLY = float(response.root_delay)
             NTPSTR = response.stratum
             NTPID = server
-        except:
+        except Exception as e:
             NTPID = "---"
-        time.sleep(3600)
+            logging.debug(e)
+        time.sleep(10)
         
 if __name__ == "__main__":
     t = threading.Thread(target = ntpDaemon)
@@ -307,6 +310,7 @@ if __name__ == "__main__":
     t.start()
     
     main()
+    #ntpDaemon()
     
     os.system("clear")
     os.system("setterm -cursor on")
