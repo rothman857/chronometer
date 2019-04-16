@@ -20,7 +20,6 @@
     
 	<ntp_servers>
 		<server>time.nist.gov</server>
-		<server>pool.ntp.org</server>
-        <server>time.google.com</server>
+
 	</ntp_servers>
 </clock>

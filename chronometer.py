@@ -25,23 +25,15 @@ tree = ET.parse('config.xml')
 root = tree.getroot()
 for child in root:
     if child.tag == "location":
-        print("Location: " + child.text)
         city = ephem.city(child.text)
         
     if child.tag == "timezones":
         for tz in child:
-            print(tz.get("code") + ": " + tz.text)
             timeZoneList.append([tz.text, timezone(tz.get("code"))])     
             
     if child.tag == "ntp_servers":
         for server in child:
-            print(server.text)
             ntp_server_list.append(server.text)
-
-print(timeZoneList)
-print(ntp_server_list)
-
-input("Press Enter to continue...")
 
 def debug(text,var):
     if dbg:
@@ -116,7 +108,6 @@ def main():
         try:
 
             time.sleep(0.0167);
-            #time.sleep(1)
 
             rows    = os.get_terminal_size().lines
             columns = os.get_terminal_size().columns
@@ -130,8 +121,7 @@ def main():
             output = ""
             resetCursor()
 
-            uSecond = now.microsecond/1000000
-            
+            uSecond = now.microsecond/1000000  
             
             highlight = [themes[3], themes[4]]
             print(themes[0],end="")
@@ -197,8 +187,7 @@ def main():
             
             DST =  [["DST Begins",    getRelativeDate(2,0,3,now.year).replace(hour=2)],
                     ["DST Ends",    getRelativeDate(1,0,11,now.year).replace(hour=2)]]
-                
-                                
+                                            
             if ((now - (DST[0][1])).total_seconds() > 0) & (((DST[1][1]) - now).total_seconds() > 0):
                 isDaylightSavings = True
                 nextDate = DST[1][1].replace(hour=2)
@@ -210,9 +199,7 @@ def main():
                     nextDate = getRelativeDate(2,0,3,now.year+1).replace(hour=2)
                     
             dstStr = " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
-                        " (" + str(nextDate-now).split(".")[0] + ")"
-                    
-            
+                        " (" + str(nextDate-now).split(".")[0] + ")"                    
 
             unixStr = ("UNIX: {0}").format(int(datetime.datetime.utcnow().timestamp()))
             
@@ -310,7 +297,6 @@ def ntpDaemon():
             NTPDLY = float(response.root_delay)
             NTPSTR = response.stratum
             NTPID = server
-            #NTPID = ntplib.ref_id_to_text(response.ref_id)
         except:
             NTPID = "---"
         time.sleep(3600)
