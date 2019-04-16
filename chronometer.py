@@ -174,9 +174,9 @@ def main():
             timeTable[CENTURY][VALUE]    = (timeTable[YEAR][VALUE]-1)/100 + 1
 
             screen += themes[4]
-            screen += ("{: ^" + str(columns) +"}\n").format(now.strftime("%I:%M:%S %p - %A %B %d, %Y"))
+            screen += ("{: ^" + str(columns-1) +"}\n").format(now.strftime("%I:%M:%S %p - %A %B %d, %Y"))
             
-            screen += vBarDown * columns + themes[0] + themes[1] + "\n"
+            screen += vBarDown * (columns-1) + themes[0] + themes[1] + "\n"
             
             for i in range(7):
                 percentValue = int(100*(timeTable[i][VALUE] - int(timeTable[i][VALUE])))
@@ -268,7 +268,7 @@ def main():
             # Draw the bar under the timezones
             NTPStrL = "NTP: "+ NTPID
             NTPStrR = "STR: {0:1} | DLY: {1:6.4f} | OFF:{2: 6.4f}".format(NTPSTR, NTPDLY, round(NTPOFF,4))
-            screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)) * " ") + NTPStrR
+            screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)-1) * " ") + NTPStrR
             
             # Switch to the header color theme
             screen += themes[3]
