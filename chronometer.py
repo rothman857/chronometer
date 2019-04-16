@@ -295,23 +295,23 @@ def ntpDaemon():
         try:
             ntpq = subprocess.run(['ntpq', '-p'], stdout=subprocess.PIPE)
             ntpq = ntpq.stdout.decode('utf-8')
-            print(ntpq)
+            
             current_server = re.search(r"\*.+", ntpq)
-            #print("found string")
-            #print(current_server.group())
-            #print("string to list")
+            
+            
+            
             ntpStats = re.split("\s*",current_server.group())
-            #print(ntpStats)
+            
 
             NTPOFF = float(ntpStats[8])
             NTPDLY = float(ntpStats[7])
             NTPSTR = ntpStats[2]
             NTPID = ntpStats[0][1:]
             
-            #print(NTPOFF)
-            #print(NTPDLY)
-            #print(NTPSTR)
-            #print(NTPID)
+            
+            
+            
+            
             
             
             
