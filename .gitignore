@@ -1,3 +1,6 @@
 *.pyc
+<<<<<<< HEAD
 *.swp
+=======
+>>>>>>> xmlconfig
 *.log
