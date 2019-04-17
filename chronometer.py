@@ -265,10 +265,12 @@ def main():
                 spacer = " " * (columns - 59)
                 screen += spacer + "\n"
 
-            if (len(NTPID) > 26):
-                NTPID = NTPID[:22] + "..."
+            half_cols = int(((columns-1)/2)//1)
+            NTPID_fmt = NTPID
+            if (len(NTPID) > (half_cols-7)):
+                NTPID_fmt = NTPID[:(half_cols-10)] + "..."
             
-            NTPStrL = "NTP:"+ NTPID[:25]
+            NTPStrL = "NTP:"+ NTPID_fmt
             NTPStrR = ("STR:{0:1}/DLY:{1:6.3f}/OFF:{2: 6.3f}").format(NTPSTR, NTPDLY, round(NTPOFF,4))
             screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)-1) * " ") + NTPStrR
             
@@ -315,6 +317,7 @@ def ntpDaemon():
         except Exception as e:
             NTPID = "---"
             print(e)
+        
         time.sleep(15)
         
 if __name__ == "__main__":
