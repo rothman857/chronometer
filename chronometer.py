@@ -291,7 +291,7 @@ def ntpDaemon():
     global NTPID
     
     pattern = re.compile(
-        "\*([\w+\-\.() ]+)\s+([\d\.]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([-\d\.]+)\s+([\d\.]+)"
+        "\*([\w+\-\.() ]+)\s+([\w\.]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([-\d\.]+)\s+([\d\.]+)"
     )
     
     while(True):
@@ -300,13 +300,13 @@ def ntpDaemon():
             ntpq = ntpq.stdout.decode('utf-8')   
             #print(ntpq)
             #input()
-            #current_server = re.search(r"\*.+", ntpq)
+            current_server = re.search(r"\*.+", ntpq)
             current_server = pattern.search(ntpq)
             #print(current_server.group(1))
             #input()
             
             #for i in range(0,10):
-            #    print(current_server.group(i))
+                #print(current_server.group(i))
             
             #input()
             
