@@ -17,9 +17,4 @@
         <tz code='Singapore'>Singapore</tz>
         <tz code='Europe/London'>UK</tz>
 	</timezones>
-    
-	<ntp_servers>
-		<server>time.nist.gov</server>
-
-	</ntp_servers>
 </clock>

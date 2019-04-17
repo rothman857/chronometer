@@ -22,7 +22,6 @@ logging.basicConfig(filename='chronometer.log',level=logging.DEBUG)
 STATIC=0
 RELATIVE=1
 timeZoneList = []
-ntp_server_list = []
 
 tree = ET.parse('config.xml')
 root = tree.getroot()
@@ -33,10 +32,6 @@ for child in root:
     if child.tag == "timezones":
         for tz in child:
             timeZoneList.append([tz.text, timezone(tz.get("code"))])     
-            
-    if child.tag == "ntp_servers":
-        for server in child:
-            ntp_server_list.append(server.text)
 
 def debug(text,var):
     if dbg:
