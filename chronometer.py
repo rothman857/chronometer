@@ -301,17 +301,8 @@ def ntpDaemon():
         try:
             ntpq = subprocess.run(['ntpq', '-pw'], stdout = subprocess.PIPE)
             ntpq = ntpq.stdout.decode('utf-8')   
-            #print(ntpq)
-            #input()
             current_server = re.search(r"\*.+", ntpq)
             current_server = pattern.search(ntpq)
-            #print(current_server.group(1))
-            #input()
-            
-            #for i in range(0,10):
-                #print(current_server.group(i))
-            
-            #input()
             
             if(current_server):
                 ntpStats = re.split("\s+",current_server.group())
@@ -325,7 +316,6 @@ def ntpDaemon():
             NTPID = "---"
             print(e)
         time.sleep(15)
-        #input()
         
 if __name__ == "__main__":
     t = threading.Thread(target = ntpDaemon)
@@ -333,12 +323,7 @@ if __name__ == "__main__":
     t.start()
     
     main()
-    #ntpDaemon()
     
     os.system("clear")
     os.system("setterm -cursor on")
     print(colors.reset.all,end="")
-
-
-    
-
