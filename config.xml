@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <clock>
-	<location>Atlanta</location>
+    <location>Atlanta</location>
     
     <!--Must have 12 timezones-->
-	<timezones>
-		<tz code='US/Eastern'>Eastern</tz>
-		<tz code='US/Central'>Central</tz>
+    <timezones>
+        <tz code='US/Eastern'>Eastern</tz>
+        <tz code='US/Central'>Central</tz>
         <tz code='US/Mountain'>Mountain</tz>
         <tz code='US/Pacific'>Pacific</tz>
         <tz code='GMT'>GMT</tz>
@@ -16,5 +16,5 @@
         <tz code='Asia/Tokyo'>Japan</tz>
         <tz code='Singapore'>Singapore</tz>
         <tz code='Europe/London'>UK</tz>
-	</timezones>
+    </timezones>
 </clock>
