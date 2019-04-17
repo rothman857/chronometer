@@ -15,6 +15,5 @@ NTP daemon needs to be running as a background service: `sudo apt install ntp`
 
 * `ephem`
 * `pytz`
-* `ntplib`
 
 Modules can be install using `pip install [module]` or from your distros repositories.
