@@ -262,8 +262,10 @@ def main():
             if (len(NTPID) > (half_cols-7)):
                 NTPID_fmt = NTPID[:(half_cols-10)] + "..."
             
+            sign = "-" if (NTPOFF < 0) else "+"
+            
             NTPStrL = "NTP:"+ NTPID_fmt
-            NTPStrR = ("STR:{0:1}/DLY:{1:6.3f}/OFF:{2: 6.3f}").format(NTPSTR, NTPDLY, round(NTPOFF,4))
+            NTPStrR = ("STR:{0:1}/DLY:{1:6.3f}/OFF:{2:" + sign  + "6.3f}").format(NTPSTR, NTPDLY, round(NTPOFF,4))
             screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)-1) * " ") + NTPStrR
             
             # Switch to the header color theme
