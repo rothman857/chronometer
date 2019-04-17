@@ -103,6 +103,7 @@ os.system("clear")
 os.system("setterm -cursor off")
 
 def main():
+    global NTPID
     while True:
         try:
 
@@ -264,7 +265,10 @@ def main():
                 spacer = " " * (columns - 59)
                 screen += spacer + "\n"
 
-            # Draw the bar under the timezones
+            if (len(NTPID) > 26):
+                NTPID = NTPID[:22] + "..."
+
+
             NTPStrL = "NTP:"+ NTPID[:25]
             NTPStrR = "STR:{0:1}/DLY:{1:6.3f}/OFF:{2: 6.3f}".format(NTPSTR, NTPDLY, round(NTPOFF,4))
             screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)-1) * " ") + NTPStrR
@@ -322,6 +326,7 @@ def ntpDaemon():
             NTPID = "---"
             print(e)
         time.sleep(15)
+        #input()
         
 if __name__ == "__main__":
     t = threading.Thread(target = ntpDaemon)
