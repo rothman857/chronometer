@@ -21,8 +21,6 @@ timeZoneList = []
 
 config_file = os.path.dirname(os.path.realpath(__file__))
 config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.xml")
-print(config_file)
-input()
 tree = ET.parse(config_file)
 root = tree.getroot()
 for child in root:
