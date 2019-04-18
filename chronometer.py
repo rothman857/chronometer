@@ -14,6 +14,8 @@ from myColors import colors
 from pytz import timezone
 
 dbg = False
+global dbg_str
+dbg_str = " "
 
 STATIC=0
 RELATIVE=1
@@ -103,6 +105,7 @@ def main():
     global NTPID
     global NTPSTR
     global NTPDLY
+    global dbg_str
     while True:
         try:
 
@@ -113,9 +116,9 @@ def main():
 
             now = datetime.datetime.now()
             utcnow = datetime.datetime.utcnow()
-            if(dbg):
-                now = (datetime.datetime.now()-dbgstart) + \
-                      datetime.datetime(dbgyear,dbgmonth,dbgday,dbghour,dbgminute,dbgsecond)
+            #if(dbg):
+            #    now = (datetime.datetime.now()-dbgstart) + \
+            #          datetime.datetime(dbgyear,dbgmonth,dbgday,dbghour,dbgminute,dbgsecond)
             screen = ""
             output = ""
             resetCursor()
@@ -264,24 +267,30 @@ def main():
 
             half_cols = int(((columns-1)/2)//1)
             NTPID_max_width = half_cols - 7
+            dbg_str = str(NTPID)
+            NTPID_temp = NTPID
             # Calculate NTP server scrolling if string is too large
             if(len(NTPID) > NTPID_max_width):
             
                 stages = 8 + len(NTPID) - NTPID_max_width
                 current_stage = int(unix_exact/.5) % stages
+                dbg_str += ":"+str(unix_exact)
                 
                 if(current_stage < 4):
-                    NTPID = NTPID[0:NTPID_max_width]
+                    NTPID_temp = NTPID[0:NTPID_max_width]
                 elif(current_stage >= (stages-4)):
-                    NTPID = NTPID[(len(NTPID)-NTPID_max_width):]
+                    NTPID_temp = NTPID[(len(NTPID)-NTPID_max_width):]
                 else:
-                    NTPID = NTPID[(current_stage-4):(current_stage-4+NTPID_max_width)]
+                    NTPID_temp = NTPID[(current_stage-4):(current_stage-4+NTPID_max_width)]
             
             sign = "-" if (NTPOFF < 0) else "+"
             
-            NTPStrL = "NTP:"+ NTPID
+            NTPStrL = "NTP:"+ NTPID_temp
             NTPStrR = ("STR:{0:1}/DLY:{1:6.3f}/OFF:{2:" + sign  + "6.3f}").format(NTPSTR, NTPDLY, round(NTPOFF,4))
             screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)-1) * " ") + NTPStrR
+            
+            if(dbg):
+                screen += " " + dbg_str
             
             # Switch to the header color theme
             screen += themes[3]
@@ -292,7 +301,7 @@ def main():
 
             print(screen,end="")
             if dbg:
-                time.sleep(1)
+                time.sleep(.5)
                 
         except KeyboardInterrupt:
             return
@@ -321,12 +330,13 @@ def ntpDaemon():
                 NTPOFF  = float(current_server.group(9))
                 NTPDLY  = float(current_server.group(8))
                 NTPSTR  = current_server.group(3)
-                NTPID   = current_server.group(1)
-
+                #NTPID   = current_server.group(1)
+                
+               
         except Exception as e:
-            NTPID = "---"
-            print(e)
-        
+            NTPID = "XXX"
+            #print(e)
+        NTPID = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         time.sleep(15)
 if __name__ == "__main__":
     t = threading.Thread(target = ntpDaemon)
