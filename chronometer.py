@@ -101,6 +101,8 @@ os.system("setterm -cursor off")
 
 def main():
     global NTPID
+    global NTPSTR
+    global NTPDLY
     while True:
         try:
 
@@ -118,7 +120,8 @@ def main():
             output = ""
             resetCursor()
 
-            uSecond = now.microsecond/1000000  
+            uSecond = now.microsecond/1000000
+            
             
             highlight = [themes[3], themes[4]]
             print(themes[0],end="")
@@ -198,7 +201,9 @@ def main():
             dstStr = " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
                         " (" + str(nextDate-now).split(".")[0] + ")"                    
 
-            unixStr = ("UNIX: {0}").format(int(datetime.datetime.utcnow().timestamp()))
+            unix_int = int(datetime.datetime.utcnow().timestamp())
+            unix_exact = unix_int + uSecond
+            unixStr = ("UNIX: {0}").format(unix_int)
             
             dayPercentComplete = timeTable[DAY][VALUE] - int(timeTable[DAY][VALUE])
             dayPercentCompleteUTC = (utcnow.hour*3600 + utcnow.minute*60 + utcnow.second + utcnow.microsecond/1000000)/86400
@@ -258,13 +263,25 @@ def main():
                 screen += spacer + "\n"
 
             half_cols = int(((columns-1)/2)//1)
-            NTPID_fmt = NTPID
-            if (len(NTPID) > (half_cols-7)):
-                NTPID_fmt = NTPID[:(half_cols-10)] + "..."
+            NTPID_max_width = half_cols - 7
+
+            # Calculate NTP server scrolling if string is too large
+            if(len(NTPID) > NTPID_max_width):
+            
+                stages = 8 + len(NTPID) - NTPID_max_width
+                current_stage = int(unix_exact/.5) % stages
+                
+                if(current_stage < 4):
+                    NTPID = NTPID[0:NTPID_max_width]
+                elif(current_stage > (len(NTPID)-NTPID_max_width)):
+                    NTPID = NTPID[(len(NTPID)-NTPID_max_width):]
+                else:
+                    NTPID = NTPID[current_stage:(current_stage+NTPID_max_width)]
+
             
             sign = "-" if (NTPOFF < 0) else "+"
             
-            NTPStrL = "NTP:"+ NTPID_fmt
+            NTPStrL = "NTP:"+ NTPID
             NTPStrR = ("STR:{0:1}/DLY:{1:6.3f}/OFF:{2:" + sign  + "6.3f}").format(NTPSTR, NTPDLY, round(NTPOFF,4))
             screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)-1) * " ") + NTPStrR
             
