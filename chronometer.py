@@ -330,13 +330,12 @@ def ntpDaemon():
                 NTPOFF  = float(current_server.group(9))
                 NTPDLY  = float(current_server.group(8))
                 NTPSTR  = current_server.group(3)
-                #NTPID   = current_server.group(1)
+                NTPID   = current_server.group(1)
                 
                
         except Exception as e:
-            NTPID = "XXX"
-            #print(e)
-        NTPID = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            NTPID = e
+
         time.sleep(15)
 if __name__ == "__main__":
     t = threading.Thread(target = ntpDaemon)
