@@ -272,16 +272,16 @@ def main():
             # Calculate NTP server scrolling if string is too large
             if(len(NTPID) > NTPID_max_width):
             
-                stages = 8 + len(NTPID) - NTPID_max_width
-                current_stage = int(unix_exact/.5) % stages
+                stages = 16 + len(NTPID) - NTPID_max_width
+                current_stage = int(unix_exact/.25) % stages
                 dbg_str += ":"+str(unix_exact)
                 
-                if(current_stage < 4):
+                if(current_stage < 8):
                     NTPID_temp = NTPID[0:NTPID_max_width]
-                elif(current_stage >= (stages-4)):
+                elif(current_stage >= (stages-8)):
                     NTPID_temp = NTPID[(len(NTPID)-NTPID_max_width):]
                 else:
-                    NTPID_temp = NTPID[(current_stage-4):(current_stage-4+NTPID_max_width)]
+                    NTPID_temp = NTPID[(current_stage-8):(current_stage-8+NTPID_max_width)]
             
             sign = "-" if (NTPOFF < 0) else "+"
             
