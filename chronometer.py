@@ -264,7 +264,6 @@ def main():
 
             half_cols = int(((columns-1)/2)//1)
             NTPID_max_width = half_cols - 7
-
             # Calculate NTP server scrolling if string is too large
             if(len(NTPID) > NTPID_max_width):
             
@@ -273,11 +272,10 @@ def main():
                 
                 if(current_stage < 4):
                     NTPID = NTPID[0:NTPID_max_width]
-                elif(current_stage > (len(NTPID)-NTPID_max_width)):
+                elif(current_stage >= (stages-4)):
                     NTPID = NTPID[(len(NTPID)-NTPID_max_width):]
                 else:
-                    NTPID = NTPID[current_stage:(current_stage+NTPID_max_width)]
-
+                    NTPID = NTPID[(current_stage-4):(current_stage-4+NTPID_max_width)]
             
             sign = "-" if (NTPOFF < 0) else "+"
             

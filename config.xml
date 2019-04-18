@@ -15,6 +15,6 @@
         <tz code='Asia/Kolkata'>India</tz>
         <tz code='Asia/Tokyo'>Japan</tz>
         <tz code='Singapore'>Singapore</tz>
-        <tz code='Europe/London'>UK</tz>
+	<tz code='Europe/London'>UK</tz>
     </timezones>
 </clock>
