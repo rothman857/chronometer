@@ -106,8 +106,7 @@ def main():
     global NTPID
     global NTPSTR
     global NTPDLY
-    
-    NTPID_str = str(NTPID)
+
     
     global dbg_str
     while True:
@@ -272,20 +271,20 @@ def main():
             half_cols = int(((columns-1)/2)//1)
             NTPID_max_width = half_cols - 7
             dbg_str = str(NTPID)
-            NTPID_temp = NTPID_str
+            NTPID_temp = NTPID
             # Calculate NTP server scrolling if string is too large
-            if(len(NTPID_str) > NTPID_max_width):
+            if(len(NTPID) > NTPID_max_width):
             
-                stages = 16 + len(NTPID_str) - NTPID_max_width
+                stages = 16 + len(NTPID) - NTPID_max_width
                 current_stage = int(unix_exact/.25) % stages
                 dbg_str += ":"+str(unix_exact)
                 
                 if(current_stage < 8):
-                    NTPID_temp = NTPID_str[0:NTPID_max_width]
+                    NTPID_temp = NTPID[0:NTPID_max_width]
                 elif(current_stage >= (stages-8)):
-                    NTPID_temp = NTPID_str[(len(NTPID)-NTPID_max_width):]
+                    NTPID_temp = NTPID[(len(NTPID)-NTPID_max_width):]
                 else:
-                    NTPID_temp = NTPID_str[(current_stage-8):(current_stage-8+NTPID_max_width)]
+                    NTPID_temp = NTPID[(current_stage-8):(current_stage-8+NTPID_max_width)]
             
             sign = "-" if (NTPOFF < 0) else "+"
             
