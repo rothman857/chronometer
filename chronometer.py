@@ -5,7 +5,6 @@ import os
 import sys
 import string
 import ephem
-import ntplib
 import threading
 import subprocess
 import re
