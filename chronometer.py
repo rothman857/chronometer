@@ -69,10 +69,6 @@ LABEL=0
 VALUE=1
 PRECISION=2
 
-global NTPDLY
-global NTPOFF
-global NTPSTR
-global NTPID
 NTPOFF = 0
 NTPDLY = 0
 NTPSTR = "-"
@@ -103,13 +99,11 @@ os.system("clear")
 os.system("setterm -cursor off")
 
 def main():
-    global NTPID
-    global NTPSTR
-    global NTPDLY
-
     
     global dbg_str
+
     while True:
+        ntp_id_str = str(NTPID)
         try:
 
             time.sleep(0.0167);
@@ -270,21 +264,21 @@ def main():
 
             half_cols = int(((columns-1)/2)//1)
             NTPID_max_width = half_cols - 7
-            dbg_str = str(NTPID)
-            NTPID_temp = NTPID
+            dbg_str = str(ntp_id_str)
+            NTPID_temp = ntp_id_str
             # Calculate NTP server scrolling if string is too large
-            if(len(NTPID) > NTPID_max_width):
+            if(len(ntp_id_str) > NTPID_max_width):
             
-                stages = 16 + len(NTPID) - NTPID_max_width
+                stages = 16 + len(ntp_id_str) - NTPID_max_width
                 current_stage = int(unix_exact/.25) % stages
                 dbg_str += ":"+str(unix_exact)
                 
                 if(current_stage < 8):
-                    NTPID_temp = NTPID[0:NTPID_max_width]
+                    NTPID_temp = ntp_id_str[0:NTPID_max_width]
                 elif(current_stage >= (stages-8)):
-                    NTPID_temp = NTPID[(len(NTPID)-NTPID_max_width):]
+                    NTPID_temp = ntp_id_str[(len(NTPID)-NTPID_max_width):]
                 else:
-                    NTPID_temp = NTPID[(current_stage-8):(current_stage-8+NTPID_max_width)]
+                    NTPID_temp = ntp_id_str[(current_stage-8):(current_stage-8+NTPID_max_width)]
             
             sign = "-" if (NTPOFF < 0) else "+"
             
@@ -338,6 +332,7 @@ def ntpDaemon():
                
         except Exception as e:
             NTPID = e
+
 
         time.sleep(15)
 if __name__ == "__main__":
