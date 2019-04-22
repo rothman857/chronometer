@@ -12,10 +12,6 @@ import xml.etree.ElementTree as ET
 from myColors import colors
 from pytz import timezone
 
-dbg = False
-global dbg_str
-dbg_str = " "
-
 STATIC=0
 RELATIVE=1
 timeZoneList = []
@@ -32,10 +28,6 @@ for child in root:
         for tz in child:
             timeZoneList.append([tz.text, timezone(tz.get("code"))])     
 
-def debug(text,var):
-    if dbg:
-        print("DEBUG>>> "+text + ": " + str(var))
-
 def getRelativeDate(ordinal,weekday,month,year):
     firstday = (datetime.datetime(year,month,1).weekday() + 1)%7
     firstSunday = (7 - firstday) % 7 + 1
@@ -49,14 +41,6 @@ def solartime(observer, sun=ephem.Sun()):
                 
 themes =[colors.bg.black, colors.fg.white, colors.fg.lightblue, colors.bg.black, colors.bg.lightblue]
          
-dbgyear        = 2019
-dbgmonth    = 7
-dbgday        = 1
-dbghour        = 11
-dbgminute    = 59
-dbgsecond    = 55
-dbgstart    = datetime.datetime.now()
-
 SECOND  = 0
 MINUTE  = 1
 HOUR    = 2
@@ -99,9 +83,6 @@ os.system("clear")
 os.system("setterm -cursor off")
 
 def main():
-    
-    global dbg_str
-
     while True:
         ntp_id_str = str(NTPID)
         try:
@@ -113,15 +94,11 @@ def main():
 
             now = datetime.datetime.now()
             utcnow = datetime.datetime.utcnow()
-            #if(dbg):
-            #    now = (datetime.datetime.now()-dbgstart) + \
-            #          datetime.datetime(dbgyear,dbgmonth,dbgday,dbghour,dbgminute,dbgsecond)
             screen = ""
             output = ""
             resetCursor()
 
             uSecond = now.microsecond/1000000
-            
             
             highlight = [themes[3], themes[4]]
             print(themes[0],end="")
@@ -131,10 +108,6 @@ def main():
             hBar = themes[2] + chr(0x2550) + themes[1]
             vBarUp = themes[2] + chr(0x00af) + themes[1]
             vBarDown = themes[2] + "_" + themes[1]
-            llCorner = themes[2] + chr(0x0255A) + themes[1]
-            lrCorner = themes[2] + chr(0x0255D) + themes[1]
-            ulCorner = themes[2] + chr(0x02554) + themes[1]
-            urCorner = themes[2] + chr(0x02557) + themes[1]
             
             binary0 = chr(0x25cf)
             binary1 = chr(0x25cb)
@@ -213,8 +186,6 @@ def main():
             metricuSecond = int(dayPercentComplete*10000000000000) % 100
             metricStr = (" Metric: {0:02.0f}:{1:02.0f}:{2:02}").format(metricHour,metricMinute,int(metricSecond))
             
-            city = ephem.city("Atlanta")
-            
             solarStrTmp = str(solartime(city)).split(".")[0]
             solarStr = "  Solar: {0:>08}".format(solarStrTmp)        
 
@@ -264,14 +235,12 @@ def main():
 
             half_cols = int(((columns-1)/2)//1)
             NTPID_max_width = half_cols - 7
-            dbg_str = str(ntp_id_str)
             NTPID_temp = ntp_id_str
             # Calculate NTP server scrolling if string is too large
             if(len(ntp_id_str) > NTPID_max_width):
             
                 stages = 16 + len(ntp_id_str) - NTPID_max_width
                 current_stage = int(unix_exact/.25) % stages
-                dbg_str += ":"+str(unix_exact)
                 
                 if(current_stage < 8):
                     NTPID_temp = ntp_id_str[0:NTPID_max_width]
@@ -286,9 +255,6 @@ def main():
             NTPStrR = ("STR:{0:1}/DLY:{1:6.3f}/OFF:{2:" + sign  + "6.3f}").format(NTPSTR, NTPDLY, round(NTPOFF,4))
             screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)-1) * " ") + NTPStrR
             
-            if(dbg):
-                screen += " " + dbg_str
-            
             # Switch to the header color theme
             screen += themes[3]
 
@@ -297,8 +263,6 @@ def main():
                 screen += " " * columns
 
             print(screen,end="")
-            if dbg:
-                time.sleep(.5)
                 
         except KeyboardInterrupt:
             return
@@ -333,7 +297,6 @@ def ntpDaemon():
         except Exception as e:
             NTPID = e
 
-
         time.sleep(15)
 if __name__ == "__main__":
     t = threading.Thread(target = ntpDaemon)
@@ -341,7 +304,6 @@ if __name__ == "__main__":
     t.start()
     
     main()
-    #ntpDaemon()
     
     os.system("clear")
     os.system("setterm -cursor on")
