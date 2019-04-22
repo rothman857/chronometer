@@ -83,6 +83,7 @@ os.system("clear")
 os.system("setterm -cursor off")
 
 def main():
+    global city
     while True:
         ntp_id_str = str(NTPID)
         try:
@@ -186,6 +187,7 @@ def main():
             metricuSecond = int(dayPercentComplete*10000000000000) % 100
             metricStr = (" Metric: {0:02.0f}:{1:02.0f}:{2:02}").format(metricHour,metricMinute,int(metricSecond))
             
+            city = ephem.city(city.name)
             solarStrTmp = str(solartime(city)).split(".")[0]
             solarStr = "  Solar: {0:>08}".format(solarStrTmp)        
 
@@ -245,7 +247,7 @@ def main():
                 if(current_stage < 8):
                     NTPID_temp = ntp_id_str[0:NTPID_max_width]
                 elif(current_stage >= (stages-8)):
-                    NTPID_temp = ntp_id_str[(len(NTPID)-NTPID_max_width):]
+                    NTPID_temp = ntp_id_str[(len(ntp_id_str)-NTPID_max_width):]
                 else:
                     NTPID_temp = ntp_id_str[(current_stage-8):(current_stage-8+NTPID_max_width)]
             
