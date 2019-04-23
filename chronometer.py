@@ -7,6 +7,7 @@ import string
 import ephem
 import threading
 import subprocess
+import socket
 import re
 import xml.etree.ElementTree as ET
 from myColors import colors
@@ -15,6 +16,7 @@ from pytz import timezone
 STATIC=0
 RELATIVE=1
 timeZoneList = []
+is_connected = False
 
 config_file = os.path.dirname(os.path.realpath(__file__))
 config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.xml")
@@ -39,7 +41,12 @@ def solartime(observer, sun=ephem.Sun()):
     hour_angle = observer.sidereal_time() - sun.ra
     return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
                 
-themes =[colors.bg.black, colors.fg.white, colors.fg.lightblue, colors.bg.black, colors.bg.lightblue]
+themes = [colors.bg.black,
+          colors.fg.white,
+          colors.fg.lightblue,
+          colors.bg.black,
+          colors.bg.lightblue,
+          colors.fg.darkgray]
          
 SECOND  = 0
 MINUTE  = 1
@@ -238,6 +245,12 @@ def main():
             half_cols = int(((columns-1)/2)//1)
             NTPID_max_width = half_cols - 7
             NTPID_temp = ntp_id_str
+            
+            if(is_connected):
+                screen += themes[1]
+            else:
+                screen += themes[5]
+ 
             # Calculate NTP server scrolling if string is too large
             if(len(ntp_id_str) > NTPID_max_width):
             
@@ -253,9 +266,14 @@ def main():
             
             sign = "-" if (NTPOFF < 0) else "+"
             
+            
+            
+            
             NTPStrL = "NTP:"+ NTPID_temp
             NTPStrR = ("STR:{0:1}/DLY:{1:6.3f}/OFF:{2:" + sign  + "6.3f}").format(NTPSTR, NTPDLY, round(NTPOFF,4))
+            
             screen += themes[4] + NTPStrL + ((columns - len(NTPStrL + NTPStrR)-1) * " ") + NTPStrR
+            screen += themes[1]
             
             # Switch to the header color theme
             screen += themes[3]
@@ -275,13 +293,31 @@ def ntpDaemon():
     global NTPOFF
     global NTPSTR
     global NTPID
+    global is_connected
+    
+    def socket_attempt(address, port):
+        is_successful = False
+        for i in range(0,3):
+            try:
+                s = socket.create_connection((address, port), 2)
+                is_successful = is_successful or True
+            except:
+                pass
+        
+        return is_successful
+                
+                
+                
     
     pattern = re.compile(
         "\*([\w+\-\.(): ]+)\s+([\w\.]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([-\d\.]+)\s+([\d\.]+)"
     )
     
     while(True):
+        
         try:
+            is_connected = socket_attempt("8.8.8.8", 53)
+            
             ntpq = subprocess.run(['ntpq', '-pw'], stdout = subprocess.PIPE)
             ntpq = ntpq.stdout.decode('utf-8')   
             current_server = re.search(r"\*.+", ntpq)
@@ -297,7 +333,8 @@ def ntpDaemon():
                 
                
         except Exception as e:
-            NTPID = e
+            is_connected = False
+            #NTPID += " (OFFLINE)"
 
         time.sleep(15)
 if __name__ == "__main__":
