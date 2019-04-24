@@ -17,6 +17,7 @@ STATIC=0
 RELATIVE=1
 timeZoneList = []
 is_connected = False
+banner = ""
 
 config_file = os.path.dirname(os.path.realpath(__file__))
 config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.xml")
@@ -29,6 +30,9 @@ for child in root:
     if child.tag == "timezones":
         for tz in child:
             timeZoneList.append([tz.text, timezone(tz.get("code"))])     
+            
+    if child.tag == "banner" and child.text is not None:
+        banner = child.text
 
 def getRelativeDate(ordinal,weekday,month,year):
     firstday = (datetime.datetime(year,month,1).weekday() + 1)%7
@@ -155,7 +159,8 @@ def main():
             screen += themes[4]
             screen += ("{: ^" + str(columns-1) +"}\n").format(now.strftime("%I:%M:%S %p - %A %B %d, %Y"))
             
-            screen += vBarDown * (columns-1) + themes[0] + themes[1] + "\n"
+            #screen += vBarDown * (columns-1) + themes[0] + themes[1] + "\n"
+            screen += ("{0:^" + str(columns-1) + "}").format(banner[:columns-1]) + themes[0] + themes[1] + "\n"
             
             for i in range(7):
                 percentValue = int(100*(timeTable[i][VALUE] - int(timeTable[i][VALUE])))
