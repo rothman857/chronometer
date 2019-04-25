@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import datetime
+from datetime import datetime, timedelta
 import time
 import os
 import sys
@@ -12,6 +12,9 @@ import re
 import xml.etree.ElementTree as ET
 from myColors import colors
 from pytz import timezone
+import tzlocal
+
+dbg_on = False
 
 STATIC=0
 RELATIVE=1
@@ -35,9 +38,9 @@ for child in root:
         banner = child.text
 
 def getRelativeDate(ordinal,weekday,month,year):
-    firstday = (datetime.datetime(year,month,1).weekday() + 1)%7
+    firstday = (datetime(year,month,1).weekday() + 1)%7
     firstSunday = (7 - firstday) % 7 + 1
-    return datetime.datetime(year,month,firstSunday + weekday + 7*(ordinal-1))
+    return datetime(year,month,firstSunday + weekday + 7*(ordinal-1))
     
 def solartime(observer, sun=ephem.Sun()):
     sun.compute(observer)
@@ -90,22 +93,36 @@ def drawProgressBar(width,min,max,value):
     level = int(width * (value-min)/(max-min) + .999999999999)
     return (chr(0x2550) * level + colors.fg.darkgray + (chr(0x2500) * (width-level)))
 
+
+def dbg(a,b):
+    if(dbg_on):
+        print("<< DEBUG " + a + ">>  (press enter to continue)")
+        print(b)
+        input()
+    return
+    
+
 os.system("clear")
 os.system("setterm -cursor off")
 
+
+
 def main():
     global city
+    loop_time = timedelta(0)
+
     while True:
         ntp_id_str = str(NTPID)
         try:
 
             time.sleep(0.0167);
-
+            start_time = datetime.now()
+            
+            now = start_time + loop_time
+            utcnow = now.utcnow()
+            
             rows    = os.get_terminal_size().lines
             columns = os.get_terminal_size().columns
-
-            now = datetime.datetime.now()
-            utcnow = datetime.datetime.utcnow()
             screen = ""
             output = ""
             resetCursor()
@@ -141,11 +158,11 @@ def main():
             if (now.month ==12):
                 daysThisMonth = 31
             else:
-                daysThisMonth = (datetime.datetime(now.year,now.month+1,1)- \
-                    datetime.datetime(now.year,now.month,1)).days
+                daysThisMonth = (datetime(now.year,now.month+1,1)- \
+                    datetime(now.year,now.month,1)).days
             
-            dayOfYear = (now - datetime.datetime(now.year,1,1)).days
-            daysThisYear = (datetime.datetime(now.year+1,1,1) - datetime.datetime(now.year,1,1)).days
+            dayOfYear = (now - datetime(now.year,1,1)).days
+            daysThisYear = (datetime(now.year+1,1,1) - datetime(now.year,1,1)).days
 
             timeTable[SECOND][VALUE]    = now.second + uSecond
             timeTable[MINUTE][VALUE]    = now.minute + timeTable[SECOND][VALUE]/60
@@ -187,7 +204,7 @@ def main():
             dstStr = " " + DST[isDaylightSavings][0] + " " + nextDate.strftime("%a %b %d") + \
                         " (" + str(nextDate-now).split(".")[0] + ")"                    
 
-            unix_int = int(datetime.datetime.utcnow().timestamp())
+            unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + uSecond
             unixStr = ("UNIX: {0}").format(unix_int)
             
@@ -220,10 +237,15 @@ def main():
             screen += solarStr +" "+vBar+" "+ netStr + " " * (columns-len(solarStr + netStr + bClockdisp[2]) - 7) + bClockdisp[2] + "    \n"
             screen += lstStr + " "+vBar+" " +hexStr+ " " * (columns-(len(lstStr + hexStr + bClockdisp[3]) + 7 )) + bClockdisp[3] + "    \n"
             screen += vBarDown * columns + ""
-                
+               
+            
+            now_tmp = now.replace(tzinfo=tzlocal.get_localzone())
             for i in range(0,len(timeZoneList),2):
-                time0 = datetime.datetime.now(timeZoneList[i][1])
-                time1 = datetime.datetime.now(timeZoneList[i+1][1])
+                
+                time0 = datetime.now(timeZoneList[i][1])
+                time1 = datetime.now(timeZoneList[i+1][1])
+                
+                #datetime_obj_pacific = timezone('US/Pacific').localize(datetime_obj_naive)
                 flash0 = False
                 flash1 = False
 
@@ -287,6 +309,9 @@ def main():
             for i in range(22,rows):
                 screen += " " * columns
 
+                
+                
+            loop_time = datetime.now() - start_time
             print(screen,end="")
                 
         except KeyboardInterrupt:
