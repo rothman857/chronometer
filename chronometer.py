@@ -12,7 +12,6 @@ import re
 import xml.etree.ElementTree as ET
 from myColors import colors
 from pytz import timezone
-import tzlocal
 
 dbg_on = False
 
@@ -239,7 +238,6 @@ def main():
             screen += vBarDown * columns + ""
                
             
-            now_tmp = now.replace(tzinfo=tzlocal.get_localzone())
             for i in range(0,len(timeZoneList),2):
                 
                 time0 = datetime.now(timeZoneList[i][1])
