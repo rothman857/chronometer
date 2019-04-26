@@ -9,8 +9,8 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
 ### Features:
 
 + Utilizes system time via NTP.  All you need to provide is an internet connection.
-+ Customizable banner that can changed in `config.xml`
-+ Customizable world clock timezones that can changed in `config.xml`.  Timezones must be in pytz format:
++ Customizable banner that can be changed in `config.xml`
++ Customizable world clock timezones that can be changed in `config.xml`.  Timezones must be in pytz format:
     ```
     import pytz
     for tz in pytz.all_timezones:
