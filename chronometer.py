@@ -108,7 +108,7 @@ def main():
     while True:
         ntp_id_str = str(ntpid)
         try:
-            time.sleep(0.0167)
+            time.sleep(0.01)
             start_time = datetime.now()
 
             now = start_time + loop_time
@@ -126,8 +126,10 @@ def main():
 
             v_bar = themes[2] + chr(0x2551) + themes[1]
             v_bar1 = themes[2] + chr(0x2502) + themes[1]
-            v_bar_up = themes[2] + chr(0x00af) + themes[1]
-            v_bar_down = themes[2] + "_" + themes[1]
+            h_bar = themes[2] + chr(0x2550) + themes[1]
+            h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
+            h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
+            h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
 
             binary0 = chr(0x25cf)
             binary1 = chr(0x25cb)
@@ -173,10 +175,10 @@ def main():
                     time_table[i][LABEL], time_table[i][VALUE], draw_progress_bar(
                         columns - 32, 0, 100, percent_value), percent_value)
 
-            screen += v_bar_up * columns + "\n"
+            screen += h_bar * 9 + h_bar_up_connect + h_bar * 16 + h_bar_up_connect_single + h_bar * (columns - 43) + h_bar_down_connect + 10 * h_bar + h_bar_up_connect_single + h_bar * 2 + h_bar_down_connect
 
-            DST = [["DST Begins",    get_relative_date(2, 0, 3, now.year).replace(hour=2)],
-                   ["DST Ends",    get_relative_date(1, 0, 11, now.year).replace(hour=2)]]
+            DST = [[" DST Begins",    get_relative_date(2, 0, 3, now.year).replace(hour=2)],
+                   [" DST Ends",    get_relative_date(1, 0, 11, now.year).replace(hour=2)]]
 
             if ((now - (DST[0][1])).total_seconds() > 0) & (((DST[1][1]) - now).total_seconds() > 0):
                 is_daylight_savings = True
@@ -219,11 +221,11 @@ def main():
             net_second = int(net_value % 60)
 
             net_str = "NET: {0:>02}°{1:>02}\'{2:>02}\"".format(net_hour, net_minute, net_second)
-            screen += dst_str + " " * (columns - len(dst_str + b_clockdisp[0]) - 4) + b_clockdisp[0] + "    \n"
-            screen += metric_str + " " + v_bar + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[1]) - 7) + b_clockdisp[1] + "    \n"
-            screen += solar_str + " " + v_bar + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 7) + b_clockdisp[2] + "    \n"
-            screen += lst_str + " " + v_bar + " " + hex_str + " " * (columns-(len(lst_str + hex_str + b_clockdisp[3]) + 7)) + b_clockdisp[3] + "    \n"
-            screen += v_bar_down * columns + ""
+            screen += dst_str + " " * (columns - len(dst_str + b_clockdisp[0]) - 3) + v_bar + b_clockdisp[0] + " " + v_bar + "\n"
+            screen += metric_str + " " + v_bar1 + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[1]) - 7) + v_bar + b_clockdisp[1] + " " + v_bar + "\n"
+            screen += solar_str + " " + v_bar1 + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 7) + v_bar + b_clockdisp[2] + " " + v_bar + "\n"
+            screen += lst_str + " " + v_bar1 + " " + hex_str + " " * (columns-(len(lst_str + hex_str + b_clockdisp[3]) + 7)) + v_bar + b_clockdisp[3] + " " + v_bar + "\n"
+            screen += h_bar * 15 + h_bar_up_connect_single + h_bar * 13 + h_bar_down_connect + h_bar * (columns - 46) + h_bar_up_connect + 13 * h_bar + h_bar_up_connect + "\n"
 
             for i in range(0, len(time_zone_list), 2):
                 time0 = datetime.now(time_zone_list[i][1])
