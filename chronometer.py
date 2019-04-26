@@ -114,7 +114,7 @@ def main():
         ntp_id_str = str(NTPID)
         try:
 
-            time.sleep(0.0167);
+            time.sleep(0.0167)
             start_time = datetime.now()
             
             now = start_time + loop_time
@@ -123,7 +123,6 @@ def main():
             rows    = os.get_terminal_size().lines
             columns = os.get_terminal_size().columns
             screen = ""
-            output = ""
             resetCursor()
 
             uSecond = now.microsecond/1000000
@@ -133,7 +132,6 @@ def main():
             
             vBar = themes[2] + chr(0x2551) + themes[1]
             vBar1 = themes[2] + chr(0x2502) + themes[1]
-            hBar = themes[2] + chr(0x2550) + themes[1]
             vBarUp = themes[2] + chr(0x00af) + themes[1]
             vBarDown = themes[2] + "_" + themes[1]
             
@@ -212,7 +210,6 @@ def main():
             metricHour = int(dayPercentComplete*10)
             metricMinute = int(dayPercentComplete*1000) % 100
             metricSecond = (dayPercentComplete*100000) % 100
-            metricuSecond = int(dayPercentComplete*10000000000000) % 100
             metricStr = (" Metric: {0:02.0f}:{1:02.0f}:{2:02}").format(metricHour,metricMinute,int(metricSecond))
             
             city = ephem.city(city.name)
@@ -325,9 +322,9 @@ def ntpDaemon():
     
     def socket_attempt(address, port):
         is_successful = False
-        for i in range(0,3):
+        for _ in range(0,3):
             try:
-                s = socket.create_connection((address, port), 2)
+                socket.create_connection((address, port), 2)
                 is_successful = is_successful or True
             except:
                 pass
@@ -338,7 +335,7 @@ def ntpDaemon():
                 
     
     pattern = re.compile(
-        "\*([\w+\-\.(): ]+)\s+([\w\.]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([-\d\.]+)\s+([\d\.]+)"
+        r"\*([\w+\-\.(): ]+)\s+([\w\.]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([-\d\.]+)\s+([\d\.]+)"
     )
     
     while(True):
@@ -352,7 +349,6 @@ def ntpDaemon():
             current_server = pattern.search(ntpq)
             
             if(current_server):
-                ntpStats = re.split("\s+",current_server.group())
 
                 NTPOFF  = float(current_server.group(9))
                 NTPDLY  = float(current_server.group(8))
@@ -362,7 +358,7 @@ def ntpDaemon():
                
         except Exception as e:
             is_connected = False
-            #NTPID += " (OFFLINE)"
+            NTPID =e
 
         time.sleep(15)
 if __name__ == "__main__":
