@@ -47,12 +47,11 @@ def solartime(observer, sun=ephem.Sun()):
     hour_angle = observer.sidereal_time() - sun.ra
     return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
 
-themes = [colors.bg.black,
-          colors.fg.white,
-          colors.fg.lightblue,
-          colors.bg.black,
-          colors.bg.lightblue,
-          colors.fg.darkgray]
+themes = [colors.bg.black,      # background
+          colors.fg.white,      # text
+          colors.fg.lightblue,  # table borders
+          colors.bg.lightblue,  # text highlight/banner
+          colors.fg.darkgray]   # progress bar dim
 
 SECOND = 0
 MINUTE = 1
@@ -71,22 +70,19 @@ ntpdly = 0
 ntpstr = "-"
 ntpid = "---"
 
-#             Label, value, precision
+#               Label       value precision
 time_table = [["Second",    0,    6],
               ["Minute",    0,    8],
-              ["Hour",    0,    10],
-              ["Day",        0,    10],
-              ["Month",    0,    10],
-              ["Year",    0,    10],
-              ["Century",    0,    10]]
+              ["Hour",      0,    10],
+              ["Day",       0,    10],
+              ["Month",     0,    10],
+              ["Year",      0,    10],
+              ["Century",   0,    10]]
 
 
 def reset_cursor():
     print("\033[0;0H", end="")
 
-
-def color(bg, fg):
-    return "\x1b[48;5;" + str(bg) + ";38;5;" + str(fg) + "m"
 
 
 def draw_progress_bar(width, min, max, value):
@@ -113,7 +109,6 @@ def main():
     while True:
         ntp_id_str = str(ntpid)
         try:
-
             time.sleep(0.0167)
             start_time = datetime.now()
 
@@ -127,7 +122,7 @@ def main():
 
             u_second = now.microsecond / 1000000
 
-            highlight = [themes[3], themes[4]]
+            highlight = [themes[0], themes[3]]
             print(themes[0], end="")
 
             v_bar = themes[2] + chr(0x2551) + themes[1]
@@ -166,9 +161,9 @@ def main():
             time_table[DAY][VALUE] = now.day + time_table[HOUR][VALUE] / 24
             time_table[MONTH][VALUE] = now.month + (time_table[DAY][VALUE] - 1)/days_this_month
             time_table[YEAR][VALUE] = now.year + (day_of_year + time_table[DAY][VALUE] - int(time_table[DAY][VALUE]))/days_this_year
-            time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1)/100 + 1
+            time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1) / 100 + 1
 
-            screen += themes[4]
+            screen += themes[3]
             screen += ("{: ^" + str(columns - 1) + "}\n").format(now.strftime("%I:%M:%S %p - %A %B %d, %Y"))
 
             screen += ("{0:^" + str(columns - 1) + "}").format(banner[:columns - 1]) + themes[0] + themes[1] + "\n"
@@ -194,8 +189,7 @@ def main():
                 else:
                     next_date = get_relative_date(2, 0, 3, now.year + 1).replace(hour=2)
 
-            dst_str = " " + DST[is_daylight_savings][0] + " " + next_date.strftime("%a %b %d") + \
-                      " (" + str(next_date - now).split(".")[0] + ")"
+            dst_str = " " + DST[is_daylight_savings][0] + " " + next_date.strftime("%a %b %d") + " (" + str(next_date - now).split(".")[0] + ")"
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
@@ -231,11 +225,9 @@ def main():
             screen += v_bar_down * columns + ""
 
             for i in range(0, len(time_zone_list), 2):
-
                 time0 = datetime.now(time_zone_list[i][1])
                 time1 = datetime.now(time_zone_list[i + 1][1])
 
-#                datetime_obj_pacific = timezone('US/Pacific').localize(datetime_obj_naive)
                 flash0 = False
                 flash1 = False
 
@@ -266,9 +258,9 @@ def main():
             if(is_connected):
                 screen += themes[1]
             else:
-                screen += themes[5]
+                screen += themes[4]
 
-            # Calculate NTP server scrolling if string is too large
+            # Calculate NTP server ID scrolling if string is too large
             if(len(ntp_id_str) > ntpid_max_width):
 
                 stages = 16 + len(ntp_id_str) - ntpid_max_width
@@ -286,11 +278,11 @@ def main():
             ntp_str_left = "NTP:" + ntpid_temp
             ntp_str_right = ("STR:{0:1}/DLY:{1:6.3f}/OFF:{2:" + sign + "6.3f}").format(ntpstr, ntpdly, round(ntpoff, 4))
 
-            screen += themes[4] + ntp_str_left + ((columns - len(ntp_str_left + ntp_str_right)-1) * " ") + ntp_str_right
+            screen += themes[3] + ntp_str_left + ((columns - len(ntp_str_left + ntp_str_right)-1) * " ") + ntp_str_right
             screen += themes[1]
 
             # Switch to the header color theme
-            screen += themes[3]
+            screen += themes[0]
 
             # Append blank lines to fill out the bottom of the screen
             for i in range(22, rows):
@@ -322,11 +314,19 @@ def ntp_daemon():
         return is_successful
 
     pattern = re.compile(
-        r"\*([\w+\-\.(): ]+)\s+([\w\.]+)\s+(\d+)\s+(\w+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d\.]+)\s+([-\d\.]+)\s+([\d\.]+)"
+        r"\*([\w+\-\.(): ]+)\s+" +  # 1 - Server ID
+        r"([\w\.]+)\s+" +           # 2 - Reference ID
+        r"(\d+)\s+" +               # 3 - Stratum
+        r"(\w+)\s+" +               # 4 - Type
+        r"(\d+)\s+" +               # 5 - When
+        r"(\d+)\s+" +               # 6 - Poll
+        r"(\d+)\s+" +               # 7 - Reach
+        r"([\d\.]+)\s+" +           # 8 - Delay
+        r"([-\d\.]+)\s+" +          # 9 - Offset
+        r"([\d\.]+)"                # 10- Jitter
     )
 
     while(True):
-
         try:
             is_connected = socket_attempt("8.8.8.8", 53)
 
@@ -336,7 +336,6 @@ def ntp_daemon():
             current_server = pattern.search(ntpq)
 
             if(current_server):
-
                 ntpoff = float(current_server.group(9))
                 ntpdly = float(current_server.group(8))
                 ntpstr = current_server.group(3)
@@ -351,9 +350,7 @@ if __name__ == "__main__":
     t = threading.Thread(target=ntp_daemon)
     t.setDaemon(True)
     t.start()
-
     main()
-
     os.system("clear")
     os.system("setterm -cursor on")
     print(colors.reset.all, end="")
