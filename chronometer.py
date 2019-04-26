@@ -84,7 +84,6 @@ def reset_cursor():
     print("\033[0;0H", end="")
 
 
-
 def draw_progress_bar(width, min, max, value):
     level = int(width * (value - min)/(max - min) + .999999999999)
     return (chr(0x2550) * level + colors.fg.darkgray + (chr(0x2500) * (width - level)))
@@ -189,35 +188,37 @@ def main():
                 else:
                     next_date = get_relative_date(2, 0, 3, now.year + 1).replace(hour=2)
 
-            dst_str = " " + DST[is_daylight_savings][0] + " " + next_date.strftime("%a %b %d") + " (" + str(next_date - now).split(".")[0] + ")"
+            next_date_countdown = str(next_date - now).split(" ")
+            next_date_countdown = next_date_countdown[0] + ":" + next_date_countdown[2].split(".")[0]
+            dst_str = " " + DST[is_daylight_savings][0] + " " + next_date.strftime("%a %b %d") + " (" + next_date_countdown + ")"
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
-            unix_str = ("UNIX: {0}").format(unix_int)
+            unix_str = ("UNX: {0}").format(unix_int)
 
             day_percent_complete = time_table[DAY][VALUE] - int(time_table[DAY][VALUE])
             day_percent_complete_utc = (utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000) / 86400
             metric_hour = int(day_percent_complete * 10)
             metric_minute = int(day_percent_complete * 1000) % 100
             metric_second = (day_percent_complete * 100000) % 100
-            metric_str = (" Metric: {0:02.0f}:{1:02.0f}:{2:02}").format(metric_hour, metric_minute, int(metric_second))
+            metric_str = (" MET: {0:02.0f}:{1:02.0f}:{2:02}").format(metric_hour, metric_minute, int(metric_second))
 
             city = ephem.city(city.name)
             solar_str_tmp = str(solartime(city)).split(".")[0]
-            solar_str = "  Solar: {0:>08}".format(solar_str_tmp)
+            solar_str = " SOL: {0:>08}".format(solar_str_tmp)
 
             lst_str_tmp = str(city.sidereal_time()).split(".")[0]
-            lst_str = "    LST: {0:>08}".format(lst_str_tmp)
+            lst_str = " LST: {0:>08}".format(lst_str_tmp)
 
             hex_str_tmp = "{:>04}: ".format(hex(int(65536 * day_percent_complete)).split("x")[1]).upper()
-            hex_str = " Hex: " + hex_str_tmp[0] + "_" + hex_str_tmp[1:3] + "_" + hex_str_tmp[3]
+            hex_str = "HEX: " + hex_str_tmp[0] + "_" + hex_str_tmp[1:3] + "_" + hex_str_tmp[3]
 
             net_value = 1296000 * day_percent_complete_utc
             net_hour = int(net_value / 3600)
             net_minute = int((net_value % 3600) / 60)
             net_second = int(net_value % 60)
 
-            net_str = " NET: {0:>02}°{1:>02}\'{2:>02}\"".format(net_hour, net_minute, net_second)
+            net_str = "NET: {0:>02}°{1:>02}\'{2:>02}\"".format(net_hour, net_minute, net_second)
             screen += dst_str + " " * (columns - len(dst_str + b_clockdisp[0]) - 4) + b_clockdisp[0] + "    \n"
             screen += metric_str + " " + v_bar + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[1]) - 7) + b_clockdisp[1] + "    \n"
             screen += solar_str + " " + v_bar + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 7) + b_clockdisp[2] + "    \n"
