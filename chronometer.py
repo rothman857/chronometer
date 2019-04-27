@@ -89,6 +89,13 @@ def draw_progress_bar(width, min, max, value):
     return (chr(0x2550) * level + colors.fg.darkgray + (chr(0x2500) * (width - level)))
 
 
+def timedelta_strf(t_delta, fmt):
+    _ = {"days" : t_delta.days}
+    _["hours"], remainder = divmod(t_delta.seconds, 3600)
+    _["minutes"], _["seconds"] = divmod(remainder, 60)
+    return fmt.format(**_)
+
+
 def dbg(a, b):
     if(dbg_on):
         print("<< DEBUG " + a + ">>  (press enter to continue)")
@@ -190,8 +197,7 @@ def main():
                 else:
                     next_date = get_relative_date(2, 0, 3, now.year + 1).replace(hour=2)
 
-            next_date_countdown = str(next_date - now).split(" ")
-            next_date_countdown = next_date_countdown[0] + ":" + next_date_countdown[2].split(".")[0]
+            next_date_countdown = timedelta_strf(next_date - now, "{days:03}:{hours:02}:{minutes:02}:{seconds:02}")
             dst_str = " " + DST[is_daylight_savings][0] + " " + next_date.strftime("%a %b %d") + " (" + next_date_countdown + ")"
 
             unix_int = int(utcnow.timestamp())
