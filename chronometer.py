@@ -168,7 +168,7 @@ def main():
             time_table[HOUR][VALUE] = now.hour + time_table[MINUTE][VALUE] / 60
             time_table[DAY][VALUE] = now.day + time_table[HOUR][VALUE] / 24
             time_table[MONTH][VALUE] = now.month + (time_table[DAY][VALUE] - 1)/days_this_month
-            time_table[YEAR][VALUE] = now.year + (day_of_year + time_table[DAY][VALUE] - int(time_table[DAY][VALUE]))/days_this_year
+            time_table[YEAR][VALUE] = now.year + (day_of_year + time_table[DAY][VALUE] - int(time_table[DAY][VALUE])) / days_this_year
             time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1) / 100 + 1
 
             screen += themes[3]

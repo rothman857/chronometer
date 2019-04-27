@@ -31,7 +31,7 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
     * [Binary Clock](https://en.wikipedia.org/wiki/Binary_clock)
 + BOTTOM:
     * World Clock
-    * NTP status (Server, Stratum, Delay, Offset)
+    * NTP Status (Server, Stratum, Delay, Offset)
 
 ### Notes:
 
