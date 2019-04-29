@@ -2,8 +2,6 @@
 from datetime import datetime, timedelta
 import time
 import os
-import sys
-import string
 import ephem
 import threading
 import subprocess
@@ -11,7 +9,7 @@ import socket
 import re
 import xml.etree.ElementTree as ET
 from myColors import colors
-from pytz import timezone
+from pytz import timezone, utc
 
 dbg_on = False
 
@@ -38,7 +36,7 @@ for child in root:
 def get_relative_date(ordinal, weekday, month, year):
     firstday = (datetime(year, month, 1).weekday() + 1) % 7
     first_sunday = (7 - firstday) % 7 + 1
-    return datetime(year, month, first_sunday + weekday + 7*(ordinal - 1))
+    return datetime(year, month, first_sunday + weekday + 7 * (ordinal - 1))
 
 
 def solartime(observer, sun=ephem.Sun()):
@@ -46,6 +44,15 @@ def solartime(observer, sun=ephem.Sun()):
     # sidereal time == ra (right ascension) is the highest point (noon)
     hour_angle = observer.sidereal_time() - sun.ra
     return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
+
+
+def is_dst(zonename, utc_time):
+    if zonename not in ["STD", "DST"]:
+        tz = timezone(zonename)
+        now = utc.localize(utc_time)
+        return now.astimezone(tz).dst() != timedelta(0)
+    else:
+        return False
 
 themes = [colors.bg.black,      # background
           colors.fg.white,      # text
@@ -70,6 +77,14 @@ ntpdly = 0
 ntpstr = "-"
 ntpid = "---"
 
+weekday_abbr = ["MO",
+                "TU",
+                "WE",
+                "TH",
+                "FR",
+                "SA",
+                "SU"]
+
 #               Label       value precision
 time_table = [["Second",    0,    6],
               ["Minute",    0,    8],
@@ -84,15 +99,37 @@ def reset_cursor():
     print("\033[0;0H", end="")
 
 
-def draw_progress_bar(width, min, max, value):
+def draw_progress_bar(*, min=0, width, max, value):
     level = int(width * (value - min)/(max - min) + .999999999999)
     return (chr(0x2550) * level + colors.fg.darkgray + (chr(0x2500) * (width - level)))
 
 
 def timedelta_strf(t_delta, fmt):
-    _ = {"days" : t_delta.days}
+    _ = {"days": t_delta.days}
     _["hours"], remainder = divmod(t_delta.seconds, 3600)
     _["minutes"], _["seconds"] = divmod(remainder, 60)
+    return fmt.format(**_)
+
+
+def net_time_strf(day_percent, fmt):
+    _ = dict()
+    _["degrees"], remainder = divmod(int(1296000*day_percent), 3600)
+    _["degrees"], remainder = int(_["degrees"]), int(remainder)
+    _["minutes"], _["seconds"] = divmod(remainder, 60)
+    return fmt.format(**_)
+
+
+def hex_strf(day_percent, fmt):
+    _ = dict()
+    _["hours"], remainder = divmod(int(day_percent * 65536), 4096)
+    _["minutes"], _["seconds"] = divmod(remainder, 16)
+    return fmt.format(**_)
+
+
+def metric_strf(day_percent, fmt):
+    _ = dict()
+    _["hours"], remainder = divmod(int(day_percent * 100000), 10000)
+    _["minutes"], _["seconds"] = divmod(remainder, 100)
     return fmt.format(**_)
 
 
@@ -111,6 +148,16 @@ os.system("setterm -cursor off")
 def main():
     global city
     loop_time = timedelta(0)
+    dst_str=["", "", "", ""]
+    v_bar = themes[2] + chr(0x2551) + themes[1]
+    v_bar1 = themes[2] + chr(0x2502) + themes[1]
+    v_bar_gray = themes[4] + chr(0x2502) + themes[1]
+    h_bar = themes[2] + chr(0x2550) + themes[1]
+    h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
+    h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
+    h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
+    highlight = [themes[0], themes[3]]
+    binary = chr(0x25cf) + chr(0x25cb)
 
     while True:
         ntp_id_str = str(ntpid)
@@ -120,40 +167,45 @@ def main():
 
             now = start_time + loop_time
             utcnow = now.utcnow()
+            cetnow = utcnow + timedelta(hours=1)
+            DST = [get_relative_date(2, 0, 3, now.year).replace(hour=2),
+                   get_relative_date(1, 0, 11, now.year).replace(hour=2)]
+            is_daylight_savings = time.localtime().tm_isdst
+
+            if (now < DST[0]):
+                next_date = DST[0]
+            elif ((now < DST[1]) and is_daylight_savings):
+                next_date = DST[1]
+            else:
+                next_date = get_relative_date(2, 0, 3, now.year + 1).replace(hour=2)
+
+            current_tz = time.tzname[is_daylight_savings]
+            time_until_dst = next_date - now + timedelta(seconds=1)
 
             rows = os.get_terminal_size().lines
             columns = os.get_terminal_size().columns
+            half_cols = int(((columns - 1) / 2) // 1)
             screen = ""
             reset_cursor()
-
-            u_second = now.microsecond / 1000000
-
-            highlight = [themes[0], themes[3]]
+            u_second = now.microsecond / 1000000 
             print(themes[0], end="")
+            hour_binary = divmod(now.hour, 10)
+            minute_binary = divmod(now.minute, 10)
+            second_binary = divmod(now.second, 10)
 
-            v_bar = themes[2] + chr(0x2551) + themes[1]
-            v_bar1 = themes[2] + chr(0x2502) + themes[1]
-            h_bar = themes[2] + chr(0x2550) + themes[1]
-            h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
-            h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
-            h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
+            b_clock_mat = [bin(hour_binary[0])[2:].zfill(4),
+                           bin(hour_binary[1])[2:].zfill(4),
+                           bin(minute_binary[0])[2:].zfill(4),
+                           bin(minute_binary[1])[2:].zfill(4),
+                           bin(second_binary[0])[2:].zfill(4),
+                           bin(second_binary[1])[2:].zfill(4),
+                           ]
 
-            binary0 = chr(0x25cf)
-            binary1 = chr(0x25cb)
-
-            hour_binary0 = "{:>04b}".format(int(now.hour / 10))
-            hour_binary1 = "{:>04b}".format(int(now.hour % 10))
-            minute_binary0 = "{:>04b}".format(int(now.minute / 10))
-            minute_binary1 = "{:>04b}".format(int(now.minute % 10))
-            second_binary0 = "{:>04b}".format(int(now.second / 10))
-            second_binary1 = "{:>04b}".format(int(now.second % 10))
-
-            b_clock_mat = [hour_binary0, hour_binary1, minute_binary0, minute_binary1, second_binary0, second_binary1]
             b_clock_mat_t = [*zip(*b_clock_mat)]
             b_clockdisp = ['', '', '', '']
 
             for i, row in enumerate(b_clock_mat_t):
-                b_clockdisp[i] = ''.join(row).replace("0", " " + binary0).replace("1", " " + binary1)
+                b_clockdisp[i] = ''.join(row).replace("0", " " + binary[0]).replace("1", " " + binary[1])
 
             if (now.month == 12):
                 days_this_month = 31
@@ -172,7 +224,7 @@ def main():
             time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1) / 100 + 1
 
             screen += themes[3]
-            screen += ("{: ^" + str(columns - 1) + "}\n").format(now.strftime("%I:%M:%S %p - %A %B %d, %Y"))
+            screen += ("{: ^" + str(columns - 1) + "}\n").format(now.strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y"))
 
             screen += ("{0:^" + str(columns - 1) + "}").format(banner[:columns - 1]) + themes[0] + themes[1] + "\n"
 
@@ -180,25 +232,14 @@ def main():
                 percent_value = int(100*(time_table[i][VALUE] - int(time_table[i][VALUE])))
                 screen += (" {0:>7} " + v_bar + " {1:>15." + str(time_table[i][PRECISION]) + "f}" + v_bar1 + "{2:}" + v_bar1 + "{3:02}% \n").format(
                     time_table[i][LABEL], time_table[i][VALUE], draw_progress_bar(
-                        columns - 32, 0, 100, percent_value), percent_value)
+                        width=(columns - 32), max=100, value=percent_value), percent_value)
 
-            screen += h_bar * 9 + h_bar_up_connect + h_bar * 16 + h_bar_up_connect_single + h_bar * (columns - 43) + h_bar_down_connect + 10 * h_bar + h_bar_up_connect_single + h_bar * 2 + h_bar_down_connect
+            screen += h_bar * 9 + h_bar_up_connect + h_bar * 16 + h_bar_up_connect_single + h_bar * (columns - 54) + h_bar_down_connect + h_bar * 13 +  h_bar_down_connect + 7 * h_bar + h_bar_up_connect_single + h_bar * 2 + h_bar_down_connect + "\n"
 
-            DST = [[" DST Begins",    get_relative_date(2, 0, 3, now.year).replace(hour=2)],
-                   [" DST Ends",    get_relative_date(1, 0, 11, now.year).replace(hour=2)]]
-
-            if ((now - (DST[0][1])).total_seconds() > 0) & (((DST[1][1]) - now).total_seconds() > 0):
-                is_daylight_savings = True
-                next_date = DST[1][1].replace(hour=2)
-            else:
-                is_daylight_savings = False
-                if ((now - DST[0][1]).total_seconds() < 0):
-                    next_date = get_relative_date(2, 0, 3, now.year).replace(hour=2)
-                else:
-                    next_date = get_relative_date(2, 0, 3, now.year + 1).replace(hour=2)
-
-            next_date_countdown = timedelta_strf(next_date - now, "{days:03}:{hours:02}:{minutes:02}:{seconds:02}")
-            dst_str = " " + DST[is_daylight_savings][0] + " " + next_date.strftime("%a %b %d") + " (" + next_date_countdown + ")"
+            dst_str[0] = "{:^8}".format("DST->STD" if is_daylight_savings else "STD->DST")
+            dst_str[1] = weekday_abbr[next_date.weekday()] + " " + next_date.strftime("%m/%d")
+            dst_str[2] = timedelta_strf(time_until_dst, "{days:03} DAYS")
+            dst_str[3] = timedelta_strf(time_until_dst, "{hours:02}:{minutes:02}:{seconds:02}")
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
@@ -206,32 +247,27 @@ def main():
 
             day_percent_complete = time_table[DAY][VALUE] - int(time_table[DAY][VALUE])
             day_percent_complete_utc = (utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000) / 86400
-            metric_hour = int(day_percent_complete * 10)
-            metric_minute = int(day_percent_complete * 1000) % 100
-            metric_second = (day_percent_complete * 100000) % 100
-            metric_str = (" MET: {0:02.0f}:{1:02.0f}:{2:02}").format(metric_hour, metric_minute, int(metric_second))
+            day_percent_complete_cet = (cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000) / 86400
 
             city = ephem.city(city.name)
             solar_str_tmp = str(solartime(city)).split(".")[0]
-            solar_str = " SOL: {0:>08}".format(solar_str_tmp)
+            solar_str = "SOL: {0:>08}".format(solar_str_tmp)
 
             lst_str_tmp = str(city.sidereal_time()).split(".")[0]
-            lst_str = " LST: {0:>08}".format(lst_str_tmp)
+            lst_str = "LST: {0:>08}".format(lst_str_tmp)
 
-            hex_str_tmp = "{:>04}: ".format(hex(int(65536 * day_percent_complete)).split("x")[1]).upper()
-            hex_str = "HEX: " + hex_str_tmp[0] + "_" + hex_str_tmp[1:3] + "_" + hex_str_tmp[3]
+            metric_str = metric_strf(day_percent_complete, "MET: {hours:02}:{minutes:02}:{seconds:02}")
+            hex_str = hex_strf(day_percent_complete, "HEX: {hours:1X}_{minutes:02X}_{seconds:1X}")
+            net_str = net_time_strf(day_percent_complete_utc, "NET: {degrees:03.0f}°{minutes:02.0f}'{seconds:02.0f}\"")
 
-            net_value = 1296000 * day_percent_complete_utc
-            net_hour = int(net_value / 3600)
-            net_minute = int((net_value % 3600) / 60)
-            net_second = int(net_value % 60)
+            sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
+            utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
-            net_str = "NET: {0:>02}°{1:>02}\'{2:>02}\"".format(net_hour, net_minute, net_second)
-            screen += dst_str + " " * (columns - len(dst_str + b_clockdisp[0]) - 3) + v_bar + b_clockdisp[0] + " " + v_bar + "\n"
-            screen += metric_str + " " + v_bar1 + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[1]) - 7) + v_bar + b_clockdisp[1] + " " + v_bar + "\n"
-            screen += solar_str + " " + v_bar1 + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 7) + v_bar + b_clockdisp[2] + " " + v_bar + "\n"
-            screen += lst_str + " " + v_bar1 + " " + hex_str + " " * (columns-(len(lst_str + hex_str + b_clockdisp[3]) + 7)) + v_bar + b_clockdisp[3] + " " + v_bar + "\n"
-            screen += h_bar * 15 + h_bar_up_connect_single + h_bar * 13 + h_bar_down_connect + h_bar * (columns - 46) + h_bar_up_connect + 13 * h_bar + h_bar_up_connect + "\n"
+            screen += " " + utc_str + " " + v_bar_gray + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 19) + v_bar + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
+            screen += " " + metric_str + " " + v_bar_gray + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 19) + v_bar + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
+            screen += " " + solar_str + " " + v_bar_gray + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 19) + v_bar + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
+            screen += " " + lst_str + " " + v_bar_gray + " " + hex_str + " " * (columns-(len(lst_str + hex_str + b_clockdisp[3]) + 19)) + v_bar + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
+            screen += h_bar * 29 + h_bar_down_connect + h_bar * (columns - 57) +h_bar_up_connect +h_bar * 13 + h_bar_up_connect + 10 * h_bar + h_bar_up_connect + "\n"
 
             for i in range(0, len(time_zone_list), 2):
                 time0 = datetime.now(time_zone_list[i][1])
@@ -260,7 +296,7 @@ def main():
                 spacer = " " * (columns - 59)
                 screen += spacer + "\n"
 
-            half_cols = int(((columns - 1) / 2) // 1)
+            
             ntpid_max_width = half_cols - 7
             ntpid_temp = ntp_id_str
 
