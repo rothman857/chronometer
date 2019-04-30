@@ -33,6 +33,12 @@ for child in root:
         banner = child.text
 
 
+def float_fixed(flt, wd, sign):
+    wd = str(wd)
+    sign = "+" if sign else ""
+    return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
+
+
 def get_relative_date(ordinal, weekday, month, year):
     firstday = (datetime(year, month, 1).weekday() + 1) % 7
     first_sunday = (7 - firstday) % 7 + 1
@@ -297,7 +303,7 @@ def main():
                 screen += spacer + "\n"
 
             
-            ntpid_max_width = half_cols - 7
+            ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
 
             if(is_connected):
@@ -318,10 +324,12 @@ def main():
                 else:
                     ntpid_temp = ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
 
-            sign = "-" if (ntpoff < 0) else "+"
-
             ntp_str_left = "NTP:" + ntpid_temp
-            ntp_str_right = ("STR:{0:1}/DLY:{1:6.3f}/OFF:{2:" + sign + "6.3f}").format(ntpstr, ntpdly, round(ntpoff, 4))
+            ntp_str_right = ("STR:{str}/DLY:{dly}/OFF:{off}").format(
+                            str = ntpstr,
+                            dly = float_fixed(ntpdly, 6, False),
+                            off = float_fixed(ntpoff, 7, True)
+                            )
 
             screen += themes[3] + ntp_str_left + ((columns - len(ntp_str_left + ntp_str_right)-1) * " ") + ntp_str_right
             screen += themes[1]
