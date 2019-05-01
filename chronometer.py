@@ -156,16 +156,13 @@ def main():
     loop_time = timedelta(0)
     dst_str = ["", "", "", ""]
     v_bar = themes[2] + chr(0x2551) + themes[1]
-    v_bar1 = themes[2] + chr(0x2502) + themes[1]
-    v_bar_gray = themes[4] + chr(0x2502) + themes[1]
+    b_var_single = themes[2] + chr(0x2502) + themes[1]
     h_bar = themes[2] + chr(0x2550) + themes[1]
     h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
     h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
     h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
     corner_ll = themes[2] + chr(0x255A) + themes[1]
     corner_lr = themes[2] + chr(0x255D) + themes[1]
-    corner_ul = themes[2] + chr(0x2554) + themes[1]
-    corner_ur = themes[2] + chr(0x2557) + themes[1]
     center_l = themes[2] + chr(0x2560) + themes[1]
     center_r = themes[2] + chr(0x2563) + themes[1]
     highlight = [themes[0], themes[3]]
@@ -242,7 +239,7 @@ def main():
 
             for i in range(7):
                 percent = time_table[i][VALUE] - int(time_table[i][VALUE])
-                screen += v_bar + (" {0:>7} " + v_bar1 + " {1:>15." + str(time_table[i][PRECISION]) + "f} " + "{2:}" + themes[1] + " {3:02}% " +  v_bar + "\n").format(
+                screen += v_bar + (" {0:>7} " + b_var_single + " {1:>15." + str(time_table[i][PRECISION]) + "f} " + "{2:}" + themes[1] + " {3:02}% " +  v_bar + "\n").format(
                           time_table[i][LABEL],
                           time_table[i][VALUE],
                           draw_progress_bar(width=(columns - 34), max=1, value=percent), int(100*(percent)))
@@ -298,7 +295,7 @@ def main():
 
                 time_str0 = time0.strftime("%I:%M %p %b %d")
                 time_str1 = time1.strftime("%I:%M %p %b %d")
-                screen += v_bar + highlight[flash0] + (" {0:>9}: {1:15} ").format(time_zone_list[i][0], time_str0) + highlight[0] + v_bar1 * 2
+                screen += v_bar + highlight[flash0] + (" {0:>9}: {1:15} ").format(time_zone_list[i][0], time_str0) + highlight[0] + b_var_single * 2
                 screen += highlight[flash1] + (" {0:>9}: {1:15} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0]
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
                 spacer = " " * (columns - 60)
@@ -306,10 +303,10 @@ def main():
 
             screen += center_l + h_bar * (columns - 27) + h_bar_down_connect + h_bar * 13 + h_bar_down_connect + 10 * h_bar + center_r + "\n"
 
-            screen += v_bar + " " + utc_str + " " + v_bar1 + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 19) + v_bar + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
-            screen += v_bar + " " + metric_str + " " + v_bar1 + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 19) + v_bar + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
-            screen += v_bar + " " + solar_str + " " + v_bar1 + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 19) + v_bar + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
-            screen += v_bar + " " + lst_str + " " + v_bar1 + " " + hex_str + " " * (columns - len(lst_str + hex_str + b_clockdisp[3]) - 19) + v_bar + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
+            screen += v_bar + " " + utc_str + " " + b_var_single + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 19) + v_bar + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
+            screen += v_bar + " " + metric_str + " " + b_var_single + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 19) + v_bar + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
+            screen += v_bar + " " + solar_str + " " + b_var_single + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 19) + v_bar + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
+            screen += v_bar + " " + lst_str + " " + b_var_single + " " + hex_str + " " * (columns - len(lst_str + hex_str + b_clockdisp[3]) - 19) + v_bar + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
             screen += corner_ll + h_bar * (columns - 27) + h_bar_up_connect + h_bar * 13 + h_bar_up_connect + h_bar * 10 + corner_lr + "\n"
             ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
