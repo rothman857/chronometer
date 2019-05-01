@@ -339,7 +339,7 @@ def main():
                             off=float_fixed(ntpoff, 7, True)
                             )
 
-            screen += themes[3] + ntp_str_left + ((columns - len(ntp_str_left + ntp_str_right)-1) * " ") + ntp_str_right
+            screen += themes[3] + " "+ ntp_str_left + ((columns - len(ntp_str_left + ntp_str_right)-2) * " ") + ntp_str_right + " "
             screen += themes[1]
 
             # Switch to the header color theme
@@ -401,6 +401,7 @@ def ntp_daemon():
                 ntpdly = float(current_server.group(8))
                 ntpstr = current_server.group(3)
                 ntpid = current_server.group(1)
+            ntpid = "124312431243143124321431243124312431243"
 
         except Exception as e:
             is_connected = False
