@@ -401,7 +401,6 @@ def ntp_daemon():
                 ntpdly = float(current_server.group(8))
                 ntpstr = current_server.group(3)
                 ntpid = current_server.group(1)
-            ntpid = "124312431243143124321431243124312431243"
 
         except Exception as e:
             is_connected = False
