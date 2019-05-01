@@ -22,9 +22,11 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
     * Time value breakdown with exact values, completion bar, and percentage.
 + MIDDLE:
     * Daylight Savings Indicator
+    * UTC - [Coordinated Universal Time](https://en.wikipedia.org/wiki/Coordinated_Universal_Time)
     * MET - [Metric Time](https://en.wikipedia.org/wiki/Metric_time)
     * SOL - [Solar Time](https://en.wikipedia.org/wiki/Solar_time)
     * LST - [Local Sidereal Time](https://en.wikipedia.org/wiki/Sidereal_time)
+    * SIT - [Swatch Internet Time](https://en.wikipedia.org/wiki/Swatch_Internet_Time)]
     * UNX - [Unix Epoch Time](https://en.wikipedia.org/wiki/Unix_time)
     * NET - [New Earth Time](https://en.wikipedia.org/wiki/New_Earth_Time)
     * HEX - [Hexadecimal Time](https://en.wikipedia.org/wiki/Hexadecimal_time)
