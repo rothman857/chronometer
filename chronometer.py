@@ -240,7 +240,7 @@ def main():
                     time_table[i][LABEL], time_table[i][VALUE], draw_progress_bar(
                         width=(columns - 32), max=1, value=percent), int(100*(percent)))
 
-            screen += h_bar * 9 + h_bar_up_connect + h_bar * 16 + h_bar_up_connect_single + h_bar * (columns - 54) + h_bar_down_connect + h_bar * 13 + h_bar_down_connect + 7 * h_bar + h_bar_up_connect_single + h_bar * 2 + h_bar_down_connect + "\n"
+            screen += h_bar * 9 + h_bar_up_connect + h_bar * 16 + h_bar_up_connect_single + (h_bar*2) + h_bar_down_connect + h_bar * (columns - 42) + 7 * h_bar + h_bar_up_connect_single + h_bar * 3 + "\n"
 
             dst_str[0] = "{:^8}".format("DST->STD" if is_daylight_savings else "STD->DST")
             dst_str[1] = weekday_abbr[next_date.weekday()] + " " + next_date.strftime("%m/%d")
@@ -269,12 +269,7 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
-            screen += " " + utc_str + " " + v_bar_gray + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 19) + v_bar + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
-            screen += " " + metric_str + " " + v_bar_gray + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 19) + v_bar + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
-            screen += " " + solar_str + " " + v_bar_gray + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 19) + v_bar + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
-            screen += " " + lst_str + " " + v_bar_gray + " " + hex_str + " " * (columns-(len(lst_str + hex_str + b_clockdisp[3]) + 19)) + v_bar + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
-            screen += h_bar * 29 + h_bar_down_connect + h_bar * (columns - 57) + h_bar_up_connect + h_bar * 13 + h_bar_up_connect + 10 * h_bar + h_bar_up_connect + "\n"
-
+            
             for i in range(0, len(time_zone_list), 2):
                 time0 = datetime.now(time_zone_list[i][1])
                 time1 = datetime.now(time_zone_list[i + 1][1])
@@ -301,7 +296,13 @@ def main():
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
                 spacer = " " * (columns - 59)
                 screen += spacer + "\n"
+            screen += h_bar * 29 + h_bar_up_connect + h_bar * (columns - 57) + h_bar_down_connect + h_bar * 13 + h_bar_down_connect + 10 * h_bar + h_bar_down_connect + "\n"
 
+            screen += " " + utc_str + " " + v_bar_gray + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 19) + v_bar + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + " \n"
+            screen += " " + metric_str + " " + v_bar_gray + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 19) + v_bar + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + " \n"
+            screen += " " + solar_str + " " + v_bar_gray + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 19) + v_bar + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + " \n"
+            screen += " " + lst_str + " " + v_bar_gray + " " + hex_str + " " * (columns-(len(lst_str + hex_str + b_clockdisp[3]) + 19)) + v_bar + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + " \n"
+            
             ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
 
