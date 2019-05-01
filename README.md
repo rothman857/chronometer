@@ -26,8 +26,8 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
     * MET - [Metric Time](https://en.wikipedia.org/wiki/Metric_time)
     * SOL - [Solar Time](https://en.wikipedia.org/wiki/Solar_time)
     * LST - [Local Sidereal Time](https://en.wikipedia.org/wiki/Sidereal_time)
-    * SIT - [Swatch Internet Time](https://en.wikipedia.org/wiki/Swatch_Internet_Time)]
     * UNX - [Unix Epoch Time](https://en.wikipedia.org/wiki/Unix_time)
+    * SIT - [Swatch Internet Time](https://en.wikipedia.org/wiki/Swatch_Internet_Time)
     * NET - [New Earth Time](https://en.wikipedia.org/wiki/New_Earth_Time)
     * HEX - [Hexadecimal Time](https://en.wikipedia.org/wiki/Hexadecimal_time)
     * [Binary Clock](https://en.wikipedia.org/wiki/Binary_clock)
