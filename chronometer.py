@@ -162,6 +162,12 @@ def main():
     h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
     h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
     h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
+    corner_ll = themes[2] + chr(0x255A) + themes[1]
+    corner_lr = themes[2] + chr(0x255D) + themes[1]
+    corner_ul = themes[2] + chr(0x2554) + themes[1]
+    corner_ur = themes[2] + chr(0x2557) + themes[1]
+    center_l = themes[2] + chr(0x2560) + themes[1]
+    center_r = themes[2] + chr(0x2563) + themes[1]
     highlight = [themes[0], themes[3]]
     binary = chr(0x25cf) + chr(0x25cb)
 
@@ -230,17 +236,18 @@ def main():
             time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1) / 100 + 1
 
             screen += themes[3]
-            screen += ("{: ^" + str(columns - 1) + "}\n").format(now.strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y"))
+            screen += ("{: ^" + str(columns) + "}\n").format(now.strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y"))
 
-            screen += ("{0:^" + str(columns - 1) + "}").format(banner[:columns - 1]) + themes[0] + themes[1] + "\n"
+            screen += ("{0:^" + str(columns) + "}").format(banner[:columns - 1]) + themes[0] + themes[1] + "\n"
 
             for i in range(7):
                 percent = time_table[i][VALUE] - int(time_table[i][VALUE])
-                screen += (" {0:>7} " + v_bar + " {1:>15." + str(time_table[i][PRECISION]) + "f}" + v_bar1 + "{2:}" + v_bar1 + "{3:02}% \n").format(
-                    time_table[i][LABEL], time_table[i][VALUE], draw_progress_bar(
-                        width=(columns - 32), max=1, value=percent), int(100*(percent)))
+                screen += v_bar + (" {0:>7} " + v_bar + " {1:>15." + str(time_table[i][PRECISION]) + "f}" + v_bar1 + "{2:}" + themes[1] + " {3:02}% " +  v_bar + "\n").format(
+                          time_table[i][LABEL],
+                          time_table[i][VALUE],
+                          draw_progress_bar(width=(columns - 34), max=1, value=percent), int(100*(percent)))
 
-            screen += h_bar * 9 + h_bar_up_connect + h_bar * 16 + h_bar_up_connect_single + (h_bar*2) + h_bar_down_connect + h_bar * (columns - 42) + 7 * h_bar + h_bar_up_connect_single + h_bar * 3 + "\n"
+            screen += center_l + h_bar * 9 + h_bar_up_connect + h_bar * 16 + h_bar_up_connect_single + h_bar * (columns - 29) + center_r + "\n"
 
             dst_str[0] = "{:^8}".format("DST->STD" if is_daylight_savings else "STD->DST")
             dst_str[1] = weekday_abbr[next_date.weekday()] + " " + next_date.strftime("%m/%d")
@@ -291,18 +298,18 @@ def main():
 
                 time_str0 = time0.strftime("%I:%M %p %b %d")
                 time_str1 = time1.strftime("%I:%M %p %b %d")
-                screen += highlight[flash0] + (" {0:>9}: {1:15}  ").format(time_zone_list[i][0], time_str0) + highlight[0] + v_bar
-                screen += highlight[flash1] + (" {0:>9}: {1:15}  ").format(time_zone_list[i + 1][0], time_str1) + highlight[0]
+                screen += v_bar + highlight[flash0] + (" {0:>9}: {1:15}  ").format(time_zone_list[i][0], time_str0) + highlight[0] + v_bar_gray
+                screen += highlight[flash1] + (" {0:>9}: {1:15} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0]
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
-                spacer = " " * (columns - 59)
-                screen += spacer + "\n"
-            screen += h_bar * 29 + h_bar_up_connect + h_bar * (columns - 57) + h_bar_down_connect + h_bar * 13 + h_bar_down_connect + 10 * h_bar + h_bar_down_connect + "\n"
+                spacer = " " * (columns - 61)
+                screen += spacer + v_bar + "\n"
+            screen += center_l + h_bar * (columns - 27) + h_bar_down_connect + h_bar * 13 + h_bar_down_connect + 10 * h_bar + center_r + "\n"
 
-            screen += " " + utc_str + " " + v_bar_gray + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 19) + v_bar + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + " \n"
-            screen += " " + metric_str + " " + v_bar_gray + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 19) + v_bar + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + " \n"
-            screen += " " + solar_str + " " + v_bar_gray + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 19) + v_bar + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + " \n"
-            screen += " " + lst_str + " " + v_bar_gray + " " + hex_str + " " * (columns-(len(lst_str + hex_str + b_clockdisp[3]) + 19)) + v_bar + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + " \n"
-            
+            screen += v_bar + " " + utc_str + " " + v_bar_gray + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 19) + v_bar + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
+            screen += v_bar + " " + metric_str + " " + v_bar_gray + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 19) + v_bar + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
+            screen += v_bar + " " + solar_str + " " + v_bar_gray + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 19) + v_bar + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
+            screen += v_bar + " " + lst_str + " " + v_bar_gray + " " + hex_str + " " * (columns - len(lst_str + hex_str + b_clockdisp[3]) - 19) + v_bar + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
+            screen += corner_ll + h_bar * (columns - 27) + h_bar_up_connect + h_bar * 13 + h_bar_up_connect + h_bar * 10 + corner_lr + "\n"
             ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
 

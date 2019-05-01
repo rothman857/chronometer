@@ -2,11 +2,9 @@
 <clock>
     <location>Atlanta</location>
     <banner></banner>
-    <!--Must have 12 timezones-->
+    <!--Must have 10 timezones-->
     <timezones>
         <tz code='US/Eastern'>Eastern</tz>
-        <tz code='US/Central'>Central</tz>
-        <tz code='US/Mountain'>Mountain</tz>
         <tz code='US/Pacific'>Pacific</tz>
         <tz code='GMT'>GMT</tz>
         <tz code='Australia/Sydney'>Australia</tz>
