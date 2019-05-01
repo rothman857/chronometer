@@ -242,12 +242,12 @@ def main():
 
             for i in range(7):
                 percent = time_table[i][VALUE] - int(time_table[i][VALUE])
-                screen += v_bar + (" {0:>7} " + v_bar + " {1:>15." + str(time_table[i][PRECISION]) + "f}" + v_bar1 + "{2:}" + themes[1] + " {3:02}% " +  v_bar + "\n").format(
+                screen += v_bar + (" {0:>7} " + v_bar1 + " {1:>15." + str(time_table[i][PRECISION]) + "f} " + "{2:}" + themes[1] + " {3:02}% " +  v_bar + "\n").format(
                           time_table[i][LABEL],
                           time_table[i][VALUE],
                           draw_progress_bar(width=(columns - 34), max=1, value=percent), int(100*(percent)))
 
-            screen += center_l + h_bar * 9 + h_bar_up_connect + h_bar * 16 + h_bar_up_connect_single + h_bar * (columns - 29) + center_r + "\n"
+            screen += center_l + h_bar * 9 + h_bar_up_connect_single + h_bar * (columns - 12) + center_r + "\n"
 
             dst_str[0] = "{:^8}".format("DST->STD" if is_daylight_savings else "STD->DST")
             dst_str[1] = weekday_abbr[next_date.weekday()] + " " + next_date.strftime("%m/%d")
