@@ -298,11 +298,12 @@ def main():
 
                 time_str0 = time0.strftime("%I:%M %p %b %d")
                 time_str1 = time1.strftime("%I:%M %p %b %d")
-                screen += v_bar + highlight[flash0] + (" {0:>9}: {1:15}  ").format(time_zone_list[i][0], time_str0) + highlight[0] + v_bar_gray
+                screen += v_bar + highlight[flash0] + (" {0:>9}: {1:15} ").format(time_zone_list[i][0], time_str0) + highlight[0] + v_bar_gray * 2
                 screen += highlight[flash1] + (" {0:>9}: {1:15} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0]
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
-                spacer = " " * (columns - 61)
+                spacer = " " * (columns - 60)
                 screen += spacer + v_bar + "\n"
+
             screen += center_l + h_bar * (columns - 27) + h_bar_down_connect + h_bar * 13 + h_bar_down_connect + 10 * h_bar + center_r + "\n"
 
             screen += v_bar + " " + utc_str + " " + v_bar_gray + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 19) + v_bar + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
