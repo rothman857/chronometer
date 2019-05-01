@@ -32,34 +32,6 @@ for child in root:
     if child.tag == "banner" and child.text is not None:
         banner = child.text
 
-
-def float_fixed(flt, wd, sign):
-    wd = str(wd)
-    sign = "+" if sign else ""
-    return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
-
-
-def get_relative_date(ordinal, weekday, month, year):
-    firstday = (datetime(year, month, 1).weekday() + 1) % 7
-    first_sunday = (7 - firstday) % 7 + 1
-    return datetime(year, month, first_sunday + weekday + 7 * (ordinal - 1))
-
-
-def solartime(observer, sun=ephem.Sun()):
-    sun.compute(observer)
-    # sidereal time == ra (right ascension) is the highest point (noon)
-    hour_angle = observer.sidereal_time() - sun.ra
-    return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
-
-
-def is_dst(zonename, utc_time):
-    if zonename not in ["STD", "DST"]:
-        tz = timezone(zonename)
-        now = utc.localize(utc_time)
-        return now.astimezone(tz).dst() != timedelta(0)
-    else:
-        return False
-
 themes = [colors.bg.black,      # background
           colors.fg.white,      # text
           colors.fg.lightblue,  # table borders
@@ -106,7 +78,7 @@ def reset_cursor():
 
 
 def draw_progress_bar(*, min=0, width, max, value):
-    level = int(width * (value - min)/(max - min) + .999999999999)
+    level = int((width + 1) * (value - min)/(max - min))
     return (chr(0x2550) * level + colors.fg.darkgray + (chr(0x2500) * (width - level)))
 
 
@@ -139,6 +111,34 @@ def metric_strf(day_percent, fmt):
     return fmt.format(**_)
 
 
+def float_fixed(flt, wd, sign):
+    wd = str(wd)
+    sign = "+" if sign else ""
+    return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
+
+
+def get_relative_date(ordinal, weekday, month, year):
+    firstday = (datetime(year, month, 1).weekday() + 1) % 7
+    first_sunday = (7 - firstday) % 7 + 1
+    return datetime(year, month, first_sunday + weekday + 7 * (ordinal - 1))
+
+
+def solartime(observer, sun=ephem.Sun()):
+    sun.compute(observer)
+    # sidereal time == ra (right ascension) is the highest point (noon)
+    hour_angle = observer.sidereal_time() - sun.ra
+    return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
+
+
+def is_dst(zonename, utc_time):
+    if zonename not in ["STD", "DST"]:
+        tz = timezone(zonename)
+        now = utc.localize(utc_time)
+        return now.astimezone(tz).dst() != timedelta(0)
+    else:
+        return False
+
+
 def dbg(a, b):
     if(dbg_on):
         print("<< DEBUG " + a + ">>  (press enter to continue)")
@@ -154,7 +154,7 @@ os.system("setterm -cursor off")
 def main():
     global city
     loop_time = timedelta(0)
-    dst_str=["", "", "", ""]
+    dst_str = ["", "", "", ""]
     v_bar = themes[2] + chr(0x2551) + themes[1]
     v_bar1 = themes[2] + chr(0x2502) + themes[1]
     v_bar_gray = themes[4] + chr(0x2502) + themes[1]
@@ -193,7 +193,7 @@ def main():
             half_cols = int(((columns - 1) / 2) // 1)
             screen = ""
             reset_cursor()
-            u_second = now.microsecond / 1000000 
+            u_second = now.microsecond / 1000000
             print(themes[0], end="")
             hour_binary = divmod(now.hour, 10)
             minute_binary = divmod(now.minute, 10)
@@ -235,12 +235,12 @@ def main():
             screen += ("{0:^" + str(columns - 1) + "}").format(banner[:columns - 1]) + themes[0] + themes[1] + "\n"
 
             for i in range(7):
-                percent_value = int(100*(time_table[i][VALUE] - int(time_table[i][VALUE])))
+                percent = time_table[i][VALUE] - int(time_table[i][VALUE])
                 screen += (" {0:>7} " + v_bar + " {1:>15." + str(time_table[i][PRECISION]) + "f}" + v_bar1 + "{2:}" + v_bar1 + "{3:02}% \n").format(
                     time_table[i][LABEL], time_table[i][VALUE], draw_progress_bar(
-                        width=(columns - 32), max=100, value=percent_value), percent_value)
+                        width=(columns - 32), max=1, value=percent), int(100*(percent)))
 
-            screen += h_bar * 9 + h_bar_up_connect + h_bar * 16 + h_bar_up_connect_single + h_bar * (columns - 54) + h_bar_down_connect + h_bar * 13 +  h_bar_down_connect + 7 * h_bar + h_bar_up_connect_single + h_bar * 2 + h_bar_down_connect + "\n"
+            screen += h_bar * 9 + h_bar_up_connect + h_bar * 16 + h_bar_up_connect_single + h_bar * (columns - 54) + h_bar_down_connect + h_bar * 13 + h_bar_down_connect + 7 * h_bar + h_bar_up_connect_single + h_bar * 2 + h_bar_down_connect + "\n"
 
             dst_str[0] = "{:^8}".format("DST->STD" if is_daylight_savings else "STD->DST")
             dst_str[1] = weekday_abbr[next_date.weekday()] + " " + next_date.strftime("%m/%d")
@@ -273,7 +273,7 @@ def main():
             screen += " " + metric_str + " " + v_bar_gray + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 19) + v_bar + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
             screen += " " + solar_str + " " + v_bar_gray + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 19) + v_bar + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
             screen += " " + lst_str + " " + v_bar_gray + " " + hex_str + " " * (columns-(len(lst_str + hex_str + b_clockdisp[3]) + 19)) + v_bar + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
-            screen += h_bar * 29 + h_bar_down_connect + h_bar * (columns - 57) +h_bar_up_connect +h_bar * 13 + h_bar_up_connect + 10 * h_bar + h_bar_up_connect + "\n"
+            screen += h_bar * 29 + h_bar_down_connect + h_bar * (columns - 57) + h_bar_up_connect + h_bar * 13 + h_bar_up_connect + 10 * h_bar + h_bar_up_connect + "\n"
 
             for i in range(0, len(time_zone_list), 2):
                 time0 = datetime.now(time_zone_list[i][1])
@@ -302,7 +302,6 @@ def main():
                 spacer = " " * (columns - 59)
                 screen += spacer + "\n"
 
-            
             ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
 
@@ -326,9 +325,9 @@ def main():
 
             ntp_str_left = "NTP:" + ntpid_temp
             ntp_str_right = ("STR:{str}/DLY:{dly}/OFF:{off}").format(
-                            str = ntpstr,
-                            dly = float_fixed(ntpdly, 6, False),
-                            off = float_fixed(ntpoff, 7, True)
+                            str=ntpstr,
+                            dly=float_fixed(ntpdly, 6, False),
+                            off=float_fixed(ntpoff, 7, True)
                             )
 
             screen += themes[3] + ntp_str_left + ((columns - len(ntp_str_left + ntp_str_right)-1) * " ") + ntp_str_right
