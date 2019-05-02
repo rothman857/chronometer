@@ -18,10 +18,11 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
     ```
 
 ### Description
-+ TOP:
++ TOP
     * Time value breakdown with exact values, completion bar, and percentage.
-+ MIDDLE:
-    * Daylight Savings Indicator
++ MIDDLE
+    * World Clock
++ BOTTOM
     * UTC - [Coordinated Universal Time](https://en.wikipedia.org/wiki/Coordinated_Universal_Time)
     * MET - [Metric Time](https://en.wikipedia.org/wiki/Metric_time)
     * SOL - [Solar Time](https://en.wikipedia.org/wiki/Solar_time)
@@ -31,9 +32,9 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
     * NET - [New Earth Time](https://en.wikipedia.org/wiki/New_Earth_Time)
     * HEX - [Hexadecimal Time](https://en.wikipedia.org/wiki/Hexadecimal_time)
     * [Binary Clock](https://en.wikipedia.org/wiki/Binary_clock)
-+ BOTTOM:
-    * World Clock
+    * Daylight Savings Indicator
     * NTP Status (Server, Stratum, Delay, Offset)
+
 
 ### Notes:
 
