@@ -285,18 +285,12 @@ def main():
             day_percent_complete_cet = (cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000) / 86400
 
             solar_str = str(solar_time(now, lon, offset, "SOL: {hour:02}:{minute:02}:{second:02}"))
-
-            #lst_str_tmp = str(city.sidereal_time()).split(".")[0]
-            #lst_str = "LST: {0:>08}".format(lst_str_tmp)
             lst_str = sidereal_time(now, lon, offset, "LST: {hour:02}:{minute:02}:{second:02}")
-
             metric_str = metric_strf(day_percent_complete, "MET: {hours:02}:{minutes:02}:{seconds:02}")
             hex_str = hex_strf(day_percent_complete, "HEX: {hours:1X}_{minutes:02X}_{seconds:1X}")
             net_str = net_time_strf(day_percent_complete_utc, "NET: {degrees:03.0f}°{minutes:02.0f}'{seconds:02.0f}\"")
-
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
-
             
             for i in range(0, len(time_zone_list), 2):
                 time0 = datetime.now(time_zone_list[i][1])
