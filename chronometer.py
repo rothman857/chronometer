@@ -31,7 +31,7 @@ for child in root:
 
     if child.tag == "banner" and child.text is not None:
         banner = child.text
-lon = -84.39
+
 themes = [colors.bg.black,      # background
           colors.fg.white,      # text
           colors.fg.lightblue,  # table borders
@@ -122,13 +122,6 @@ def get_relative_date(ordinal, weekday, month, year):
     first_sunday = (7 - firstday) % 7 + 1
     return datetime(year, month, first_sunday + weekday + 7 * (ordinal - 1))
 
-""" 
-def solartime(observer, sun=ephem.Sun()):
-    sun.compute(observer)
-    # sidereal time == ra (right ascension) is the highest point (noon)
-    hour_angle = observer.sidereal_time() - sun.ra
-    return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h """
-
 
 def solar_time(dt, lon, off, fmt):
     lstm = 15 * off
@@ -177,7 +170,6 @@ os.system("setterm -cursor off")
 
 
 def main():
-    global city
     loop_time = timedelta(0)
     dst_str = ["", "", "", ""]
     v_bar = themes[2] + chr(0x2551) + themes[1]
