@@ -2,11 +2,11 @@
 from datetime import datetime, timedelta
 import time
 import os
-import ephem
 import threading
 import subprocess
 import socket
 import re
+import math
 import xml.etree.ElementTree as ET
 from myColors import colors
 from pytz import timezone, utc
@@ -22,8 +22,8 @@ config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.
 tree = ET.parse(config_file)
 root = tree.getroot()
 for child in root:
-    if child.tag == "location":
-        city = ephem.city(child.text)
+    if child.tag == "longitude":
+        lon = float(child.text)
 
     if child.tag == "timezones":
         for tz in child:
@@ -31,7 +31,7 @@ for child in root:
 
     if child.tag == "banner" and child.text is not None:
         banner = child.text
-
+lon = -84.39
 themes = [colors.bg.black,      # background
           colors.fg.white,      # text
           colors.fg.lightblue,  # table borders
@@ -122,12 +122,37 @@ def get_relative_date(ordinal, weekday, month, year):
     first_sunday = (7 - firstday) % 7 + 1
     return datetime(year, month, first_sunday + weekday + 7 * (ordinal - 1))
 
-
+""" 
 def solartime(observer, sun=ephem.Sun()):
     sun.compute(observer)
     # sidereal time == ra (right ascension) is the highest point (noon)
     hour_angle = observer.sidereal_time() - sun.ra
-    return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h
+    return ephem.hours(hour_angle + ephem.hours('12:00')).norm  # norm for 24h """
+
+
+def solar_time(dt, lon, off, fmt):
+    lstm = 15 * off
+    d = (dt - dt.replace(day=1, month=1)).total_seconds()/(86400)
+    b = (360/365.242) * (d - 81) * math.pi/180
+    eot = 9.87 * math.sin(2 * b) - 7.53 * math.cos(b) - 1.5 * math.sin(b)
+    tc = 4 * (lon - lstm) + eot
+    lst = (dt + timedelta(hours=tc/60))
+    _ = {"hour": lst.hour, "minute": lst.minute, "second": lst.second}
+    return fmt.format(**_)
+
+
+def sidereal_time(dt, lon, off, fmt):
+    j = ((datetime.now() - datetime(year=2000, month=1, day=1)) - timedelta(hours=off)).total_seconds()/86400
+    l0 = 99.967794687
+    l1 = 360.98564736628603
+    l2 = 2.907879 * (10 ** -13)
+    l3 = -5.302 * (10 ** -22)
+    theta = (l0 + (l1 * j) + (l2 * (j ** 2)) + (l3 * (j ** 3)) + lon) % 360
+    result = int(timedelta(hours = theta/15).total_seconds())
+    _ = dict()
+    _["hour"], remainder = divmod(result, 3600)
+    _["minute"], _["second"] = divmod(remainder, 60)
+    return fmt.format(**_)
 
 
 def is_dst(zonename, utc_time):
@@ -173,7 +198,7 @@ def main():
         try:
             time.sleep(0.01)
             start_time = datetime.now()
-
+            offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
             now = start_time + loop_time
             utcnow = now.utcnow()
             cetnow = utcnow + timedelta(hours=1)
@@ -259,12 +284,11 @@ def main():
             day_percent_complete_utc = (utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000) / 86400
             day_percent_complete_cet = (cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000) / 86400
 
-            city = ephem.city(city.name)
-            solar_str_tmp = str(solartime(city)).split(".")[0]
-            solar_str = "SOL: {0:>08}".format(solar_str_tmp)
+            solar_str = str(solar_time(now, lon, offset, "SOL: {hour:02}:{minute:02}:{second:02}"))
 
-            lst_str_tmp = str(city.sidereal_time()).split(".")[0]
-            lst_str = "LST: {0:>08}".format(lst_str_tmp)
+            #lst_str_tmp = str(city.sidereal_time()).split(".")[0]
+            #lst_str = "LST: {0:>08}".format(lst_str_tmp)
+            lst_str = sidereal_time(now, lon, offset, "LST: {hour:02}:{minute:02}:{second:02}")
 
             metric_str = metric_strf(day_percent_complete, "MET: {hours:02}:{minutes:02}:{seconds:02}")
             hex_str = hex_strf(day_percent_complete, "HEX: {hours:1X}_{minutes:02X}_{seconds:1X}")

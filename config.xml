@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <clock>
-    <location>Atlanta</location>
+    <longitude>-84.39</longitude>
     <banner></banner>
     <!--Must have 10 timezones-->
     <timezones>
