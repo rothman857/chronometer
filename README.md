@@ -38,8 +38,9 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
 
 ### Notes:
 
-In order to get the display to work with this code, you need to set the resolution to 480x320, and set the console font to VGA 8x14.
-NTP daemon needs to be running as a background service: `sudo apt install ntp`
+* In order to get the display to work with this code, you need to set the resolution to 480x320, and set the console font to VGA 8x14.
+* `longitude` value needs to updated in `config.xml` to ensure accurate solar time and sidereal time values.  West longitude is indicated by a negative value.
+* NTP daemon needs to be running as a background service: `sudo apt install ntp`
 
 ### Required Python modules:
 
