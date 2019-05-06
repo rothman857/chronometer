@@ -44,7 +44,6 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
 
 ### Required Python modules:
 
-* `ephem`
 * `pytz`
 
 Modules can be install using `pip install [module]` or from your distros repositories.
