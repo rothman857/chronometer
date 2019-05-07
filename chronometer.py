@@ -99,8 +99,10 @@ def net_time_strf(day_percent, fmt):
 
 def hex_strf(day_percent, fmt):
     _ = dict()
-    _["hours"], remainder = divmod(int(day_percent * 65536), 4096)
-    _["minutes"], _["seconds"] = divmod(remainder, 16)
+    _["hours"], remainder = divmod(int(day_percent * 268435456), 16777216)
+    _["minutes"], _["seconds"] = divmod(remainder, 65536)
+    _["seconds"] //= 4096
+    _["sub"] = remainder % 4096
     return fmt.format(**_)
 
 
@@ -279,7 +281,7 @@ def main():
             solar_str = str(solar_time(now, lon, offset, "SOL: {hour:02}:{minute:02}:{second:02}"))
             lst_str = sidereal_time(now, lon, offset, "LST: {hour:02}:{minute:02}:{second:02}")
             metric_str = metric_strf(day_percent_complete, "MET: {hours:02}:{minutes:02}:{seconds:02}")
-            hex_str = hex_strf(day_percent_complete, "HEX: {hours:1X}_{minutes:02X}_{seconds:1X}")
+            hex_str = hex_strf(day_percent_complete, "HEX: {hours:1X}_{minutes:02X}_{seconds:1X}.{sub:03X}")
             net_str = net_time_strf(day_percent_complete_utc, "NET: {degrees:03.0f}°{minutes:02.0f}'{seconds:02.0f}\"")
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
@@ -315,8 +317,8 @@ def main():
 
             screen += v_bar + " " + utc_str + " " + b_var_single + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 19) + v_bar + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
             screen += v_bar + " " + metric_str + " " + b_var_single + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 19) + v_bar + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
-            screen += v_bar + " " + solar_str + " " + b_var_single + " " + net_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 19) + v_bar + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
-            screen += v_bar + " " + lst_str + " " + b_var_single + " " + hex_str + " " * (columns - len(lst_str + hex_str + b_clockdisp[3]) - 19) + v_bar + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
+            screen += v_bar + " " + solar_str + " " + b_var_single + " " + hex_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 19) + v_bar + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
+            screen += v_bar + " " + lst_str + " " + b_var_single + " " + net_str + " " * (columns - len(lst_str + hex_str + b_clockdisp[3]) - 19) + v_bar + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
             screen += corner_ll + h_bar * (columns - 27) + h_bar_up_connect + h_bar * 13 + h_bar_up_connect + h_bar * 10 + corner_lr + "\n"
             ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
