@@ -184,7 +184,7 @@ def main():
     center_l = themes[2] + chr(0x2560) + themes[1]
     center_r = themes[2] + chr(0x2563) + themes[1]
     highlight = [themes[0], themes[3]]
-    binary = chr(0x25cf) + chr(0x25cb)
+    binary = "-#"
 
     while True:
         ntp_id_str = str(ntpid)
