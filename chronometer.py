@@ -101,8 +101,7 @@ def hex_strf(day_percent, fmt):
     _ = dict()
     _["hours"], remainder = divmod(int(day_percent * 268435456), 16777216)
     _["minutes"], _["seconds"] = divmod(remainder, 65536)
-    _["seconds"] //= 4096
-    _["sub"] = remainder % 4096
+    _["seconds"], _["sub"] = divmod(_["seconds"], 4096)
     return fmt.format(**_)
 
 
