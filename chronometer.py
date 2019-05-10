@@ -7,15 +7,15 @@ import subprocess
 import socket
 import re
 import math
+import random
 import xml.etree.ElementTree as ET
 from myColors import colors
 from pytz import timezone, utc
 
 dbg_on = False
-
+random.seed()
 time_zone_list = []
 is_connected = False
-banner = ""
 
 config_file = os.path.dirname(os.path.realpath(__file__))
 config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.xml")
@@ -29,13 +29,10 @@ for child in root:
         for tz in child:
             time_zone_list.append([tz.text, timezone(tz.get("code"))])
 
-    if child.tag == "banner" and child.text is not None:
-        banner = child.text
-
 themes = [colors.bg.black,      # background
           colors.fg.white,      # text
           colors.fg.lightblue,  # table borders
-          colors.bg.lightblue,  # text highlight/banner
+          colors.bg.lightblue,  # text highlight
           colors.fg.darkgray]   # progress bar dim
 
 SECOND = 0
@@ -64,13 +61,13 @@ weekday_abbr = ["MO",
                 "SU"]
 
 #               Label       value precision
-time_table = [["Second",    0,    6],
-              ["Minute",    0,    8],
-              ["Hour",      0,    10],
-              ["Day",       0,    10],
-              ["Month",     0,    10],
-              ["Year",      0,    10],
-              ["Century",   0,    10]]
+time_table = [["S",    0,    10],
+              ["M",    0,    10],
+              ["H",      0,    10],
+              ["D",       0,    10],
+              ["M",     0,    10],
+              ["Y",      0,    10],
+              ["C",   0,    10]]
 
 
 def reset_cursor():
@@ -181,6 +178,8 @@ def main():
     h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
     corner_ll = themes[2] + chr(0x255A) + themes[1]
     corner_lr = themes[2] + chr(0x255D) + themes[1]
+    corner_ul = themes[2] + chr(0x2554) + themes[1]
+    corner_ur = themes[2] + chr(0x2557) + themes[1]
     center_l = themes[2] + chr(0x2560) + themes[1]
     center_r = themes[2] + chr(0x2563) + themes[1]
     highlight = [themes[0], themes[3]]
@@ -189,7 +188,7 @@ def main():
     while True:
         ntp_id_str = str(ntpid)
         try:
-            time.sleep(0.01)
+            time.sleep(0.001)
             start_time = datetime.now()
             offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
             now = start_time + loop_time
@@ -242,8 +241,8 @@ def main():
             day_of_year = (now - datetime(now.year, 1, 1)).days
             days_this_year = (datetime(now.year + 1, 1, 1) - datetime(now.year, 1, 1)).days
 
-            time_table[SECOND][VALUE] = now.second + u_second
-            time_table[MINUTE][VALUE] = now.minute + time_table[SECOND][VALUE] / 60
+            time_table[SECOND][VALUE] = now.second + u_second + random.randint(0,9999)/10000000000
+            time_table[MINUTE][VALUE] = now.minute + time_table[SECOND][VALUE] / 60 + random.randint(0,99)/10000000000
             time_table[HOUR][VALUE] = now.hour + time_table[MINUTE][VALUE] / 60
             time_table[DAY][VALUE] = now.day + time_table[HOUR][VALUE] / 24
             time_table[MONTH][VALUE] = now.month + (time_table[DAY][VALUE] - 1)/days_this_month
@@ -251,18 +250,17 @@ def main():
             time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1) / 100 + 1
 
             screen += themes[3]
-            screen += ("{: ^" + str(columns) + "}\n").format(now.strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y"))
-
-            screen += ("{0:^" + str(columns) + "}").format(banner[:columns - 1]) + themes[0] + themes[1] + "\n"
+            screen += ("{: ^" + str(columns) + "}\n").format(now.strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y")).upper() + themes[0]
+            screen += corner_ul + h_bar * (columns - 2) + corner_ur + "\n"
 
             for i in range(7):
                 percent = time_table[i][VALUE] - int(time_table[i][VALUE])
-                screen += v_bar + (" {0:>7} " + b_var_single + " {1:>15." + str(time_table[i][PRECISION]) + "f} " + "{2:}" + themes[1] + " {3:02}% " +  v_bar + "\n").format(
+                screen += v_bar + (" {0:}: " + "{1:>15." + str(time_table[i][PRECISION]) + "f} " + "{2:}" + themes[1] + " {3:02}% " +  v_bar + "\n").format(
                           time_table[i][LABEL],
                           time_table[i][VALUE],
-                          draw_progress_bar(width=(columns - 34), max=1, value=percent), int(100*(percent)))
+                          draw_progress_bar(width=(columns - 27), max=1, value=percent), int(100*(percent)))
 
-            screen += center_l + h_bar * 9 + h_bar_up_connect_single + h_bar * (columns - 12) + center_r + "\n"
+            screen += center_l + h_bar * (columns - 2) + center_r + "\n"
 
             dst_str[0] = "{:^8}".format("DST->STD" if is_daylight_savings else "STD->DST")
             dst_str[1] = weekday_abbr[next_date.weekday()] + " " + next_date.strftime("%m/%d")
@@ -304,8 +302,8 @@ def main():
                     elif (time1.hour == 8 or time1.hour == 17):
                         flash1 = (int(u_second * 10) < 5)
 
-                time_str0 = time0.strftime("%I:%M %p %b %d")
-                time_str1 = time1.strftime("%I:%M %p %b %d")
+                time_str0 = time0.strftime("%I:%M %p %b %d").upper()
+                time_str1 = time1.strftime("%I:%M %p %b %d").upper()
                 screen += v_bar + highlight[flash0] + (" {0:>9}: {1:15} ").format(time_zone_list[i][0], time_str0) + highlight[0] + b_var_single * 2
                 screen += highlight[flash1] + (" {0:>9}: {1:15} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0]
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
