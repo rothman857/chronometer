@@ -255,10 +255,11 @@ def main():
 
             for i in range(7):
                 percent = time_table[i][VALUE] - int(time_table[i][VALUE])
-                screen += v_bar + (" {0:}: " + "{1:>15." + str(time_table[i][PRECISION]) + "f} " + "{2:}" + themes[1] + " {3:02}% " +  v_bar + "\n").format(
+                screen += v_bar + (" {0:} " + "{2:}" + themes[1] + " {3:011.8f}% " + v_bar + "\n").format(
                           time_table[i][LABEL],
                           time_table[i][VALUE],
-                          draw_progress_bar(width=(columns - 27), max=1, value=percent), int(100*(percent)))
+                          draw_progress_bar(width=(columns - 19), max=1, value=percent),
+                          100 * (percent))
 
             screen += center_l + h_bar * (columns - 2) + center_r + "\n"
 
