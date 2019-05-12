@@ -17,7 +17,7 @@ random.seed()
 time_zone_list = []
 is_connected = False
 
-config_file = open("config")
+config_file = open("chrono-config")
 for line in config_file:
     setting = re.search(r"^[^#].+", line)
     if setting:
