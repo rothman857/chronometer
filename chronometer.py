@@ -8,7 +8,6 @@ import socket
 import re
 import math
 import random
-import xml.etree.ElementTree as ET
 from myColors import colors
 from pytz import timezone, utc
 
