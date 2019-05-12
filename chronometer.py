@@ -15,7 +15,7 @@ dbg_on = False
 random.seed()
 time_zone_list = []
 is_connected = False
-config_file = os.path.dirname(os.path.realpath(__file__))
+
 config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "chrono-config")
 config_file = open(config_file)
 for line in config_file:
