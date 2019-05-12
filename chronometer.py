@@ -17,17 +17,18 @@ random.seed()
 time_zone_list = []
 is_connected = False
 
-config_file = os.path.dirname(os.path.realpath(__file__))
-config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "config.xml")
-tree = ET.parse(config_file)
-root = tree.getroot()
-for child in root:
-    if child.tag == "longitude":
-        lon = float(child.text)
-
-    if child.tag == "timezones":
-        for tz in child:
-            time_zone_list.append([tz.text, timezone(tz.get("code"))])
+config_file = open("config")
+for line in config_file:
+    setting = re.search(r"^[^#].+", line)
+    if setting:
+        setting = re.split(r"\s+", setting.string)
+        if (setting[0] == "timezone"):
+            time_zone_list.append([setting[2].replace("'",""), timezone(setting[1])])
+        if (setting[0] == "longitude"):
+            lon = float(setting[1])
+        if (setting[0] == "refresh"):
+            refresh = float(setting[1])
+config_file.close()
 
 themes = [colors.bg.black,      # background
           colors.fg.white,      # text
@@ -188,7 +189,7 @@ def main():
     while True:
         ntp_id_str = str(ntpid)
         try:
-            time.sleep(0.001)
+            time.sleep(refresh)
             start_time = datetime.now()
             offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
             now = start_time + loop_time

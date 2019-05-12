@@ -1,0 +1,20 @@
+# Raspberry Pi Internet Chronometer
+
+# West longitude is negative
+longitude -84.39
+
+# Refresh rate in seconds.  Lower value = higher CPU%
+refresh .001
+
+# Must have 10 defined timezones.
+# Syntax: timezone <pytz name> <label>
+timezone US/Eastern         'EASTERN'
+timezone US/Pacific         'PACIFIC'
+timezone GMT                'GMT'
+timezone Australia/Sydney   'AUSTRALIA'
+timezone Europe/Berlin      'GERMANY'
+timezone Asia/Hong_Kong     'HONG KONG'
+timezone Asia/Kolkata       'INDIA'
+timezone Asia/Tokyo         'JAPAN'
+timezone Singapore          'SINGAPORE'
+timezone Europe/London      'UK'
