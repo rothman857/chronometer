@@ -19,15 +19,14 @@ is_connected = False
 config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "chrono-config")
 config_file = open(config_file)
 for line in config_file:
-    setting = re.search(r"^[^#].+", line)
+    setting = re.search(r"^([^#]\w+)\s+([\w.\/-]+)(\s+\'([\w ]+)\')*", line)
     if setting:
-        setting = re.split(r"\s+", setting.string)
-        if (setting[0] == "timezone"):
-            time_zone_list.append([setting[2].replace("'",""), timezone(setting[1])])
-        if (setting[0] == "longitude"):
-            lon = float(setting[1])
-        if (setting[0] == "refresh"):
-            refresh = float(setting[1])
+        if (setting.group(1) == "timezone"):
+            time_zone_list.append([setting.group(4), timezone(setting.group(2))])
+        if (setting.group(1) == "longitude"):
+            lon = float(setting.group(2))
+        if (setting.group(1) == "refresh"):
+            refresh = float(setting.group(2))
 config_file.close()
 
 themes = [colors.bg.black,      # background
