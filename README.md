@@ -19,7 +19,7 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
 
 ### Description
 + TOP
-    * Time value breakdown with exact values, completion bar, and percentage.
+    * Progress chart for current time units (**S**econd, **M**inute, **H**our, **D**ay, **M**onth, **Y**ear, **C**entury.
 + MIDDLE
     * World Clock
 + BOTTOM
@@ -39,7 +39,7 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
 ### Notes:
 
 * In order to get the display to work with this code, you need to set the resolution to 480x320, and set the console font to VGA 8x14.
-* `longitude` value needs to updated in `config.xml` to ensure accurate solar time and sidereal time values.  West longitude is indicated by a negative value.
+* `longitude` value needs to updated in `chrono-config` to ensure accurate solar time and sidereal time values.  West longitude is indicated by a negative value.
 * NTP daemon needs to be running as a background service: `sudo apt install ntp`
 
 ### Required Python modules:
