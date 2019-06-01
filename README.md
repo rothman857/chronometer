@@ -19,7 +19,7 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
 
 ### Description
 + TOP
-    * Progress chart for current time units (**S**econd, **M**inute, **H**our, **D**ay, **M**onth, **Y**ear, **C**entury.
+    * Progress chart for current time units (**S**econd, **M**inute, **H**our, **D**ay, **M**onth, **Y**ear, **C**entury).
 + MIDDLE
     * World Clock
 + BOTTOM
