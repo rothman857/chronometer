@@ -285,7 +285,7 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
             
-            offset_dbg = timedelta(hours=13, minutes=0)
+            offset_dbg = timedelta(hours=0, minutes=0)
 
             for i in range(0, len(time_zone_list), 2):
                 time0 = datetime.now(time_zone_list[i][1]) + offset_dbg
