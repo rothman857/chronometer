@@ -190,9 +190,9 @@ def main():
         ntp_id_str = str(ntpid)
         try:
             time.sleep(refresh)
-            start_time = datetime.now()
+            start_time = datetime.now() + timedelta(hours=5)
             offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
-            now = start_time + loop_time
+            now = start_time + loop_time + timedelta(hours=5)
             utcnow = now.utcnow()
             cetnow = utcnow + timedelta(hours=1)
             DST = [get_relative_date(2, 0, 3, now.year).replace(hour=2),
@@ -285,24 +285,31 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
             
+            offset_dbg = timedelta(hours=13, minutes=0)
+
             for i in range(0, len(time_zone_list), 2):
-                time0 = datetime.now(time_zone_list[i][1])
-                time1 = datetime.now(time_zone_list[i + 1][1])
+                time0 = datetime.now(time_zone_list[i][1]) + offset_dbg
+                time1 = datetime.now(time_zone_list[i + 1][1]) + offset_dbg
 
                 flash0 = False
                 flash1 = False
+                flash_dur = .15
 
                 if (time0.weekday() < 5):
                     if (time0.hour > 8 and time0.hour < 17):
                         flash0 = True
-                    elif (time0.hour == 8 or time0.hour == 17):
-                        flash0 = (int(u_second * 10) < 5)
+                    elif (time0.hour == 8):
+                        flash0 = (u_second < flash_dur)
+                    elif (time0.hour == 17):
+                        flash0 = not (u_second < flash_dur)
 
                 if (time1.weekday() < 5):
                     if (time1.hour > 8 and time1.hour < 17):
                         flash1 = True
-                    elif (time1.hour == 8 or time1.hour == 17):
-                        flash1 = (int(u_second * 10) < 5)
+                    elif (time1.hour == 8):
+                        flash1 = (u_second < flash_dur)
+                    elif  (time1.hour == 17):
+                        flash1 = not (u_second < flash_dur)
 
                 time_str0 = time0.strftime("%I:%M %p %b %d").upper()
                 time_str1 = time1.strftime("%I:%M %p %b %d").upper()
@@ -357,7 +364,7 @@ def main():
             for i in range(22, rows):
                 screen += " " * columns
 
-            loop_time = datetime.now() - start_time
+            loop_time = datetime.now() - start_time + timedelta(hours=5)
             print(screen, end="")
 
         except KeyboardInterrupt:
