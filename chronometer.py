@@ -190,9 +190,9 @@ def main():
         ntp_id_str = str(ntpid)
         try:
             time.sleep(refresh)
-            start_time = datetime.now() + timedelta(hours=5)
+            start_time = datetime.now()
             offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
-            now = start_time + loop_time + timedelta(hours=5)
+            now = start_time + loop_time
             utcnow = now.utcnow()
             cetnow = utcnow + timedelta(hours=1)
             DST = [get_relative_date(2, 0, 3, now.year).replace(hour=2),
@@ -364,7 +364,7 @@ def main():
             for i in range(22, rows):
                 screen += " " * columns
 
-            loop_time = datetime.now() - start_time + timedelta(hours=5)
+            loop_time = datetime.now() - start_time
             print(screen, end="")
 
         except KeyboardInterrupt:
