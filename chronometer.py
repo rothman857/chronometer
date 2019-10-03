@@ -175,7 +175,6 @@ def main():
     h_bar = themes[2] + chr(0x2550) + themes[1]
     h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
     h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
-    h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
     corner_ll = themes[2] + chr(0x255A) + themes[1]
     corner_lr = themes[2] + chr(0x255D) + themes[1]
     corner_ul = themes[2] + chr(0x2554) + themes[1]
