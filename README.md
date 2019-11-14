@@ -32,7 +32,8 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
     * NET - [New Earth Time](https://en.wikipedia.org/wiki/New_Earth_Time)
     * HEX - [Hexadecimal Time](https://en.wikipedia.org/wiki/Hexadecimal_time)
     * [Binary Clock](https://en.wikipedia.org/wiki/Binary_clock)
-    * Daylight Savings Indicator
+    * INT FIX - [International Fixed Calendar](https://en.wikipedia.org/wiki/International_Fixed_Calendar)
+    * RED JDN - [Reduced Julian Date Number](https://en.wikipedia.org/wiki/Julian_day)
     * NTP Status (Server, Stratum, Delay, Offset)
 
 
