@@ -102,6 +102,15 @@ def timedelta_strf(t_delta, fmt):
 def day_of_year(dt):
     return (dt - datetime(dt.year, 1, 1)).days
 
+def is_leap_year(dt):
+    year = dt.year
+    if year / 400 == 0:
+        return True
+    if year / 100 == 0:
+        return False
+    if year / 4 == 0:
+        return True
+
 
 def net_time_strf(day_percent, fmt):
     _ = dict()
@@ -162,19 +171,31 @@ def sidereal_time(dt, lon, off, fmt):
     _["minute"], _["second"] = divmod(remainder, 60)
     return fmt.format(**_)
 
-def julian_day_number(dt):
-    julian_datetime = 367 * dt.year - int((7 * (dt.year + int((dt.month + 9) / 12.0))) / 4.0) + int(
-        (275 * dt.month) / 9.0) + dt.day + 1721013.5 + (
-                          dt.hour + dt.minute / 60.0 + dt.second / math.pow(60,2)) / 24.0 - 0.5 * math.copysign(
-        1, 100 * dt.year + dt.month - 190002.5) + 0.5
-    return int(julian_datetime)
+def red_julian_day(dt):
+    a = (14 - dt.month) // 12
+    y = dt.year + 4800 - a
+    m = dt.month + 12 * a - 3
 
-def int_fix_date(dt, is_leap, fmt):
-    _ = dict()
-    _['month'], _['day'] = divmod(day_of_year(dt), 28)
-    _['weekday'] = weekday_abbr[dt.weekday()]
-    return fmt.format(**_)
+    jdn = dt.day + (153*m+2)//5 + y*365 + y//4 - y//100 + y//400 - 32045
+    jd = jdn + (dt.hour - 12) / 24 + dt.minute / 1440 + dt.second / 86400 + dt.microsecond / 86400000000
+    return jd - 2400000
 
+def int_fix_date(dt):
+    month, day = divmod(day_of_year(dt), 28)
+    weekday = weekday_abbr[dt.weekday()]
+    doy = day_of_year(dt)
+
+    if is_leap_year(dt):
+        if doy > 169:
+            doy -= 1
+        elif doy == 169:
+            return "LEAP DAY"
+
+    if day_of_year == 365:
+        return "YEAR DAY"
+
+    
+    return '{w} {m:02}/{d:02}'.format(m=month, w = weekday, d = day)
 
 
 def is_dst(zonename, utc_time):
@@ -225,19 +246,10 @@ def main():
             now = start_time + loop_time
             utcnow = now.utcnow()
             cetnow = utcnow + timedelta(hours=1)
-            DST = [get_relative_date(2, 0, 3, now.year).replace(hour=2),
-                   get_relative_date(1, 0, 11, now.year).replace(hour=2)]
+
             is_daylight_savings = time.localtime().tm_isdst
 
-            if (now < DST[0]):
-                next_date = DST[0]
-            elif ((now < DST[1]) and is_daylight_savings):
-                next_date = DST[1]
-            else:
-                next_date = get_relative_date(2, 0, 3, now.year + 1).replace(hour=2)
-
             current_tz = time.tzname[is_daylight_savings]
-            time_until_dst = next_date - now + timedelta(seconds=1)
 
             rows = os.get_terminal_size().lines
             columns = os.get_terminal_size().columns
@@ -295,9 +307,9 @@ def main():
             screen += center_l + h_bar * (columns - 2) + center_r + "\n"
 
             dst_str[0] = "{:^8}".format("INTL FIX")
-            dst_str[1] = int_fix_date(now,False, '{weekday} {month:02}/{day:02}')
-            dst_str[2] = "{:^8}".format("JULIAN")
-            dst_str[3] = "{:>08}".format(julian_day_number(now))
+            dst_str[1] = int_fix_date(now)
+            dst_str[2] = "{:^8}".format("REDU JUL")
+            dst_str[3] = "{:>08.2f}".format(red_julian_day(utcnow))
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
