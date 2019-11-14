@@ -69,6 +69,20 @@ time_table = [["S",    0,    10],
               ["Y",      0,    10],
               ["C",   0,    10]]
 
+ifc_months = ["JAN",
+               "FEB",
+               "MAR",
+               "APR",
+               "MAY",
+               "JUN",
+               "SOL",
+               "JUL",
+               "AUG",
+               "SEP",
+               "OCT",
+               "NOV",
+               "DEC",]
+
 
 def reset_cursor():
     print("\033[0;0H", end="")
@@ -84,6 +98,9 @@ def timedelta_strf(t_delta, fmt):
     _["hours"], remainder = divmod(t_delta.seconds, 3600)
     _["minutes"], _["seconds"] = divmod(remainder, 60)
     return fmt.format(**_)
+
+def day_of_year(dt):
+    return (dt - datetime(dt.year, 1, 1)).days
 
 
 def net_time_strf(day_percent, fmt):
@@ -145,6 +162,20 @@ def sidereal_time(dt, lon, off, fmt):
     _["minute"], _["second"] = divmod(remainder, 60)
     return fmt.format(**_)
 
+def julian_day_number(dt):
+    julian_datetime = 367 * dt.year - int((7 * (dt.year + int((dt.month + 9) / 12.0))) / 4.0) + int(
+        (275 * dt.month) / 9.0) + dt.day + 1721013.5 + (
+                          dt.hour + dt.minute / 60.0 + dt.second / math.pow(60,2)) / 24.0 - 0.5 * math.copysign(
+        1, 100 * dt.year + dt.month - 190002.5) + 0.5
+    return int(julian_datetime)
+
+def int_fix_date(dt, is_leap, fmt):
+    _ = dict()
+    _['month'], _['day'] = divmod(day_of_year(dt), 28)
+    _['weekday'] = weekday_abbr[dt.weekday()]
+    return fmt.format(**_)
+
+
 
 def is_dst(zonename, utc_time):
     if zonename not in ["STD", "DST"]:
@@ -175,7 +206,7 @@ def main():
     h_bar = themes[2] + chr(0x2550) + themes[1]
     h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
     h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
-    h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
+#h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
     corner_ll = themes[2] + chr(0x255A) + themes[1]
     corner_lr = themes[2] + chr(0x255D) + themes[1]
     corner_ul = themes[2] + chr(0x2554) + themes[1]
@@ -238,7 +269,7 @@ def main():
             else:
                 days_this_month = (datetime(now.year, now.month + 1, 1) - datetime(now.year, now.month, 1)).days
 
-            day_of_year = (now - datetime(now.year, 1, 1)).days
+            #day_of_year = (now - datetime(now.year, 1, 1)).days
             days_this_year = (datetime(now.year + 1, 1, 1) - datetime(now.year, 1, 1)).days
 
             time_table[SECOND][VALUE] = now.second + u_second + random.randint(0,9999)/10000000000
@@ -246,7 +277,7 @@ def main():
             time_table[HOUR][VALUE] = now.hour + time_table[MINUTE][VALUE] / 60
             time_table[DAY][VALUE] = now.day + time_table[HOUR][VALUE] / 24
             time_table[MONTH][VALUE] = now.month + (time_table[DAY][VALUE] - 1)/days_this_month
-            time_table[YEAR][VALUE] = now.year + (day_of_year + time_table[DAY][VALUE] - int(time_table[DAY][VALUE])) / days_this_year
+            time_table[YEAR][VALUE] = now.year + (day_of_year(now) + time_table[DAY][VALUE] - int(time_table[DAY][VALUE])) / days_this_year
             time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1) / 100 + 1
 
             screen += themes[3]
@@ -263,10 +294,10 @@ def main():
 
             screen += center_l + h_bar * (columns - 2) + center_r + "\n"
 
-            dst_str[0] = "{:^8}".format("DST->STD" if is_daylight_savings else "STD->DST")
-            dst_str[1] = weekday_abbr[next_date.weekday()] + " " + next_date.strftime("%m/%d")
-            dst_str[2] = timedelta_strf(time_until_dst, "{days:03} DAYS")
-            dst_str[3] = timedelta_strf(time_until_dst, "{hours:02}:{minutes:02}:{seconds:02}")
+            dst_str[0] = "{:^8}".format("INTL FIX")
+            dst_str[1] = int_fix_date(now,False, '{weekday} {month:02}/{day:02}')
+            dst_str[2] = "{:^8}".format("JULIAN")
+            dst_str[3] = "{:>08}".format(julian_day_number(now))
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
