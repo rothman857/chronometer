@@ -52,13 +52,13 @@ ntpdly = 0
 ntpstr = "-"
 ntpid = "---"
 
-weekday_abbr = ["MO",
-                "TU",
-                "WE",
-                "TH",
-                "FR",
-                "SA",
-                "SU"]
+weekday_abbr = ["S",
+                "U",
+                "M",
+                "T",
+                "W",
+                "R",
+                "F"]
 
 #               Label       value precision
 time_table = [["S",    0,    10],
@@ -181,9 +181,15 @@ def red_julian_day(dt):
     return jd - 2400000
 
 def int_fix_date(dt):
-    month, day = divmod(day_of_year(dt), 28)
-    weekday = weekday_abbr[dt.weekday()]
-    doy = day_of_year(dt)
+    doy = day_of_year(dt) + 1
+    m, d = divmod(doy, 28)
+    if d == 0:
+        d = 28
+
+    w = doy % 7
+    weekday = weekday_abbr[w]
+    month = ifc_months[m]
+    
 
     if is_leap_year(dt):
         if doy > 169:
@@ -195,7 +201,7 @@ def int_fix_date(dt):
         return "YEAR DAY"
 
     
-    return '{w} {m:02}/{d:02}'.format(m=month, w = weekday, d = day)
+    return '{w} {m} {d:02}'.format(m=month, w = weekday, d = d)
 
 
 def is_dst(zonename, utc_time):
@@ -306,9 +312,9 @@ def main():
 
             screen += center_l + h_bar * (columns - 2) + center_r + "\n"
 
-            dst_str[0] = "{:^8}".format("INTL FIX")
+            dst_str[0] = "{:^8}".format("INT FIX:")
             dst_str[1] = int_fix_date(now)
-            dst_str[2] = "{:^8}".format("REDU JUL")
+            dst_str[2] = "{:^8}".format("RED JDN:")
             dst_str[3] = "{:>08.2f}".format(red_julian_day(utcnow))
 
             unix_int = int(utcnow.timestamp())
