@@ -69,6 +69,20 @@ time_table = [["S",    0,    10],
               ["Y",      0,    10],
               ["C",   0,    10]]
 
+ifc_months = ["JAN",
+               "FEB",
+               "MAR",
+               "APR",
+               "MAY",
+               "JUN",
+               "SOL",
+               "JUL",
+               "AUG",
+               "SEP",
+               "OCT",
+               "NOV",
+               "DEC",]
+
 
 def reset_cursor():
     print("\033[0;0H", end="")
@@ -84,6 +98,18 @@ def timedelta_strf(t_delta, fmt):
     _["hours"], remainder = divmod(t_delta.seconds, 3600)
     _["minutes"], _["seconds"] = divmod(remainder, 60)
     return fmt.format(**_)
+
+def day_of_year(dt):
+    return (dt - datetime(dt.year, 1, 1)).days
+
+def is_leap_year(dt):
+    year = dt.year
+    if year / 400 == 0:
+        return True
+    if year / 100 == 0:
+        return False
+    if year / 4 == 0:
+        return True
 
 
 def net_time_strf(day_percent, fmt):
@@ -145,6 +171,32 @@ def sidereal_time(dt, lon, off, fmt):
     _["minute"], _["second"] = divmod(remainder, 60)
     return fmt.format(**_)
 
+def red_julian_day(dt):
+    a = (14 - dt.month) // 12
+    y = dt.year + 4800 - a
+    m = dt.month + 12 * a - 3
+
+    jdn = dt.day + (153*m+2)//5 + y*365 + y//4 - y//100 + y//400 - 32045
+    jd = jdn + (dt.hour - 12) / 24 + dt.minute / 1440 + dt.second / 86400 + dt.microsecond / 86400000000
+    return jd - 2400000
+
+def int_fix_date(dt):
+    month, day = divmod(day_of_year(dt), 28)
+    weekday = weekday_abbr[dt.weekday()]
+    doy = day_of_year(dt)
+
+    if is_leap_year(dt):
+        if doy > 169:
+            doy -= 1
+        elif doy == 169:
+            return "LEAP DAY"
+
+    if day_of_year == 365:
+        return "YEAR DAY"
+
+    
+    return '{w} {m:02}/{d:02}'.format(m=month, w = weekday, d = day)
+
 
 def is_dst(zonename, utc_time):
     if zonename not in ["STD", "DST"]:
@@ -175,7 +227,7 @@ def main():
     h_bar = themes[2] + chr(0x2550) + themes[1]
     h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
     h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
-    h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
+#h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
     corner_ll = themes[2] + chr(0x255A) + themes[1]
     corner_lr = themes[2] + chr(0x255D) + themes[1]
     corner_ul = themes[2] + chr(0x2554) + themes[1]
@@ -194,19 +246,10 @@ def main():
             now = start_time + loop_time
             utcnow = now.utcnow()
             cetnow = utcnow + timedelta(hours=1)
-            DST = [get_relative_date(2, 0, 3, now.year).replace(hour=2),
-                   get_relative_date(1, 0, 11, now.year).replace(hour=2)]
+
             is_daylight_savings = time.localtime().tm_isdst
 
-            if (now < DST[0]):
-                next_date = DST[0]
-            elif ((now < DST[1]) and is_daylight_savings):
-                next_date = DST[1]
-            else:
-                next_date = get_relative_date(2, 0, 3, now.year + 1).replace(hour=2)
-
             current_tz = time.tzname[is_daylight_savings]
-            time_until_dst = next_date - now + timedelta(seconds=1)
 
             rows = os.get_terminal_size().lines
             columns = os.get_terminal_size().columns
@@ -238,7 +281,7 @@ def main():
             else:
                 days_this_month = (datetime(now.year, now.month + 1, 1) - datetime(now.year, now.month, 1)).days
 
-            day_of_year = (now - datetime(now.year, 1, 1)).days
+            #day_of_year = (now - datetime(now.year, 1, 1)).days
             days_this_year = (datetime(now.year + 1, 1, 1) - datetime(now.year, 1, 1)).days
 
             time_table[SECOND][VALUE] = now.second + u_second + random.randint(0,9999)/10000000000
@@ -246,7 +289,7 @@ def main():
             time_table[HOUR][VALUE] = now.hour + time_table[MINUTE][VALUE] / 60
             time_table[DAY][VALUE] = now.day + time_table[HOUR][VALUE] / 24
             time_table[MONTH][VALUE] = now.month + (time_table[DAY][VALUE] - 1)/days_this_month
-            time_table[YEAR][VALUE] = now.year + (day_of_year + time_table[DAY][VALUE] - int(time_table[DAY][VALUE])) / days_this_year
+            time_table[YEAR][VALUE] = now.year + (day_of_year(now) + time_table[DAY][VALUE] - int(time_table[DAY][VALUE])) / days_this_year
             time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1) / 100 + 1
 
             screen += themes[3]
@@ -263,10 +306,10 @@ def main():
 
             screen += center_l + h_bar * (columns - 2) + center_r + "\n"
 
-            dst_str[0] = "{:^8}".format("DST->STD" if is_daylight_savings else "STD->DST")
-            dst_str[1] = weekday_abbr[next_date.weekday()] + " " + next_date.strftime("%m/%d")
-            dst_str[2] = timedelta_strf(time_until_dst, "{days:03} DAYS")
-            dst_str[3] = timedelta_strf(time_until_dst, "{hours:02}:{minutes:02}:{seconds:02}")
+            dst_str[0] = "{:^8}".format("INTL FIX")
+            dst_str[1] = int_fix_date(now)
+            dst_str[2] = "{:^8}".format("REDU JUL")
+            dst_str[3] = "{:>08.2f}".format(red_julian_day(utcnow))
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
@@ -284,24 +327,31 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
             
+            offset_dbg = timedelta(hours=0, minutes=0)
+
             for i in range(0, len(time_zone_list), 2):
-                time0 = datetime.now(time_zone_list[i][1])
-                time1 = datetime.now(time_zone_list[i + 1][1])
+                time0 = datetime.now(time_zone_list[i][1]) + offset_dbg
+                time1 = datetime.now(time_zone_list[i + 1][1]) + offset_dbg
 
                 flash0 = False
                 flash1 = False
+                flash_dur = .15
 
                 if (time0.weekday() < 5):
                     if (time0.hour > 8 and time0.hour < 17):
                         flash0 = True
-                    elif (time0.hour == 8 or time0.hour == 17):
-                        flash0 = (int(u_second * 10) < 5)
+                    elif (time0.hour == 8):
+                        flash0 = (u_second < flash_dur)
+                    elif (time0.hour == 17):
+                        flash0 = not (u_second < flash_dur)
 
                 if (time1.weekday() < 5):
                     if (time1.hour > 8 and time1.hour < 17):
                         flash1 = True
-                    elif (time1.hour == 8 or time1.hour == 17):
-                        flash1 = (int(u_second * 10) < 5)
+                    elif (time1.hour == 8):
+                        flash1 = (u_second < flash_dur)
+                    elif  (time1.hour == 17):
+                        flash1 = not (u_second < flash_dur)
 
                 time_str0 = time0.strftime("%I:%M %p %b %d").upper()
                 time_str1 = time1.strftime("%I:%M %p %b %d").upper()
