@@ -359,9 +359,9 @@ def main():
 
             screen += center_l + h_bar * (columns - 2) + center_r + "\n"
 
-            dst_str[0] = "{:^8}".format("INT FIX:")
+            dst_str[0] = "{:^8}".format("INT FXD:")
             dst_str[1] = int_fix_date(now)
-            dst_str[2] = "{:^8}".format("R DJ:   ")
+            dst_str[2] = "{:^8}".format("RED JUL:")
             dst_str[3] = "{:>08.2f}".format(red_julian_day(utcnow))
 
             unix_int = int(utcnow.timestamp())
