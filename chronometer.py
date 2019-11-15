@@ -361,7 +361,7 @@ def main():
 
             dst_str[0] = "{:^8}".format("INT FIX:")
             dst_str[1] = int_fix_date(now)
-            dst_str[2] = "{:^8}".format("RED JDN:")
+            dst_str[2] = "{:^8}".format("RJULDAT:")
             dst_str[3] = "{:>08.2f}".format(red_julian_day(utcnow))
 
             unix_int = int(utcnow.timestamp())
