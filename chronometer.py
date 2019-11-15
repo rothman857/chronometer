@@ -8,10 +8,23 @@ import socket
 import re
 import math
 import random
+import argparse
 from myColors import colors
 from pytz import timezone, utc
 
-dbg_on = False
+ap = argparse.ArgumentParser()
+ap.add_argument('-d', action='store_true', help='Debug mode')
+args = ap.parse_args()
+
+if args.d:
+    dbg_start = datetime.now()
+    dbg_override = datetime(year = 2020,
+                            month = 6,
+                            day = 17,
+                            hour = 23,
+                            minute = 59,
+                            second = 50)
+
 random.seed()
 time_zone_list = []
 is_connected = False
@@ -104,11 +117,11 @@ def day_of_year(dt):
 
 def is_leap_year(dt):
     year = dt.year
-    if year / 400 == 0:
+    if year % 400 == 0:
         return True
-    if year / 100 == 0:
+    if year % 100 == 0:
         return False
-    if year / 4 == 0:
+    if year % 4 == 0:
         return True
 
 
@@ -181,27 +194,27 @@ def red_julian_day(dt):
     return jd - 2400000
 
 def int_fix_date(dt):
-    doy = day_of_year(dt) + 1
-    m, d = divmod(doy, 28)
+    ordinal = day_of_year(dt) + 1
+    if is_leap_year(dt):
+        if ordinal > 169:
+            ordinal -= 1
+        elif ordinal == 169:
+            return "LEAP DAY"
+    if ordinal == 365:
+        return "YEAR DAY"
+
+    m, d = divmod(ordinal, 28)
     if d == 0:
         d = 28
 
-    w = doy % 7
+    w = ordinal % 7
     weekday = weekday_abbr[w]
     month = ifc_months[m]
-    
-
-    if is_leap_year(dt):
-        if doy > 169:
-            doy -= 1
-        elif doy == 169:
-            return "LEAP DAY"
-
-    if day_of_year == 365:
-        return "YEAR DAY"
 
     
-    return '{w} {m} {d:02}'.format(m=month, w = weekday, d = d)
+
+    
+    return '{w} {d:02}-{m}'.format(m=month, w = weekday, d = d)
 
 
 def is_dst(zonename, utc_time):
@@ -214,7 +227,7 @@ def is_dst(zonename, utc_time):
 
 
 def dbg(a, b):
-    if(dbg_on):
+    if(args.d):
         print("<< DEBUG " + a + ">>  (press enter to continue)")
         print(b)
         input()
@@ -250,6 +263,9 @@ def main():
             start_time = datetime.now()
             offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
             now = start_time + loop_time
+
+            if args.d:
+                now = dbg_override + (start_time - dbg_start)
             utcnow = now.utcnow()
             cetnow = utcnow + timedelta(hours=1)
 
