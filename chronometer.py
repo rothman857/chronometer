@@ -16,6 +16,37 @@ ap = argparse.ArgumentParser()
 ap.add_argument('-d', action='store_true', help='Debug mode')
 args = ap.parse_args()
 
+here = os.path.dirname(os.path.realpath(__file__))
+
+if os.path.exists(os.path.join(here, 'chrono-config')):
+    pass
+else:
+    data = (
+        """# Raspberry Pi Internet Chronometer
+
+# West longitude is negative
+longitude -84.39
+
+# Refresh rate in seconds.  Lower value = higher CPU%
+refresh .001
+
+# Must have 10 defined timezones.
+# Syntax: timezone <pytz name> <label>
+timezone US/Eastern         'EASTERN'
+timezone US/Pacific         'PACIFIC'
+timezone GMT                'GMT'
+timezone Australia/Sydney   'AUSTRALIA'
+timezone Europe/Berlin      'GERMANY'
+timezone Asia/Hong_Kong     'HONG KONG'
+timezone Asia/Kolkata       'INDIA'
+timezone Asia/Tokyo         'JAPAN'
+timezone Singapore          'SINGAPORE'
+timezone Europe/London      'UK'"""
+)
+    with open('chrono-config', 'w+') as f:
+        f.write(data)
+
+
 if args.d:
     dbg_start = datetime.now()
     dbg_override = datetime(year = 2020,
@@ -29,7 +60,7 @@ random.seed()
 time_zone_list = []
 is_connected = False
 
-config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "chrono-config")
+config_file = os.path.join(here, "chrono-config")
 config_file = open(config_file)
 for line in config_file:
     setting = re.search(r"^([^#]\w+)\s+([\w.\/-]+)(\s+\'([\w ]+)\')*", line)
