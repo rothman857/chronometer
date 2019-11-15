@@ -49,12 +49,12 @@ timezone Europe/London      'UK'"""
 
 if args.d:
     dbg_start = datetime.now()
-    dbg_override = datetime(year = 2020,
-                            month = 6,
-                            day = 17,
+    dbg_override = datetime(year = 3000,
+                            month = 12,
+                            day = 31,
                             hour = 23,
                             minute = 59,
-                            second = 50)
+                            second = 55)
 
 random.seed()
 time_zone_list = []
@@ -235,16 +235,16 @@ def int_fix_date(dt):
         return "YEAR DAY"
 
     m, d = divmod(ordinal, 28)
+    
     if d == 0:
         d = 28
-
+        m -= 1
+    if m == 13:
+        m = 12
+    
     w = ordinal % 7
     weekday = weekday_abbr[w]
     month = ifc_months[m]
-
-    
-
-    
     return '{w} {d:02}-{m}'.format(m=month, w = weekday, d = d)
 
 
