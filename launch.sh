@@ -7,7 +7,7 @@ do
   sleep 1
 #  if (ping -c 1 -W 1 8.8.8.8 > /dev/null); then
 if (nc -zw1 google.com 80); then
-    echo "FOund network"
+    echo "Found network"
     break
   else
     echo "Waiting for network..."
