@@ -1,6 +1,5 @@
 #!/bin/bash
-# Call this script from /etc/rc.local to update on reboot
-
+# This script checks for a update before running the chronometer.
 
 # Wait for internet connection
 while :
