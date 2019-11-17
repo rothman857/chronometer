@@ -1,4 +1,6 @@
 #!/bin/bash
+# Call this script from rc.local to update on reboot
+
 
 #Wait for internet connection
 while :
