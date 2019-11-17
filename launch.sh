@@ -1,4 +1,4 @@
-#!/usr/bin/sh
+#!/bin/bash
 
 #Wait for internet connection
 while :
@@ -7,6 +7,7 @@ do
   if (ping -c 1 -W 1 8.8.8.8 > /dev/null); then
     break
   else
+    echo "Waiting for network..."
   fi
 done
 
