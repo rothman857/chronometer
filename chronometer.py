@@ -407,7 +407,7 @@ def main():
                         flash1 = not (u_second < flash_dur)
 
                 sign0 = '+' if time0.day > _now.day else ' '
-                sign1 = '+' if time0.day > _now.day else ' '
+                sign1 = '+' if time1.day > _now.day else ' '
 
                 time_str0 = time0.strftime("%I:%M %p").upper() + sign0
                 time_str1 = time1.strftime("%I:%M %p").upper() + sign1
