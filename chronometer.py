@@ -411,11 +411,16 @@ def main():
 
                 time_str0 = time0.strftime("%I:%M %p").upper() + sign0
                 time_str1 = time1.strftime("%I:%M %p").upper() + sign1
-                screen += v_bar + highlight[flash0] + (" {0:>9}: {1:10} ").format(time_zone_list[i][0], time_str0) + highlight[0] + b_var_single * 2
-                screen += highlight[flash1] + (" {0:>9}: {1:10} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0]
-                # Each Timezone column is 29 chars, and the bar is 1 = 59
+
+                left_pad = (columns - 48) // 2
+                right_pad = (columns - 48) - left_pad
                 spacer = " " * (columns - 50)
-                screen += spacer + v_bar + "\n"
+
+                screen +=  v_bar + (' ' * left_pad) + highlight[flash0] + (" {0:>9}: {1:9} ").format(time_zone_list[i][0], time_str0) + highlight[0] + b_var_single * 2
+                screen += highlight[flash1] + (" {0:>9}: {1:9} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' * right_pad
+                # Each Timezone column is 29 chars, and the bar is 1 = 59
+                
+                screen += v_bar + "\n"
 
             screen += center_l + h_bar * (columns - 27) + h_bar_down_connect + h_bar * 13 + h_bar_down_connect + 10 * h_bar + center_r + "\n"
 
