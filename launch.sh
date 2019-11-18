@@ -1,11 +1,12 @@
 #!/bin/bash
 # This script checks for a update before running the chronometer.
+# Call this script from /etc/rc.local (with a trailing '&') to
+# automatically update the chronometer on reboot
 
 # Wait for internet connection
 while :
 do
   sleep 1
-#  if (ping -c 1 -W 1 8.8.8.8 > /dev/null); then
 if (nc -zw1 google.com 80); then
     echo "Found network"
     break
