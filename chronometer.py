@@ -50,12 +50,12 @@ timezone Europe/London      'UK'"""
 
 if args.d:
     dbg_start = datetime.now()
-    dbg_override = datetime(year = 3000,
-                            month = 12,
-                            day = 31,
-                            hour = 23,
-                            minute = 59,
-                            second = 55)
+    dbg_override = datetime(year = 2019,
+                            month = 11,
+                            day = 1,
+                            hour = 19,
+                            minute = 0,
+                            second = 0)
 
 random.seed()
 time_zone_list = []
@@ -380,12 +380,11 @@ def main():
             net_str = net_time_strf(day_percent_complete_utc, "NET: {degrees:03.0f}°{minutes:02.0f}'{seconds:02.0f}\"")
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
-            
-            offset_dbg = timedelta(hours=0, minutes=0)
 
             for i in range(0, len(time_zone_list), 2):
-                time0 = datetime.now(time_zone_list[i][1]) + offset_dbg
-                time1 = datetime.now(time_zone_list[i + 1][1]) + offset_dbg
+                time0 = datetime.now(time_zone_list[i][1]) 
+                time1 = datetime.now(time_zone_list[i + 1][1])
+                _now = datetime.now()
 
                 flash0 = False
                 flash1 = False
@@ -407,12 +406,15 @@ def main():
                     elif  (time1.hour == 17):
                         flash1 = not (u_second < flash_dur)
 
-                time_str0 = time0.strftime("%I:%M %p %b %d").upper()
-                time_str1 = time1.strftime("%I:%M %p %b %d").upper()
-                screen += v_bar + highlight[flash0] + (" {0:>9}: {1:15} ").format(time_zone_list[i][0], time_str0) + highlight[0] + b_var_single * 2
-                screen += highlight[flash1] + (" {0:>9}: {1:15} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0]
+                sign0 = '+' if time0.day > _now.day else ' '
+                sign1 = '+' if time0.day > _now.day else ' '
+
+                time_str0 = time0.strftime("%I:%M %p").upper() + sign0
+                time_str1 = time1.strftime("%I:%M %p").upper() + sign1
+                screen += v_bar + highlight[flash0] + (" {0:>9}: {1:10} ").format(time_zone_list[i][0], time_str0) + highlight[0] + b_var_single * 2
+                screen += highlight[flash1] + (" {0:>9}: {1:10} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0]
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
-                spacer = " " * (columns - 60)
+                spacer = " " * (columns - 50)
                 screen += spacer + v_bar + "\n"
 
             screen += center_l + h_bar * (columns - 27) + h_bar_down_connect + h_bar * 13 + h_bar_down_connect + 10 * h_bar + center_r + "\n"
