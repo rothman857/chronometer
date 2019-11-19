@@ -414,7 +414,6 @@ def main():
 
                 padding1 = (columns - 48) // 4
                 padding2 = (columns - 48) - (3 * padding1)
-                spacer = " " * (columns - 50)
 
                 screen +=  v_bar + highlight[flash0] + (' ' * padding1) + (" {0:>9}: {1:9} ").format(time_zone_list[i][0], time_str0) + (' ' * padding1)  + highlight[0] + b_var_single * 2
                 screen += highlight[flash1] + (' ' * padding1) + (" {0:>9}: {1:9} ").format(time_zone_list[i + 1][0], time_str1) + (' ' * padding2) + highlight[0]
