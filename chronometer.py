@@ -52,9 +52,9 @@ timezone Europe/London      'UK'"""
 if args.d:
     dbg_start = datetime.now().astimezone()
     dbg_override = datetime(year = 2019,
-                            month = 5,
-                            day = 1,
-                            hour = 19,
+                            month = 10,
+                            day = 20,
+                            hour = 1,
                             minute = 0,
                             second = 0).astimezone()
 
@@ -382,6 +382,8 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
+            leap_stats = ["LEAP SHIFT", "HH:MM:SS.s", 'CORRECTION', 'DD-MM-YYYY', 'DDDD days ']
+
             for i in range(0, len(time_zone_list), 2):
                 #time0 = datetime.now(time_zone_list[i][1]) 
                 #time1 = datetime.now(time_zone_list[i + 1][1])
@@ -426,14 +428,13 @@ def main():
                 time_str0 = time0.strftime("%I:%M %p").upper() + sign0
                 time_str1 = time1.strftime("%I:%M %p").upper() + sign1
 
-                padding1 = (columns - 48) // 4
-                padding2 = (columns - 48) - (3 * padding1)
+                padding = (columns - 60) * ' '
 
-                screen +=  v_bar + highlight[flash0] + (' ' * padding1) + (" {0:>9}: {1:9} ").format(time_zone_list[i][0], time_str0) + (' ' * padding1)  + highlight[0] + b_var_single * 2
-                screen += highlight[flash1] + (' ' * padding1) + (" {0:>9}: {1:9} ").format(time_zone_list[i + 1][0], time_str1) + (' ' * padding2) + highlight[0]
+                screen +=  v_bar + highlight[flash0] + (" {0:>9}: {1:9} ").format(time_zone_list[i][0], time_str0) + highlight[0] + b_var_single
+                screen += highlight[flash1] + (" {0:>9}: {1:9} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
                 
-                screen += v_bar + "\n"
+                screen += "\n"
 
             screen += center_l + h_bar * (columns - 27) + h_bar_down_connect + h_bar * 13 + h_bar_down_connect + 10 * h_bar + center_r + "\n"
 
