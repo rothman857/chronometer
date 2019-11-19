@@ -52,8 +52,8 @@ timezone Europe/London      'UK'"""
 if args.d:
     dbg_start = datetime.now().astimezone()
     dbg_override = datetime(year = 2019,
-                            month = 10,
-                            day = 20,
+                            month = 2,
+                            day = 28,
                             hour = 1,
                             minute = 0,
                             second = 0).astimezone()
@@ -249,6 +249,23 @@ def int_fix_date(dt):
     month = ifc_months[m]
     return '{w} {d:02}-{m}'.format(m=month, w = weekday, d = d)
 
+def leap_shift(dt, fmt):
+    pass
+
+def count_leaps(dt):
+    count = (dt.year % 400) // 4
+    count -= (dt.year % 400) // 100
+    count += (dt.year % 400) // 400
+
+    if is_leap_year(dt) and dt < datetime(month=2,day=29,year=dt.year):
+        count -= 1
+
+    if dt.day == 29 and dt.month == 2:
+        day_percent = (dt - datetime(year=dt.year,month=2,day=29)).total_seconds()/86400
+        count += day_percent
+    else:
+        count += 1
+    return count
 
 def is_dst(zonename, utc_time):
     if zonename not in ["STD", "DST"]:
@@ -540,6 +557,11 @@ def ntp_daemon():
 
         time.sleep(15)
 if __name__ == "__main__":
+    if args.d:
+        print(count_leaps(datetime(year=2400, month=3,day=1, hour=18, minute=0)))
+        input()
+
+
     t = threading.Thread(target=ntp_daemon)
     t.setDaemon(True)
     t.start()
