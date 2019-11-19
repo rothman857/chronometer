@@ -12,6 +12,7 @@ import random
 import argparse
 from myColors import colors
 from pytz import timezone, utc
+import pytz
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', action='store_true', help='Debug mode')
@@ -49,13 +50,13 @@ timezone Europe/London      'UK'"""
 
 
 if args.d:
-    dbg_start = datetime.now()
+    dbg_start = datetime.now().astimezone()
     dbg_override = datetime(year = 2019,
-                            month = 11,
+                            month = 5,
                             day = 1,
                             hour = 19,
                             minute = 0,
-                            second = 0)
+                            second = 0).astimezone()
 
 random.seed()
 time_zone_list = []
@@ -145,7 +146,7 @@ def timedelta_strf(t_delta, fmt):
     return fmt.format(**_)
 
 def day_of_year(dt):
-    return (dt - datetime(dt.year, 1, 1)).days
+    return (dt - datetime(dt.year, 1, 1).astimezone()).days
 
 def is_leap_year(dt):
     year = dt.year
@@ -204,7 +205,7 @@ def solar_time(dt, lon, off, fmt):
 
 
 def sidereal_time(dt, lon, off, fmt):
-    j = ((datetime.now() - datetime(year=2000, month=1, day=1)) - timedelta(hours=off)).total_seconds()/86400
+    j = ((dt - datetime(year=2000, month=1, day=1).astimezone()) - timedelta(hours=off)).total_seconds()/86400
     l0 = 99.967794687
     l1 = 360.98564736628603
     l2 = 2.907879 * (10 ** -13)
@@ -292,13 +293,13 @@ def main():
         ntp_id_str = str(ntpid)
         try:
             time.sleep(refresh)
-            start_time = datetime.now()
+            start_time = datetime.now().astimezone()
             offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
             now = start_time + loop_time
 
             if args.d:
                 now = dbg_override + (start_time - dbg_start)
-            utcnow = now.utcnow()
+            utcnow = now.astimezone(pytz.utc)
             cetnow = utcnow + timedelta(hours=1)
 
             is_daylight_savings = time.localtime().tm_isdst
@@ -382,9 +383,10 @@ def main():
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
             for i in range(0, len(time_zone_list), 2):
-                time0 = datetime.now(time_zone_list[i][1]) 
-                time1 = datetime.now(time_zone_list[i + 1][1])
-                _now = datetime.now()
+                #time0 = datetime.now(time_zone_list[i][1]) 
+                #time1 = datetime.now(time_zone_list[i + 1][1])
+                time0 = now.astimezone(time_zone_list[i][1])
+                time1 = now.astimezone(time_zone_list[i+1][1])
 
                 flash0 = False
                 flash1 = False
@@ -406,8 +408,20 @@ def main():
                     elif  (time1.hour == 17):
                         flash1 = not (u_second < flash_dur)
 
-                sign0 = '+' if time0.day > _now.day else ' '
-                sign1 = '+' if time1.day > _now.day else ' '
+
+                if time0.day > now.day:
+                    sign0 = "+"
+                elif time0.day < now.day:
+                    sign0 = "-"
+                else:
+                    sign0 = ' '
+
+                if time1.day > now.day:
+                    sign1 = "+"
+                elif time1.day < now.day:
+                    sign1 = "-"
+                else:
+                    sign1 = ' '
 
                 time_str0 = time0.strftime("%I:%M %p").upper() + sign0
                 time_str1 = time1.strftime("%I:%M %p").upper() + sign1
@@ -466,7 +480,7 @@ def main():
             for i in range(22, rows):
                 screen += " " * columns
 
-            loop_time = datetime.now() - start_time
+            loop_time = datetime.now().astimezone() - start_time
             print(screen, end="")
 
         except KeyboardInterrupt:
