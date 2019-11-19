@@ -16,7 +16,11 @@ import pytz
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', action='store_true', help='Debug mode')
+ap.add_argument('--date', action='store', default=None)
 args = ap.parse_args()
+
+if args.date:
+    args.d = True
 
 here = os.path.dirname(os.path.realpath(__file__))
 
@@ -51,12 +55,7 @@ timezone Europe/London      'UK'"""
 
 if args.d:
     dbg_start = datetime.now().astimezone()
-    dbg_override = datetime(year = 2019,
-                            month = 2,
-                            day = 28,
-                            hour = 1,
-                            minute = 0,
-                            second = 0).astimezone()
+    dbg_override = datetime.strptime(args.date, '%b %d %Y %I:%M:%S%p').astimezone()
 
 random.seed()
 time_zone_list = []
@@ -250,18 +249,27 @@ def int_fix_date(dt):
     return '{w} {d:02}-{m}'.format(m=month, w = weekday, d = d)
 
 def leap_shift(dt, fmt):
-    pass
+    first_year = dt.year - dt.year % 400
+    actual_days = (dt - datetime(year=first_year,month=3,day=1).astimezone()).total_seconds()/86400
+    adj_days = (actual_days - count_leaps(dt))
+    period = 365 * 400
+    
+    
+
+    _ = dict()
+    result = adj_days
+    return result
 
 def count_leaps(dt):
     count = (dt.year % 400) // 4
     count -= (dt.year % 400) // 100
     count += (dt.year % 400) // 400
 
-    if is_leap_year(dt) and dt < datetime(month=2,day=29,year=dt.year):
+    if is_leap_year(dt) and dt < datetime(month=2,day=29,year=dt.year).astimezone():
         count -= 1
 
     if dt.day == 29 and dt.month == 2:
-        day_percent = (dt - datetime(year=dt.year,month=2,day=29)).total_seconds()/86400
+        day_percent = (dt - datetime(year=dt.year,month=2,day=29).astimezone()).total_seconds()/86400
         count += day_percent
     else:
         count += 1
@@ -399,7 +407,9 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
-            leap_stats = ["LEAP SHIFT", "HH:MM:SS.s", 'CORRECTION', 'DD-MM-YYYY', 'DDDD days ']
+            #leap_shift_value = float_fixed(leap_shift(now, 'asdf'),10,False)
+
+            leap_stats = ["Leap Time ", '{: 10f}'.format(count_leaps(now)), 'CORRECTION', 'DD-MM-YYYY', 'DDDD days ']
 
             for i in range(0, len(time_zone_list), 2):
                 #time0 = datetime.now(time_zone_list[i][1]) 
@@ -557,11 +567,6 @@ def ntp_daemon():
 
         time.sleep(15)
 if __name__ == "__main__":
-    if args.d:
-        print(count_leaps(datetime(year=2400, month=3,day=1, hour=18, minute=0)))
-        input()
-
-
     t = threading.Thread(target=ntp_daemon)
     t.setDaemon(True)
     t.start()
