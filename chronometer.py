@@ -55,7 +55,7 @@ timezone Europe/London      'UK'"""
 
 if args.d:
     dbg_start = datetime.now().astimezone()
-    dbg_override = datetime.strptime(args.date, '%b %d %Y %I:%M:%S%p').astimezone()
+    dbg_override = datetime.strptime(args.date, '%b %d %Y %I:%M:%S %p').astimezone()
 
 random.seed()
 time_zone_list = []
@@ -248,29 +248,42 @@ def int_fix_date(dt):
     month = ifc_months[m]
     return '{w} {d:02}-{m}'.format(m=month, w = weekday, d = d)
 
-def leap_shift(dt, fmt):
-    first_year = dt.year - dt.year % 400
+def leap_shift(dt):
+    start_year = dt.year - dt.year % 400
+    # if dt < datetime(year=dt.year, month=3, day=1).astimezone():
+    #     start_year -= 400
+
     ratio = 365.2425/365
-    seconds = (dt - datetime(year=first_year,month=3,day=1).astimezone()).total_seconds()
+    seconds = (dt - datetime(year=start_year,month=3,day=1).astimezone()).total_seconds()
     actual_seconds = seconds * ratio
-    seconds_adj = seconds - (count_leaps(dt)*86400)
-    result = actual_seconds - seconds_adj
-    
-    return result
+
+    seconds_adj = actual_seconds - (count_leaps(dt)*86400*ratio)
+
+    result = seconds - seconds_adj
+
+    return result, count_leaps(dt), seconds, seconds_adj
 
 def count_leaps(dt):
-    count = (dt.year % 400) // 4
-    count -= (dt.year % 400) // 100
-    count += (dt.year % 400) // 400
+    start_year = dt.year - dt.year % 400
 
-    if is_leap_year(dt) and dt < datetime(month=2,day=29,year=dt.year).astimezone():
+    # if dt < datetime(year=start_year, month=3, day=1).astimezone():
+    #     start_year -= 400
+
+    years = (dt - datetime(day=1,month=3,year=start_year).astimezone()).total_seconds()//(365*86400)
+    if years < 0:
+        years = 0
+
+    count = years // 4
+    count -= years // 100
+    count += years // 400
+
+    if is_leap_year(dt) and dt < datetime(month=3,day=1,year=dt.year).astimezone():
         count -= 1
 
     if dt.day == 29 and dt.month == 2:
-        day_percent = (dt - datetime(year=dt.year,month=2,day=29).astimezone()).total_seconds()/86400
+        day_percent = (dt - datetime(year=dt.year,month=2,day=29).astimezone()).total_seconds()/(86400)
         count += day_percent
-    else:
-        count += 1
+
     return count
 
 def is_dst(zonename, utc_time):
@@ -406,8 +419,11 @@ def main():
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
             #leap_shift_value = float_fixed(leap_shift(now, 'asdf'),10,False)
+            a,b,c, d = leap_shift(now)
 
-            leap_stats = ["Leap Time ", '{: 10f}'.format(count_leaps(now)), 'CORRECTION', 'DD-MM-YYYY', 'DDDD days ']
+            leap_stats = ["LEAP DRIFT", float_fixed(a, 15, False), 
+                          float_fixed(b, 15, False), float_fixed(c, 15, False), 
+                          float_fixed(d, 15, False)]
 
             for i in range(0, len(time_zone_list), 2):
                 #time0 = datetime.now(time_zone_list[i][1]) 
@@ -453,7 +469,7 @@ def main():
                 time_str0 = time0.strftime("%I:%M %p").upper() + sign0
                 time_str1 = time1.strftime("%I:%M %p").upper() + sign1
 
-                padding = (columns - 60) * ' '
+                padding = (columns - 70) * ' '
 
                 screen +=  v_bar + highlight[flash0] + (" {0:>9}: {1:9} ").format(time_zone_list[i][0], time_str0) + highlight[0] + b_var_single
                 screen += highlight[flash1] + (" {0:>9}: {1:9} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
