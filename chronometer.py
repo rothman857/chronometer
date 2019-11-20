@@ -387,9 +387,7 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
-            #leap_shift_value = float_fixed(leap_shift(now, 'asdf'),10,False)
-            a,b,c, d = leap_shift(now)
-
+            a,b,c,d=0,0,0,0
             leap_stats = ["LEAP DRIFT", 
                           float_fixed(a, 15, False), 
                           float_fixed(b, 15, False), 
