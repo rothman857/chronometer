@@ -250,14 +250,12 @@ def int_fix_date(dt):
 
 def leap_shift(dt, fmt):
     first_year = dt.year - dt.year % 400
-    actual_days = (dt - datetime(year=first_year,month=3,day=1).astimezone()).total_seconds()/86400
-    adj_days = (actual_days - count_leaps(dt))
-    period = 365 * 400
+    ratio = 365.2425/365
+    seconds = (dt - datetime(year=first_year,month=3,day=1).astimezone()).total_seconds()
+    actual_seconds = seconds * ratio
+    seconds_adj = seconds - (count_leaps(dt)*86400)
+    result = actual_seconds - seconds_adj
     
-    
-
-    _ = dict()
-    result = adj_days
     return result
 
 def count_leaps(dt):
