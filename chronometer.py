@@ -249,42 +249,11 @@ def int_fix_date(dt):
     return '{w} {d:02}-{m}'.format(m=month, w = weekday, d = d)
 
 def leap_shift(dt):
-    start_year = dt.year - dt.year % 400
-    # if dt < datetime(year=dt.year, month=3, day=1).astimezone():
-    #     start_year -= 400
-
-    ratio = 365.2425/365
-    seconds = (dt - datetime(year=start_year,month=3,day=1).astimezone()).total_seconds()
-    actual_seconds = seconds * ratio
-
-    seconds_adj = actual_seconds - (count_leaps(dt)*86400*ratio)
-
-    result = seconds - seconds_adj
-
-    return result, count_leaps(dt), seconds, seconds_adj
+    pass
 
 def count_leaps(dt):
-    start_year = dt.year % 400
+    pass
 
-
-    # years = (dt - datetime(day=1,month=3,year=start_year).astimezone()).total_seconds()//(365*86400)
-    # if years < 0:
-    #     years = 0
-
-    count =  start_year // 4
-    count -= start_year // 100
-    count += start_year // 400
-
-    if is_leap_year(dt) and dt < datetime(month=3,day=1,year=dt.year).astimezone():
-        count -= 1
-
-    if dt.day == 29 and dt.month == 2:
-        day_percent = (dt - datetime(year=dt.year,month=2,day=29).astimezone()).total_seconds()/(86400)
-        count += day_percent
-    
-    count %= 97
-
-    return count
 
 def is_dst(zonename, utc_time):
     if zonename not in ["STD", "DST"]:
@@ -421,8 +390,10 @@ def main():
             #leap_shift_value = float_fixed(leap_shift(now, 'asdf'),10,False)
             a,b,c, d = leap_shift(now)
 
-            leap_stats = ["LEAP DRIFT", float_fixed(a, 15, False), 
-                          float_fixed(b, 15, False), float_fixed(c, 15, False), 
+            leap_stats = ["LEAP DRIFT", 
+                          float_fixed(a, 15, False), 
+                          float_fixed(b, 15, False), 
+                          float_fixed(c, 15, False), 
                           float_fixed(d, 15, False)]
 
             for i in range(0, len(time_zone_list), 2):
