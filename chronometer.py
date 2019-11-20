@@ -264,18 +264,16 @@ def leap_shift(dt):
     return result, count_leaps(dt), seconds, seconds_adj
 
 def count_leaps(dt):
-    start_year = dt.year - dt.year % 400
+    start_year = dt.year % 400
 
-    # if dt < datetime(year=start_year, month=3, day=1).astimezone():
-    #     start_year -= 400
 
-    years = (dt - datetime(day=1,month=3,year=start_year).astimezone()).total_seconds()//(365*86400)
-    if years < 0:
-        years = 0
+    # years = (dt - datetime(day=1,month=3,year=start_year).astimezone()).total_seconds()//(365*86400)
+    # if years < 0:
+    #     years = 0
 
-    count = years // 4
-    count -= years // 100
-    count += years // 400
+    count =  start_year // 4
+    count -= start_year // 100
+    count += start_year // 400
 
     if is_leap_year(dt) and dt < datetime(month=3,day=1,year=dt.year).astimezone():
         count -= 1
@@ -283,6 +281,8 @@ def count_leaps(dt):
     if dt.day == 29 and dt.month == 2:
         day_percent = (dt - datetime(year=dt.year,month=2,day=29).astimezone()).total_seconds()/(86400)
         count += day_percent
+    
+    count %= 97
 
     return count
 
