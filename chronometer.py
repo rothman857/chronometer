@@ -340,7 +340,7 @@ def main():
             start_time = datetime.now()
             offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
             now = start_time + loop_time
-            _now = utc.localize(now)
+            _now = utc.localize(now).astimezone()
 
             if args.d:
                 now = dbg_override + (start_time - dbg_start)
