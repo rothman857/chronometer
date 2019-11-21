@@ -147,6 +147,7 @@ def timedelta_strf(t_delta, fmt):
     return fmt.format(**_)
 
 def day_of_year(dt):
+    dt = dt.replace(tzinfo=None)
     return (dt - datetime(dt.year, 1, 1)).days
 
 def is_leap_year(dt):
@@ -195,6 +196,7 @@ def get_relative_date(ordinal, weekday, month, year):
 
 
 def solar_time(dt, lon, off, fmt):
+    dt = dt.replace(tzinfo=None)
     lstm = 15 * off
     d = (dt - dt.replace(day=1, month=1)).total_seconds()/(86400)
     b = (360/365.242) * (d - 81) * math.pi/180
@@ -206,6 +208,7 @@ def solar_time(dt, lon, off, fmt):
 
 
 def sidereal_time(dt, lon, off, fmt):
+    dt = dt.replace(tzinfo=None)
     j = ((dt - datetime(year=2000, month=1, day=1)) - timedelta(hours=off)).total_seconds()/86400
     l0 = 99.967794687
     l1 = 360.98564736628603
@@ -384,12 +387,12 @@ def main():
             #day_of_year = (now - datetime(now.year, 1, 1)).days
             days_this_year = (datetime(now.year + 1, 1, 1) - datetime(now.year, 1, 1)).days
 
-            time_table[SECOND][VALUE] = now.second + u_second + random.randint(0,9999)/10000000000
-            time_table[MINUTE][VALUE] = now.minute + time_table[SECOND][VALUE] / 60 + random.randint(0,99)/10000000000
-            time_table[HOUR][VALUE] = now.hour + time_table[MINUTE][VALUE] / 60
-            time_table[DAY][VALUE] = now.day + time_table[HOUR][VALUE] / 24
-            time_table[MONTH][VALUE] = now.month + (time_table[DAY][VALUE] - 1)/days_this_month
-            time_table[YEAR][VALUE] = now.year + (day_of_year(now) + time_table[DAY][VALUE] - int(time_table[DAY][VALUE])) / days_this_year
+            time_table[SECOND][VALUE] = _now.astimezone().second + u_second + random.randint(0,9999)/10000000000
+            time_table[MINUTE][VALUE] = _now.astimezone().minute + time_table[SECOND][VALUE] / 60 + random.randint(0,99)/10000000000
+            time_table[HOUR][VALUE] = _now.astimezone().hour + time_table[MINUTE][VALUE] / 60
+            time_table[DAY][VALUE] = _now.astimezone().day + time_table[HOUR][VALUE] / 24
+            time_table[MONTH][VALUE] = _now.astimezone().month + (time_table[DAY][VALUE] - 1)/days_this_month
+            time_table[YEAR][VALUE] = _now.astimezone().year + (day_of_year(_now.astimezone()) + time_table[DAY][VALUE] - int(time_table[DAY][VALUE])) / days_this_year
             time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1) / 100 + 1
 
             screen += themes[3]
@@ -419,8 +422,8 @@ def main():
             day_percent_complete_utc = (utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000) / 86400
             day_percent_complete_cet = (cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000) / 86400
 
-            solar_str = str(solar_time(now, lon, offset, "SOL: {hour:02}:{minute:02}:{second:02}"))
-            lst_str = sidereal_time(now, lon, offset, "LST: {hour:02}:{minute:02}:{second:02}")
+            solar_str = str(solar_time(_now.astimezone(), lon, offset, "SOL: {hour:02}:{minute:02}:{second:02}"))
+            lst_str = sidereal_time(_now.astimezone(), lon, offset, "LST: {hour:02}:{minute:02}:{second:02}")
             metric_str = metric_strf(day_percent_complete, "MET: {hours:02}:{minutes:02}:{seconds:02}")
             hex_str = hex_strf(day_percent_complete, "HEX: {hours:1X}_{minutes:02X}_{seconds:1X}.{sub:03X}")
             net_str = net_time_strf(day_percent_complete_utc, "NET: {degrees:03.0f}°{minutes:02.0f}'{seconds:02.0f}\"")
