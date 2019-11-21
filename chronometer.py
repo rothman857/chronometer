@@ -19,6 +19,8 @@ ap.add_argument('-d', action='store_true', help='Debug mode')
 ap.add_argument('--date', action='store', default=None)
 args = ap.parse_args()
 
+utc = pytz.utc
+
 if args.date:
     args.d = True
 
@@ -342,7 +344,7 @@ def main():
 
             if args.d:
                 now = dbg_override + (start_time - dbg_start)
-            utcnow = now.astimezone(pytz.utc)
+            utcnow = utc.localize(now)
             cetnow = utcnow + timedelta(hours=1)
 
             is_daylight_savings = time.localtime().tm_isdst
