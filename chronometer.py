@@ -248,7 +248,7 @@ def int_fix_date(dt):
     month = ifc_months[m]
     return '{w} {d:02}-{m}'.format(m=month, w = weekday, d = d)
 
-def leap_shift(dt):
+def leap_shift(dt, fmt):
     ratio = 365/365.2425
     start_year = dt.year - (dt.year % 400)
     if dt.year == start_year:
@@ -262,24 +262,22 @@ def leap_shift(dt):
     seconds = (dt - start_date).total_seconds()
     actual_seconds = seconds * ratio
     diff = seconds - actual_seconds
+    drift = diff - leapage(dt) * 86400
+    _ = dict()
+    _['hour'], remainder = divmod(drift, 3600)
+    _['minute'], _['second'] = divmod(remainder, 60)
+    _['sub'] = 10 * (_['second'] - int(_['second']))
 
-    return (seconds,
-           actual_seconds,
-           diff,
-           leapage(dt),
-           0,
-    )
+    for i in _:
+        _[i] = int(_[i])
+    return fmt.format(**_)
+
 
 def leapage(dt):
     years = (dt.year-1) % 400
     count = years // 4
     count -= years // 100
     count += years // 400
-
-
-    # if count < 0:
-    #     count = 96
-
 
     if is_leap_year(dt):
         if dt.month == 2 and dt.day == 29:
@@ -288,10 +286,10 @@ def leapage(dt):
         elif dt >= datetime(month=3, day=1, year=dt.year):
             count += 1
             pass
+
+    if count == 97:
+        count = 0
     return count
-
-
-
 
 def is_dst(zonename, utc_time):
     if zonename not in ["STD", "DST"]:
@@ -409,7 +407,7 @@ def main():
             dst_str[0] = "{:^8}".format("INT FXD:")
             dst_str[1] = int_fix_date(now)
             dst_str[2] = "{:^8}".format("RED JUL:")
-            dst_str[3] = "{:>08.2f}".format(red_julian_day(utcnow))
+            dst_str[3] = float_fixed(red_julian_day(utcnow), 8, False)
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
@@ -427,14 +425,12 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
-            # a,b,c,d= leap_shift(now), 0, 0, 0
-            # leap_stats = ["LEAP DRIFT", 
-            #               float_fixed(a, 15, False), 
-            #               float_fixed(b, 15, False), 
-            #               float_fixed(c, 15, False), 
-            #               float_fixed(d, 15, False)]
-
-            leap_stats = [float_fixed(i, 15, False) for i in leap_shift(now)]
+            leap_stats = ["LEAP DRIFT",
+                          leap_shift(now, "{hour:02}:{minute:02}:{second:02}.{sub:}"),
+                          ' ' * 10,
+                          ' ' * 10,
+                          ' ' * 10,
+                          ]
 
             for i in range(0, len(time_zone_list), 2):
                 #time0 = datetime.now(time_zone_list[i][1]) 
@@ -480,7 +476,7 @@ def main():
                 time_str0 = time0.strftime("%I:%M %p").upper() + sign0
                 time_str1 = time1.strftime("%I:%M %p").upper() + sign1
 
-                padding = (columns - 70) * ' '
+                padding = (columns - 60) * ' '
 
                 screen +=  v_bar + highlight[flash0] + (" {0:>9}: {1:9} ").format(time_zone_list[i][0], time_str0) + highlight[0] + b_var_single
                 screen += highlight[flash1] + (" {0:>9}: {1:9} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
