@@ -254,6 +254,7 @@ def int_fix_date(dt):
     return '{w} {d:02}-{m}'.format(m=month, w = weekday, d = d)
 
 def leap_shift(dt, fmt):
+    dt = dt.replace(tzinfo=None)
     ratio = 365/365.2425
     start_year = dt.year - (dt.year % 400)
     if dt.year == start_year:
@@ -342,11 +343,10 @@ def main():
             start_time = datetime.utcnow()
             offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
             now = start_time + loop_time
-            _now = now.replace(tzinfo=utc)
-            
-
             if args.d:
                 now = dbg_override + (start_time - dbg_start)
+
+            _now = now.replace(tzinfo=utc)
             utcnow = now
             cetnow = utcnow + timedelta(hours=1)
 
@@ -431,7 +431,7 @@ def main():
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
             leap_stats = ["LEAP DRIFT",
-                          leap_shift(now, "{hour:02}:{minute:02}:{second:02}.{sub:}"),
+                          leap_shift(_now.astimezone(), "{hour:02}:{minute:02}:{second:02}.{sub:}"),
                           ' ' * 10,
                           ' ' * 10,
                           ' ' * 10,
