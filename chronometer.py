@@ -249,11 +249,48 @@ def int_fix_date(dt):
     return '{w} {d:02}-{m}'.format(m=month, w = weekday, d = d)
 
 def leap_shift(dt):
-    start_year = dt.year % 400 if (dt.day 1 and dt.month < 3) else (dt.year % 400) - 400
-    return start_year
+    ratio = 365/365.2425
+    start_year = dt.year - (dt.year % 400)
+    if dt.year == start_year:
+        if dt < datetime(month=3, day=1, year=dt.year):
+            start_date = datetime(month=3, day=1, year=dt.year-400)
+        else:
+            start_date = datetime(month=3, day=1, year=dt.year)
+    else:
+        start_date = datetime(month=3, day=1, year=start_year)
 
-def count_leaps(dt):
-    pass
+    seconds = (dt - start_date).total_seconds()
+    actual_seconds = seconds * ratio
+    diff = seconds - actual_seconds
+
+    return (seconds,
+           actual_seconds,
+           diff,
+           leapage(dt),
+           0,
+    )
+
+def leapage(dt):
+    years = (dt.year-1) % 400
+    count = years // 4
+    count -= years // 100
+    count += years // 400
+
+
+    # if count < 0:
+    #     count = 96
+
+
+    if is_leap_year(dt):
+        if dt.month == 2 and dt.day == 29:
+            percent_complete = (dt - datetime(month=2, day=29, year=dt.year)).total_seconds()/86400
+            count += percent_complete
+        elif dt >= datetime(month=3, day=1, year=dt.year):
+            count += 1
+            pass
+    return count
+
+
 
 
 def is_dst(zonename, utc_time):
@@ -356,7 +393,7 @@ def main():
             time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1) / 100 + 1
 
             screen += themes[3]
-            screen += ("{: ^" + str(columns) + "}\n").format(_now.strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y")).upper() + themes[0]
+            screen += ("{: ^" + str(columns) + "}\n").format(now.strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y")).upper() + themes[0]
             screen += corner_ul + h_bar * (columns - 2) + corner_ur + "\n"
 
             for i in range(7):
@@ -390,12 +427,14 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
-            a,b,c,d= leap_shift(now), 0, 0, 0
-            leap_stats = ["LEAP DRIFT", 
-                          float_fixed(a, 15, False), 
-                          float_fixed(b, 15, False), 
-                          float_fixed(c, 15, False), 
-                          float_fixed(d, 15, False)]
+            # a,b,c,d= leap_shift(now), 0, 0, 0
+            # leap_stats = ["LEAP DRIFT", 
+            #               float_fixed(a, 15, False), 
+            #               float_fixed(b, 15, False), 
+            #               float_fixed(c, 15, False), 
+            #               float_fixed(d, 15, False)]
+
+            leap_stats = [float_fixed(i, 15, False) for i in leap_shift(now)]
 
             for i in range(0, len(time_zone_list), 2):
                 #time0 = datetime.now(time_zone_list[i][1]) 
