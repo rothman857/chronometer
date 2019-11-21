@@ -147,7 +147,7 @@ def timedelta_strf(t_delta, fmt):
     return fmt.format(**_)
 
 def day_of_year(dt):
-    return (dt - datetime(dt.year, 1, 1).astimezone()).days
+    return (dt - datetime(dt.year, 1, 1)).days
 
 def is_leap_year(dt):
     year = dt.year
@@ -206,7 +206,7 @@ def solar_time(dt, lon, off, fmt):
 
 
 def sidereal_time(dt, lon, off, fmt):
-    j = ((dt - datetime(year=2000, month=1, day=1).astimezone()) - timedelta(hours=off)).total_seconds()/86400
+    j = ((dt - datetime(year=2000, month=1, day=1)) - timedelta(hours=off)).total_seconds()/86400
     l0 = 99.967794687
     l1 = 360.98564736628603
     l2 = 2.907879 * (10 ** -13)
@@ -261,7 +261,7 @@ def leap_shift(dt, fmt):
     else:
         start_date = datetime(month=3, day=1, year=start_year)
 
-    seconds = (dt - start_date.astimezone()).total_seconds()
+    seconds = (dt - start_date).total_seconds()
     actual_seconds = seconds * ratio
     diff = seconds - actual_seconds
     drift = diff - leapage(dt) * 86400
@@ -336,9 +336,10 @@ def main():
         ntp_id_str = str(ntpid)
         try:
             time.sleep(refresh)
-            start_time = utc.localize(datetime.now())
+            start_time = datetime.utcnow()
             offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
             now = start_time + loop_time
+            _now = now.replace(tzinfo=utc)
             
 
             if args.d:
@@ -392,7 +393,7 @@ def main():
             time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1) / 100 + 1
 
             screen += themes[3]
-            screen += ("{: ^" + str(columns) + "}\n").format(now.astimezone().strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y")).upper() + themes[0]
+            screen += ("{: ^" + str(columns) + "}\n").format(_now.astimezone().strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y")).upper() + themes[0]
             screen += corner_ul + h_bar * (columns - 2) + corner_ur + "\n"
 
             for i in range(7):
@@ -436,8 +437,8 @@ def main():
             for i in range(0, len(time_zone_list), 2):
                 #time0 = datetime.now(time_zone_list[i][1]) 
                 #time1 = datetime.now(time_zone_list[i + 1][1])
-                time0 = now.astimezone(time_zone_list[i][1])
-                time1 = now.astimezone(time_zone_list[i+1][1])
+                time0 = _now.astimezone(time_zone_list[i][1])
+                time1 = _now.astimezone(time_zone_list[i+1][1])
 
                 flash0 = False
                 flash1 = False
@@ -530,7 +531,7 @@ def main():
             for i in range(22, rows):
                 screen += " " * columns
 
-            loop_time = datetime.now().astimezone() - start_time
+            loop_time = datetime.utcnow() - start_time
             print(screen, end="")
 
         except KeyboardInterrupt:
