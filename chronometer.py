@@ -318,12 +318,13 @@ def dbg(a, b):
     return
 
 def sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.htm  
-    #zenith:
-	# offical      = 90 degrees 50' = 90.83333
-    # civil        = 96 degrees
-	# nautical     = 102 degrees
-	# astronomical = 108 degrees
-    zenith = 90.83333
+
+    zenith = 90.83333 # Official (90 degrees 50')
+    #zenith = 108 # Civil
+    #zenith = 102 # Nautical
+    #zenith = 108 # Astronomical
+
+
     #dt = dt.astimezone()
     N = day_of_year(dt.astimezone())
     lngHour = lon / 15
@@ -514,7 +515,7 @@ def main():
             screen += center_l + h_bar * (columns - 2) + center_r + "\n"
 
             dst_str[0] = "{:^8}".format("INT FXD:")
-            dst_str[1] = int_fix_date(now)
+            dst_str[1] = int_fix_date(_now.astimezone())
             dst_str[2] = "{:^8}".format("RED JUL:")
             dst_str[3] = float_fixed(red_julian_day(utcnow), 8, False)
 
