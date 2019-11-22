@@ -557,7 +557,7 @@ def main():
                           h_bar_single * 18,
                           "SR:" + suntime[0],
                           "SS:" + suntime[1],
-                          "DN%: " + "{}%|{}%".format(float_fixed(diff0, 5, False), float_fixed(diff1, 5, False))
+                          "DNR: " + "{}%|{}%".format(float_fixed(diff0, 5, False), float_fixed(diff1, 5, False))
                           ]
 
             for i in range(0, len(time_zone_list), 2):
