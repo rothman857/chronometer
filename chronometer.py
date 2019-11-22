@@ -427,6 +427,7 @@ def main():
     v_bar = themes[2] + chr(0x2551) + themes[1]
     b_var_single = themes[2] + chr(0x2502) + themes[1]
     h_bar = themes[2] + chr(0x2550) + themes[1]
+    h_bar_single = themes[2] + chr(0x2500) + themes[1]
     h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
     h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
 #h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
@@ -553,10 +554,10 @@ def main():
             
 
             leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
+                          h_bar_single * 18,
                           "SR:" + suntime[0],
                           "SS:" + suntime[1],
-                          "DN%: " + "{}%|{}%".format(float_fixed(diff0, 5, False), float_fixed(diff1, 5, False)),
-                          ' ' * 18,
+                          "DN%: " + "{}%|{}%".format(float_fixed(diff0, 5, False), float_fixed(diff1, 5, False))
                           ]
 
             for i in range(0, len(time_zone_list), 2):
