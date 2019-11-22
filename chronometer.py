@@ -534,8 +534,8 @@ def main():
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
             leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
-                          "SR:" + sunriseset(_now, sunrise=True, fmt = "{sign}{hour:02}:{minute:02}:{second:02}.{sub:04}"),
-                          "SS:" + sunriseset(_now, sunrise=False, fmt = "{sign}{hour:02}:{minute:02}:{second:02}.{sub:04}"),
+                          "SR:" + sunriseset(_now, sunrise=True, fmt = "{sign}{hour:02}:{minute:02}:{second:02}.{sub:05}"),
+                          "SS:" + sunriseset(_now, sunrise=False, fmt = "{sign}{hour:02}:{minute:02}:{second:02}.{sub:05}"),
                           ' ' * 18,
                           ' ' * 18,
                           ]
