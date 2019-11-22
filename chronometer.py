@@ -375,15 +375,15 @@ def sunriseset(dt, sunrise, fmt): # https://edwilliams.org/sunrise_sunset_algori
                    microsecond=int(sub))
 
     suntime = datetime.combine(dt, suntime).replace(tzinfo=utc).astimezone()
-    countdown = (suntime - dt).total_seconds() % 86400
+    countdown = (suntime - dt).total_seconds()# % 86400
 
     _ = dict()
     _['hour'], remainder = divmod(countdown, 3600)
     _['minute'], _['second'] = divmod(remainder, 60)
     _['sub'] = 100000 * (_['second'] - int(_['second']))
+    _['sign'] = ' ' if countdown > 0 else '-'
+    _['hour'] = abs(_['hour'])
 
-
-    _['sign'] = ' ' if countdown > 0 else ''
 
     for i in _:
         if isinstance(_[i], float):
@@ -534,8 +534,8 @@ def main():
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
             leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
-                          "SR: " + sunriseset(_now, sunrise=True, fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
-                          "SS: " + sunriseset(_now, sunrise=False, fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
+                          "SR:" + sunriseset(_now, sunrise=True, fmt = "{sign}{hour:02}:{minute:02}:{second:02}.{sub:04}"),
+                          "SS:" + sunriseset(_now, sunrise=False, fmt = "{sign}{hour:02}:{minute:02}:{second:02}.{sub:04}"),
                           ' ' * 18,
                           ' ' * 18,
                           ]
@@ -584,8 +584,8 @@ def main():
 
                 padding = (columns - 60) * ' '
 
-                screen +=  v_bar + highlight[flash0] + (" {0:>9}:{1:6} ").format(time_zone_list[i][0], time_str0) + highlight[0] + b_var_single
-                screen += highlight[flash1] + (" {0:>9}:{1:6} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
+                screen +=  v_bar + ' ' + highlight[flash0] + ("{0:>9}:{1:6}").format(time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
+                screen += ' ' + highlight[flash1] + ("{0:>9}:{1:6}").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
                 
                 screen += "\n"
