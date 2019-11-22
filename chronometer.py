@@ -224,14 +224,15 @@ def sidereal_time(dt, lon, off, fmt):
     _["minute"], _["second"] = divmod(remainder, 60)
     return fmt.format(**_)
 
-def red_julian_day(dt):
-    a = (14 - dt.month) // 12
-    y = dt.year + 4800 - a
-    m = dt.month + 12 * a - 3
+def julian_date(date, reduced=False):
+    a = (14 - date.month) // 12
+    y = date.year + 4800 - a
+    m = date.month + 12 * a - 3
 
-    jdn = dt.day + (153*m+2)//5 + y*365 + y//4 - y//100 + y//400 - 32045
-    jd = jdn + (dt.hour - 12) / 24 + dt.minute / 1440 + dt.second / 86400 + dt.microsecond / 86400000000
-    return jd - 2400000
+    jdn = date.day + (153*m+2)//5 + y*365 + y//4 - y//100 + y//400 - 32045
+    jd = jdn + (date.hour - 12) / 24 + date.minute / 1440 + date.second / 86400 + date.microsecond / 86400000000
+    
+    return jd - 2400000 if reduced else jd
 
 def int_fix_date(dt):
     ordinal = day_of_year(dt) + 1
@@ -393,6 +394,22 @@ def sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.h
     return countdown
     #return suntime.strftime("%H:%M:%S.%f")[:-1]
 
+def sunriseset2(dt): # https://en.wikipedia.org/wiki/Sunrise_equation
+    n = julian_date(dt) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
+    J_star = n - (lon/360) # Mean Solar Noon
+    M = (357.5291 + 0.98560028 * J_star) % 360 # Solar mean anomaly
+    C = 1.9148 * sin(M) + 0.0200*sin(2*M) + 0.0003 * sin(3*M) # Equation of the center
+    _lambda = (M + C + 180 + 102.93723) % 360 # Ecliptic Longitude
+    J_transit = 2451545.0 + J_star + 0.0053 * sin(M) - 0.0069*sin(2*_lambda) # Solar Transit
+    delta = asin(sin(_lambda) * sin(23.44)) # Declination of Sun
+    w_0 = acos((sin(-.83) - sin(lat) + sin(delta))/(cos(lat) * cos(delta))) # Hour angle
+
+    J_rise =J_transit - (w_0/360)
+    J_set = J_transit + (w_0/360)
+
+
+
+
 def acos(x):
     return degrees(math.acos(x))
 
@@ -416,6 +433,18 @@ def radians(deg):
 
 def degrees(rad):
     return rad * 180 / math.pi
+
+def jul_to_greg(J):
+    _J = int(J)
+    f = _J + 1401 + (((4 * _J + 274277) // 146097) * 3) // 4 - 38
+    e = 4 * f + 3
+    g = (e % 1461) // 4
+    h = 5 * g + 2
+    D = (h % 153) // 5 + 1
+    M = ((h // 153 + 2) % 12) + 1
+    Y = (e // 1461) - 4716 + (12 + 2 - M) // 12
+    return datetime(year=Y, day=D, month=M) + timedelta(seconds=86400 * (J - _J))
+
 
 
 os.system("clear")
@@ -517,7 +546,7 @@ def main():
             dst_str[0] = "{:^8}".format("INT FXD:")
             dst_str[1] = int_fix_date(_now.astimezone())
             dst_str[2] = "{:^8}".format("RED JUL:")
-            dst_str[3] = float_fixed(red_julian_day(utcnow), 8, False)
+            dst_str[3] = float_fixed(julian_date(date = utcnow, reduced=True), 8, False)
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
