@@ -395,17 +395,22 @@ def sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.h
     #return suntime.strftime("%H:%M:%S.%f")[:-1]
 
 def sunriseset2(dt): # https://en.wikipedia.org/wiki/Sunrise_equation
-    n = julian_date(dt) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
+    n = int(julian_date(dt)) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
     J_star = n - (lon/360) # Mean Solar Noon
     M = (357.5291 + 0.98560028 * J_star) % 360 # Solar mean anomaly
     C = 1.9148 * sin(M) + 0.0200*sin(2*M) + 0.0003 * sin(3*M) # Equation of the center
-    _lambda = (M + C + 180 + 102.93723) % 360 # Ecliptic Longitude
+    _lambda = (M + C + 180 + 102.9372) % 360 # Ecliptic Longitude
     J_transit = 2451545.0 + J_star + 0.0053 * sin(M) - 0.0069*sin(2*_lambda) # Solar Transit
     delta = asin(sin(_lambda) * sin(23.44)) # Declination of Sun
-    w_0 = acos((sin(-.83) - sin(lat) + sin(delta))/(cos(lat) * cos(delta))) # Hour angle
-
+    temp = (sin(-.83) - sin(lat) * sin(delta))/(cos(lat) * cos(delta))
+    w_0 = acos(temp) # Hour angle
     J_rise =J_transit - (w_0/360)
     J_set = J_transit + (w_0/360)
+
+    t_rise = (jul_to_greg(J_rise).astimezone() - dt.astimezone()).total_seconds()
+    t_set = (jul_to_greg(J_set).astimezone() - dt.astimezone()).total_seconds()
+
+    return [t_rise, t_set]
 
 
 
@@ -435,6 +440,7 @@ def degrees(rad):
     return rad * 180 / math.pi
 
 def jul_to_greg(J):
+    J += .5
     _J = int(J)
     f = _J + 1401 + (((4 * _J + 274277) // 146097) * 3) // 4 - 38
     e = 4 * f + 3
@@ -443,7 +449,7 @@ def jul_to_greg(J):
     D = (h % 153) // 5 + 1
     M = ((h // 153 + 2) % 12) + 1
     Y = (e // 1461) - 4716 + (12 + 2 - M) // 12
-    return datetime(year=Y, day=D, month=M) + timedelta(seconds=86400 * (J - _J))
+    return (datetime(year=Y, day=D, month=M) + timedelta(seconds = 86400 * (J - _J))).replace(tzinfo=utc)
 
 
 
@@ -565,8 +571,9 @@ def main():
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
 
-            suntime = [sunriseset(_now, sunrise=True),
-                       sunriseset(_now, sunrise=False)]
+            #suntime = [sunriseset(_now, sunrise=True),
+            #            sunriseset(_now, sunrise=False)]
+            suntime = sunriseset2(_now)
             
             diff0 = (suntime[1] - suntime[0])/864
             diff1 = 100 - diff0
