@@ -33,7 +33,8 @@ else:
         """# Raspberry Pi Internet Chronometer
 
 # West longitude is negative
-longitude -84.39
+longitude -73.94388889
+latitude 40.66111111
 
 # Refresh rate in seconds.  Lower value = higher CPU%
 refresh .001
@@ -72,6 +73,8 @@ for line in config_file:
             time_zone_list.append([setting.group(4), timezone(setting.group(2))])
         if (setting.group(1) == "longitude"):
             lon = float(setting.group(2))
+        if (setting.group(1) == "latitude"):
+            lat = float(setting.group(2))
         if (setting.group(1) == "refresh"):
             refresh = float(setting.group(2))
 config_file.close()
@@ -272,7 +275,7 @@ def leap_shift(dt, fmt):
     _ = dict()
     _['hour'], remainder = divmod(drift, 3600)
     _['minute'], _['second'] = divmod(remainder, 60)
-    _['sub'] = 10 * (_['second'] - int(_['second']))
+    _['sub'] = 100000 * (_['second'] - int(_['second']))
 
     for i in _:
         _[i] = int(_[i])
@@ -297,6 +300,7 @@ def leapage(dt):
         count = 0
     return count
 
+
 def is_dst(zonename, utc_time):
     if zonename not in ["STD", "DST"]:
         tz = timezone(zonename)
@@ -312,6 +316,85 @@ def dbg(a, b):
         print(b)
         input()
     return
+
+def sunriseset(dt, fmt, sunrise=True): # https://edwilliams.org/sunrise_sunset_algorithm.htm  
+    zenith = 96
+    N = day_of_year(dt)
+    lngHour = lon / 15
+    if sunrise:
+        t = N + ((6 - lngHour) / 24)
+    else:
+        t = N + ((18 - lngHour) / 24)
+
+    M = (0.9856 * t) - 3.289
+    L = M + (1.916 * sin(M)) + (0.020 * sin(2 * M)) + 282.634
+    L %= 360
+    RA = atan(0.91764 * tan(L))
+    RA %= 360
+
+    Lquadrant  = (math.floor(L/90)) * 90
+    RAquadrant = (math.floor(RA/90)) * 90
+    RA = RA + (Lquadrant - RAquadrant)
+    RA = RA / 15
+
+    sinDec = 0.39782 * sin(L)
+    cosDec = cos(asin(sinDec))
+
+    cosH = (cos(zenith) - (sinDec * sin(lat))) / (cosDec * cos(lat))
+
+    if (cosH >  1):
+      pass
+    else:
+      pass
+
+    if sunrise:
+      H = 360 - acos(cosH)
+    else:
+      H = acos(cosH)
+
+    H = H / 15
+    T = H + RA - (0.06571 * t) - 6.622
+
+    UT = T - lngHour
+    UT %= 24
+
+    suntime = 
+    
+    return
+
+
+    # _ = dict()
+    # _['hour'], remainder = int(UT), (UT - int(UT))*3600
+    # _['minute'], _['second'] = divmod(remainder, 60)
+    # _['sub'] = 100000 * (_['second'] - int(_['second']))
+
+    for i in _:
+        _[i] = int(_[i])
+    return fmt.format(**_)
+
+def acos(x):
+    return degrees(math.acos(x))
+
+def asin(x):
+    return degrees(math.asin(x))
+
+def atan(x):
+    return degrees(math.atan(x))
+
+def sin(deg):
+    return math.sin(radians(deg))
+
+def cos(deg):
+    return math.cos(radians(deg))
+
+def tan(deg):
+    return math.tan(radians(deg))
+
+def radians(deg):
+    return deg * math.pi / 180
+
+def degrees(rad):
+    return rad * 180 / math.pi
 
 
 os.system("clear")
@@ -430,16 +513,14 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
-            leap_stats = ["LEAP DRIFT",
-                          leap_shift(_now.astimezone(), "{hour:02}:{minute:02}:{second:02}.{sub:}"),
-                          ' ' * 10,
-                          ' ' * 10,
-                          ' ' * 10,
+            leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:}"),
+                          "SR: " + sunriseset(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:}", sunrise=True, ),
+                          "SS: " + sunriseset(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:}", sunrise=False, ),
+                          ' ' * 18,
+                          ' ' * 18,
                           ]
 
             for i in range(0, len(time_zone_list), 2):
-                #time0 = datetime.now(time_zone_list[i][1]) 
-                #time1 = datetime.now(time_zone_list[i + 1][1])
                 time0 = _now.astimezone(time_zone_list[i][1])
                 time1 = _now.astimezone(time_zone_list[i+1][1])
 
@@ -464,27 +545,27 @@ def main():
                         flash1 = not (u_second < flash_dur)
 
 
-                if time0.day > now.day:
+                if time0.day > _now.astimezone().day:
                     sign0 = "+"
-                elif time0.day < now.day:
+                elif time0.day < _now.astimezone().day:
                     sign0 = "-"
                 else:
                     sign0 = ' '
 
-                if time1.day > now.day:
+                if time1.day > _now.astimezone().day:
                     sign1 = "+"
-                elif time1.day < now.day:
+                elif time1.day < _now.astimezone().day:
                     sign1 = "-"
                 else:
                     sign1 = ' '
 
-                time_str0 = time0.strftime("%I:%M %p").upper() + sign0
-                time_str1 = time1.strftime("%I:%M %p").upper() + sign1
+                time_str0 = sign0 + time0.strftime("%H:%M").upper()
+                time_str1 = sign1 + time1.strftime("%H:%M").upper()
 
                 padding = (columns - 60) * ' '
 
-                screen +=  v_bar + highlight[flash0] + (" {0:>9}: {1:9} ").format(time_zone_list[i][0], time_str0) + highlight[0] + b_var_single
-                screen += highlight[flash1] + (" {0:>9}: {1:9} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
+                screen +=  v_bar + highlight[flash0] + (" {0:>9}:{1:6} ").format(time_zone_list[i][0], time_str0) + highlight[0] + b_var_single
+                screen += highlight[flash1] + (" {0:>9}:{1:6} ").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
                 
                 screen += "\n"
