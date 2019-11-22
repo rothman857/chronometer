@@ -545,7 +545,7 @@ def main():
                 minute, second = divmod(remainder, 60)
                 sub = 100000 * (second - int(second))
                 sign = ' ' if s > 0 else '-'
-                suntime[i] = '{}{:02}:{:02}:{:02}.{:04}'.format(sign, int(abs(hour)), int(minute), int(second), int(sub))
+                suntime[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(abs(hour)), int(minute), int(second), int(sub))
 
                 # _['hour'], remainder = divmod(countdown, 3600)
     # _['minute'], _['second'] = divmod(remainder, 60)
