@@ -533,7 +533,7 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
-            leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:}"),
+            leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
                           "SR: " + sunriseset(_now, sunrise=True, fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
                           "SS: " + sunriseset(_now, sunrise=False, fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
                           ' ' * 18,
