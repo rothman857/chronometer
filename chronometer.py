@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-from datetime import datetime, timedelta
-import time
+from datetime import datetime, timedelta, time
+import time as t
 import os
 import threading
 import subprocess
@@ -317,9 +317,15 @@ def dbg(a, b):
         input()
     return
 
-def sunriseset(dt, fmt, sunrise=True): # https://edwilliams.org/sunrise_sunset_algorithm.htm  
-    zenith = 96
-    N = day_of_year(dt)
+def sunriseset(dt, sunrise, fmt): # https://edwilliams.org/sunrise_sunset_algorithm.htm  
+    #zenith:
+	# offical      = 90 degrees 50' = 90.83333
+    # civil        = 96 degrees
+	# nautical     = 102 degrees
+	# astronomical = 108 degrees
+    zenith = 90.83333
+    #dt = dt.astimezone()
+    N = day_of_year(dt.astimezone())
     lngHour = lon / 15
     if sunrise:
         t = N + ((6 - lngHour) / 24)
@@ -357,20 +363,34 @@ def sunriseset(dt, fmt, sunrise=True): # https://edwilliams.org/sunrise_sunset_a
 
     UT = T - lngHour
     UT %= 24
-
-    suntime = 
     
-    return
+    hour = int(UT)
+    minute, second = divmod((UT-hour)*3600, 60)
+    sub = (second-int(second)) * 100000
 
 
-    # _ = dict()
-    # _['hour'], remainder = int(UT), (UT - int(UT))*3600
-    # _['minute'], _['second'] = divmod(remainder, 60)
-    # _['sub'] = 100000 * (_['second'] - int(_['second']))
+    suntime = time(hour=hour,
+                   minute=int(minute),
+                   second = int(second),
+                   microsecond=int(sub))
+
+    suntime = datetime.combine(dt, suntime).replace(tzinfo=utc).astimezone()
+    countdown = (suntime - dt).total_seconds() % 86400
+
+    _ = dict()
+    _['hour'], remainder = divmod(countdown, 3600)
+    _['minute'], _['second'] = divmod(remainder, 60)
+    _['sub'] = 100000 * (_['second'] - int(_['second']))
+
+
+    _['sign'] = ' ' if countdown > 0 else ''
 
     for i in _:
-        _[i] = int(_[i])
-    return fmt.format(**_)
+        if isinstance(_[i], float):
+            _[i] = int(_[i])
+    
+    return str(fmt.format(**_))
+    #return suntime.strftime("%H:%M:%S.%f")[:-1]
 
 def acos(x):
     return degrees(math.acos(x))
@@ -422,9 +442,9 @@ def main():
     while True:
         ntp_id_str = str(ntpid)
         try:
-            time.sleep(refresh)
+            t.sleep(refresh)
             start_time = datetime.utcnow()
-            offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
+            offset = -(t.timezone if (t.localtime().tm_isdst == 0) else t.altzone)/(3600)
             now = start_time + loop_time
             if args.d:
                 now = dbg_override + (start_time - dbg_start)
@@ -433,9 +453,9 @@ def main():
             utcnow = now
             cetnow = utcnow + timedelta(hours=1)
 
-            is_daylight_savings = time.localtime().tm_isdst
+            is_daylight_savings = t.localtime().tm_isdst
 
-            current_tz = time.tzname[is_daylight_savings]
+            current_tz = t.tzname[is_daylight_savings]
 
             rows = os.get_terminal_size().lines
             columns = os.get_terminal_size().columns
@@ -514,8 +534,8 @@ def main():
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
             leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:}"),
-                          "SR: " + sunriseset(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:}", sunrise=True, ),
-                          "SS: " + sunriseset(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:}", sunrise=False, ),
+                          "SR: " + sunriseset(_now, sunrise=True, fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
+                          "SS: " + sunriseset(_now, sunrise=False, fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
                           ' ' * 18,
                           ' ' * 18,
                           ]
@@ -672,11 +692,11 @@ def ntp_daemon():
             is_connected = False
             ntpid = e
 
-        time.sleep(15)
+        t.sleep(15)
 if __name__ == "__main__":
-    t = threading.Thread(target=ntp_daemon)
-    t.setDaemon(True)
-    t.start()
+    thread = threading.Thread(target=ntp_daemon)
+    thread.setDaemon(True)
+    thread.start()
     main()
     os.system("clear")
     os.system("setterm -cursor on")
