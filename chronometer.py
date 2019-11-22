@@ -317,7 +317,7 @@ def dbg(a, b):
         input()
     return
 
-def sunriseset(dt, sunrise, fmt): # https://edwilliams.org/sunrise_sunset_algorithm.htm  
+def sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.htm  
     #zenith:
 	# offical      = 90 degrees 50' = 90.83333
     # civil        = 96 degrees
@@ -375,21 +375,21 @@ def sunriseset(dt, sunrise, fmt): # https://edwilliams.org/sunrise_sunset_algori
                    microsecond=int(sub))
 
     suntime = datetime.combine(dt, suntime).replace(tzinfo=utc).astimezone()
-    countdown = (suntime - dt).total_seconds()# % 86400
+    countdown = (suntime - dt).total_seconds()
 
-    _ = dict()
-    _['hour'], remainder = divmod(countdown, 3600)
-    _['minute'], _['second'] = divmod(remainder, 60)
-    _['sub'] = 100000 * (_['second'] - int(_['second']))
-    _['sign'] = ' ' if countdown > 0 else '-'
-    _['hour'] = abs(_['hour'])
+    # _ = dict()
+    # _['hour'], remainder = divmod(countdown, 3600)
+    # _['minute'], _['second'] = divmod(remainder, 60)
+    # _['sub'] = 100000 * (_['second'] - int(_['second']))
+    # _['sign'] = ' ' if countdown > 0 else '-'
+    # _['hour'] = abs(_['hour'])
 
 
-    for i in _:
-        if isinstance(_[i], float):
-            _[i] = int(_[i])
+    # for i in _:
+    #     if isinstance(_[i], float):
+    #         _[i] = int(_[i])
     
-    return str(fmt.format(**_))
+    return countdown
     #return suntime.strftime("%H:%M:%S.%f")[:-1]
 
 def acos(x):
@@ -533,10 +533,29 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
+
+            suntime = [sunriseset(_now, sunrise=True),
+                       sunriseset(_now, sunrise=False)]
+            
+            diff0 = (suntime[1] - suntime[0])/864
+            diff1 = 100 - diff0
+            for i, s in enumerate(suntime):
+                hour, remainder = divmod(s, 3600)
+                minute, second = divmod(remainder, 60)
+                sub = 100000 * (second - int(second))
+                sign = ' ' if s > 0 else '-'
+                suntime[i] = '{}{:02}:{:02}:{:02}.{:04}'.format(sign, int(abs(hour)), int(minute), int(second), int(sub))
+
+                # _['hour'], remainder = divmod(countdown, 3600)
+    # _['minute'], _['second'] = divmod(remainder, 60)
+    # _['sub'] = 100000 * (_['second'] - int(_['second']))
+            
+            
+
             leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
-                          "SR:" + sunriseset(_now, sunrise=True, fmt = "{sign}{hour:02}:{minute:02}:{second:02}.{sub:05}"),
-                          "SS:" + sunriseset(_now, sunrise=False, fmt = "{sign}{hour:02}:{minute:02}:{second:02}.{sub:05}"),
-                          ' ' * 18,
+                          "SR:" + suntime[0],
+                          "SS:" + suntime[1],
+                          "DN%: " + "{}%|{}%".format(float_fixed(diff0, 5, False), float_fixed(diff1, 5, False)),
                           ' ' * 18,
                           ]
 
