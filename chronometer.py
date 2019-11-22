@@ -318,7 +318,7 @@ def dbg(a, b):
         input()
     return
 
-def sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.htm  
+def _sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.htm  
 
     zenith = 90.83333 # Official (90 degrees 50')
     #zenith = 108 # Civil
@@ -394,7 +394,7 @@ def sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.h
     return countdown
     #return suntime.strftime("%H:%M:%S.%f")[:-1]
 
-def sunriseset2(dt): # https://en.wikipedia.org/wiki/Sunrise_equation
+def sunriseset(dt, sunrise = True): # https://en.wikipedia.org/wiki/Sunrise_equation
     n = int(julian_date(dt)) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
     J_star = n - (lon/360) # Mean Solar Noon
     M = (357.5291 + 0.98560028 * J_star) % 360 # Solar mean anomaly
@@ -410,7 +410,7 @@ def sunriseset2(dt): # https://en.wikipedia.org/wiki/Sunrise_equation
     t_rise = (jul_to_greg(J_rise).astimezone() - dt.astimezone()).total_seconds()
     t_set = (jul_to_greg(J_set).astimezone() - dt.astimezone()).total_seconds()
 
-    return [t_rise, t_set]
+    return t_rise if sunrise else t_set
 
 
 
@@ -570,26 +570,19 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
-
-            #suntime = [sunriseset(_now, sunrise=True),
-            #            sunriseset(_now, sunrise=False)]
-            suntime = sunriseset2(_now)
+            sunrise = sunriseset(_now, sunrise=True)
+            sunset = sunriseset(_now, sunrise=False)
+            suntime = [None, None]
             
-            diff0 = (suntime[1] - suntime[0])/864
+            diff0 = (sunset - sunrise)/864
             diff1 = 100 - diff0
-            for i, s in enumerate(suntime):
-                hour, remainder = divmod(s, 3600)
-                minute, second = divmod(remainder, 60)
-                sub = 100000 * (second - int(second))
+            for i, s in enumerate([sunrise, sunset]):
+                hours, remainder = divmod(abs(s), 3600)
+                minutes, seconds = divmod(remainder, 60)
+                subs = 100000 * (seconds - int(seconds))
                 sign = ' ' if s > 0 else '-'
-                suntime[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(abs(hour)), int(minute), int(second), int(sub))
-
-                # _['hour'], remainder = divmod(countdown, 3600)
-    # _['minute'], _['second'] = divmod(remainder, 60)
-    # _['sub'] = 100000 * (_['second'] - int(_['second']))
+                suntime[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
             
-            
-
             leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
                           h_bar_single * 18,
                           "SR:" + suntime[0],
