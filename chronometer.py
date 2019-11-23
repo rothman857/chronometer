@@ -410,9 +410,8 @@ def sunriseset(dt, sunrise = True, dbg = False, offset = 0): # https://en.wikipe
 
     t_rise = (jul_to_greg(J_rise) - dt).total_seconds()
     t_set = (jul_to_greg(J_set) - dt).total_seconds()
-    dbgstr = n
 
-    return str(dbgstr)[:18] if dbg else (t_rise if sunrise else t_set)
+    return t_rise if sunrise else t_set
 
 
 
@@ -576,6 +575,9 @@ def main():
             sunset = sunriseset(_now, sunrise=False)
             suntime = [None, None]
 
+            diff0 = (sunset - sunrise)/864
+            diff1 = 100 - diff0
+
             if sunrise < -43200:
                 sunrise = sunriseset(_now, sunrise=True, offset=1)
             if sunset < -43200:
@@ -583,8 +585,7 @@ def main():
 
             
             
-            diff0 = (sunset - sunrise)/864
-            diff1 = 100 - diff0
+            
             for i, s in enumerate([sunrise, sunset]):
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
@@ -593,8 +594,7 @@ def main():
                 suntime[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
             
             leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
-                          #h_bar_single * 18,
-                          sunriseset(_now, sunrise=False, dbg=True),
+                          h_bar_single * 18,
                           "SR:" + suntime[0],
                           "SS:" + suntime[1],
                           "DNR:" + " {}%/{}%".format(float_fixed(diff0, 5, False), float_fixed(diff1, 5, False))
