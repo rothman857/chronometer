@@ -394,8 +394,9 @@ def _sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.
     return countdown
     #return suntime.strftime("%H:%M:%S.%f")[:-1]
 
-def sunriseset(dt, sunrise = True): # https://en.wikipedia.org/wiki/Sunrise_equation
-    n = int(julian_date(dt)) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
+def sunriseset(dt, sunrise = True, dbg = False, offset = 0): # https://en.wikipedia.org/wiki/Sunrise_equation
+    n = julian_date(dt) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
+    n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()//86400 + offset
     J_star = n - (lon/360) # Mean Solar Noon
     M = (357.5291 + 0.98560028 * J_star) % 360 # Solar mean anomaly
     C = 1.9148 * sin(M) + 0.0200*sin(2*M) + 0.0003 * sin(3*M) # Equation of the center
@@ -407,10 +408,11 @@ def sunriseset(dt, sunrise = True): # https://en.wikipedia.org/wiki/Sunrise_equa
     J_rise =J_transit - (w_0/360)
     J_set = J_transit + (w_0/360)
 
-    t_rise = (jul_to_greg(J_rise).astimezone() - dt.astimezone()).total_seconds()
-    t_set = (jul_to_greg(J_set).astimezone() - dt.astimezone()).total_seconds()
+    t_rise = (jul_to_greg(J_rise) - dt).total_seconds()
+    t_set = (jul_to_greg(J_set) - dt).total_seconds()
+    dbgstr = n
 
-    return t_rise if sunrise else t_set
+    return str(dbgstr)[:18] if dbg else (t_rise if sunrise else t_set)
 
 
 
@@ -449,7 +451,7 @@ def jul_to_greg(J):
     D = (h % 153) // 5 + 1
     M = ((h // 153 + 2) % 12) + 1
     Y = (e // 1461) - 4716 + (12 + 2 - M) // 12
-    return (datetime(year=Y, day=D, month=M) + timedelta(seconds = 86400 * (J - _J))).replace(tzinfo=utc)
+    return (datetime(year=Y, day=D, month=M).replace(tzinfo=utc).astimezone() + timedelta(seconds = 86400 * (J - _J)))
 
 
 
@@ -573,6 +575,13 @@ def main():
             sunrise = sunriseset(_now, sunrise=True)
             sunset = sunriseset(_now, sunrise=False)
             suntime = [None, None]
+
+            if sunrise < -43200:
+                sunrise = sunriseset(_now, sunrise=True, offset=1)
+            if sunset < -43200:
+                sunset = sunriseset(_now, sunrise=False, offset=1)
+
+            
             
             diff0 = (sunset - sunrise)/864
             diff1 = 100 - diff0
@@ -584,7 +593,8 @@ def main():
                 suntime[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
             
             leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
-                          h_bar_single * 18,
+                          #h_bar_single * 18,
+                          sunriseset(_now, sunrise=False, dbg=True),
                           "SR:" + suntime[0],
                           "SS:" + suntime[1],
                           "DNR:" + " {}%/{}%".format(float_fixed(diff0, 5, False), float_fixed(diff1, 5, False))
