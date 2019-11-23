@@ -394,9 +394,12 @@ def _sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.
     return countdown
     #return suntime.strftime("%H:%M:%S.%f")[:-1]
 
-def sunriseset(dt, sunrise = True, dbg = False, offset = 0): # https://en.wikipedia.org/wiki/Sunrise_equation
+def sunriseset(dt, sunrise = True, dbg = False, offset = 0, fixed = False): # https://en.wikipedia.org/wiki/Sunrise_equation
     n = julian_date(dt) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
-    n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()//86400 + offset
+    _n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()//86400 + offset
+
+    n = n if fixed else _n
+
     J_star = n - (lon/360) # Mean Solar Noon
     M = (357.5291 + 0.98560028 * J_star) % 360 # Solar mean anomaly
     C = 1.9148 * sin(M) + 0.0200*sin(2*M) + 0.0003 * sin(3*M) # Equation of the center
@@ -573,10 +576,12 @@ def main():
 
             sunrise = sunriseset(_now, sunrise=True)
             sunset = sunriseset(_now, sunrise=False)
-            suntime = [None, None]
+            suntime = [None, None, None]
 
-            diff0 = (sunset - sunrise)/864
-            diff1 = 100 - diff0
+            # diff0 = (sunset - sunrise)/864
+            # diff1 = 100 - diff0
+
+            diff = sunriseset(_now, sunrise=False, fixed=True) - sunriseset(_now, sunrise=True, fixed=True)
 
             if sunrise < -43200:
                 sunrise = sunriseset(_now, sunrise=True, offset=1)
@@ -586,7 +591,7 @@ def main():
             
             
             
-            for i, s in enumerate([sunrise, sunset]):
+            for i, s in enumerate([sunrise, sunset, diff]):
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
                 subs = 100000 * (seconds - int(seconds))
@@ -597,7 +602,7 @@ def main():
                           h_bar_single * 18,
                           "SR:" + suntime[0],
                           "SS:" + suntime[1],
-                          "DNR:" + " {}%/{}%".format(float_fixed(diff0, 5, False), float_fixed(diff1, 5, False))
+                          "DD:" + suntime[2]
                           ]
 
             for i in range(0, len(time_zone_list), 2):
