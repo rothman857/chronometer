@@ -396,10 +396,10 @@ def _sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.
 
 def sunriseset(dt, sunrise = True, dbg = False, offset = 0, fixed = False): # https://en.wikipedia.org/wiki/Sunrise_equation
     n = julian_date(dt) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
-    _n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()//86400 + offset
+    _n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()//86400
 
     n = n if fixed else _n
-
+    n += offset
     J_star = n - (lon/360) # Mean Solar Noon
     M = (357.5291 + 0.98560028 * J_star) % 360 # Solar mean anomaly
     C = 1.9148 * sin(M) + 0.0200*sin(2*M) + 0.0003 * sin(3*M) # Equation of the center
