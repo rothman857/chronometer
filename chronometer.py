@@ -186,10 +186,14 @@ def metric_strf(day_percent, fmt):
     return fmt.format(**_)
 
 
-def float_fixed(flt, wd, sign):
+def float_fixed(flt, wd, sign = False):
     wd = str(wd)
     sign = "+" if sign else ""
     return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
+
+def ff(value, width, sign = False):
+    integer_digits = len(str(int(value)))
+    return round(value, width - integer_digits - 1)
 
 
 def get_relative_date(ordinal, weekday, month, year):
@@ -396,7 +400,7 @@ def _sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.
 
 def sunriseset(dt, sunrise = True, dbg = False, offset = 0, fixed = False): # https://en.wikipedia.org/wiki/Sunrise_equation
     n = julian_date(dt) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
-    _n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()//86400
+    _n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()/86400
 
     n = n if fixed else _n
     n += offset
