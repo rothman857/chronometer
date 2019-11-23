@@ -555,7 +555,7 @@ def main():
                           draw_progress_bar(width=(columns - 19), max=1, value=percent),
                           100 * (percent))
 
-            screen += center_l + h_bar * (columns - 2) + center_r + "\n"
+            screen += center_l + h_bar * (columns - 23) + h_bar_down_connect + h_bar * 20 + center_r + "\n"
 
             dst_str[0] = "{:^8}".format("INT FXD:")
             dst_str[1] = int_fix_date(_now.astimezone())
@@ -585,7 +585,7 @@ def main():
             # diff0 = (sunset - sunrise)/864
             # diff1 = 100 - diff0
 
-            diff = sunriseset(_now, sunrise=False, fixed=True) - sunriseset(_now, sunrise=True, fixed=True)
+            diff = sunriseset(_now, sunrise=True, fixed=True) - sunriseset(_now, sunrise=False, fixed=True)
 
             if sunrise < -43200:
                 sunrise = sunriseset(_now, sunrise=True, offset=1)
@@ -599,7 +599,7 @@ def main():
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
                 subs = 100000 * (seconds - int(seconds))
-                sign = ' ' if s > 0 else '-'
+                sign = '-' if s > 0 else ' '
                 suntime[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
             
             leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
@@ -659,7 +659,7 @@ def main():
                 
                 screen += "\n"
 
-            screen += center_l + h_bar * (columns - 27) + h_bar_down_connect + h_bar * 13 + h_bar_down_connect + 10 * h_bar + center_r + "\n"
+            screen += center_l + h_bar * (columns - 27) + h_bar_down_connect + h_bar * 3 + h_bar_up_connect + h_bar * 9 + h_bar_down_connect + 10 * h_bar + center_r + "\n"
 
             screen += v_bar + " " + utc_str + " " + b_var_single + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 19) + v_bar + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
             screen += v_bar + " " + metric_str + " " + b_var_single + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 19) + v_bar + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
