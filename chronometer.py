@@ -398,7 +398,7 @@ def _sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.
     return countdown
     #return suntime.strftime("%H:%M:%S.%f")[:-1]
 
-def sunriseset(dt, sunrise = True, dbg = False, offset = 0, fixed = False): # https://en.wikipedia.org/wiki/Sunrise_equation
+def sunriseset(dt, offset = 0, fixed = False, event = ''): # https://en.wikipedia.org/wiki/Sunrise_equation
     n = julian_date(dt) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
     _n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()//86400
 
@@ -417,8 +417,16 @@ def sunriseset(dt, sunrise = True, dbg = False, offset = 0, fixed = False): # ht
 
     t_rise = (jul_to_greg(J_rise) - dt).total_seconds()
     t_set = (jul_to_greg(J_set) - dt).total_seconds()
+    t_noon = (jul_to_greg(J_transit) - dt).total_seconds()
 
-    return t_rise if sunrise else t_set
+    if event == '':
+        return t_rise, t_set, t_noon
+    elif event == 'sunrise':
+        return t_rise
+    elif event == 'sunset':
+        return t_set
+    elif event == 'noon':
+        return t_noon
 
 
 
@@ -570,7 +578,15 @@ def main():
             day_percent_complete_utc = (utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000) / 86400
             day_percent_complete_cet = (cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000) / 86400
 
+            sunrise, sunset, sol_noon = sunriseset(_now)
+
+            
+            
+
             solar_str = str(solar_time(_now.astimezone(), lon, offset, "SOL: {hour:02}:{minute:02}:{second:02}"))
+            solar_str = "SOL: " + (_now.astimezone().replace(hour=12, minute=0, second=0, microsecond=0) - timedelta(seconds=sol_noon)).strftime(
+                '%H:%M:%S'
+            )
             lst_str = sidereal_time(_now.astimezone(), lon, offset, "LST: {hour:02}:{minute:02}:{second:02}")
             metric_str = metric_strf(day_percent_complete, "MET: {hours:02}:{minutes:02}:{seconds:02}")
             hex_str = hex_strf(day_percent_complete, "HEX: {hours:1X}_{minutes:02X}_{seconds:1X}.{sub:03X}")
@@ -578,23 +594,23 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
-            sunrise = sunriseset(_now, sunrise=True)
-            sunset = sunriseset(_now, sunrise=False)
-            suntime = [None, None, None]
+            #sunrise = sunriseset(_now, sunrise=True)
+            #sunset = sunriseset(_now, sunrise=False)
+            
 
             # diff0 = (sunset - sunrise)/864
             # diff1 = 100 - diff0
 
-            diff = sunriseset(_now, sunrise=True, fixed=True) - sunriseset(_now, sunrise=False, fixed=True)
+            diff = sunriseset(_now, event='sunrise', fixed=True) - sunriseset(_now, event='sunset', fixed=True)
 
             if sunrise < -43200:
-                sunrise = sunriseset(_now, sunrise=True, offset=1)
+                sunrise = sunriseset(_now, event='sunrise', offset=1)
             if sunset < -43200:
-                sunset = sunriseset(_now, sunrise=False, offset=1)
+                sunset = sunriseset(_now, event='sunset', offset=1)
 
             
             
-            
+            suntime = [None, None, None]
             for i, s in enumerate([sunrise, sunset, diff]):
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
