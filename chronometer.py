@@ -533,7 +533,7 @@ def main():
             b_clockdisp = ['', '', '', '']
 
             for i, row in enumerate(b_clock_mat_t):
-                b_clockdisp[i] = ''.join(row).replace("0", " " + binary[0]).replace("1", " " + binary[1])
+                b_clockdisp[i] = ''.join(row).replace("0", binary[0]).replace("1", binary[1])
 
             if (now.month == 12):
                 days_this_month = 31
@@ -565,10 +565,10 @@ def main():
 
             screen += center_l + h_bar * (columns - 23) + h_bar_down_connect + h_bar * 20 + center_r + "\n"
 
-            dst_str[0] = "{:^8}".format("INT FXD:")
-            dst_str[1] = int_fix_date(_now.astimezone())
-            dst_str[2] = "{:^8}".format("RED JUL:")
-            dst_str[3] = float_fixed(julian_date(date = utcnow, reduced=True), 8, False)
+            dst_str[0] = ("IFC: " + int_fix_date(_now.astimezone()))[:13]
+            dst_str[1] = ("RDJ: " + float_fixed(julian_date(date = utcnow, reduced=True), 8, False))
+            dst_str[2] = "PAX:         "
+            dst_str[3] = "AND:         "
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
@@ -675,13 +675,13 @@ def main():
                 
                 screen += "\n"
 
-            screen += center_l + h_bar * (columns - 27) + h_bar_down_connect + h_bar * 3 + h_bar_up_connect + h_bar * 9 + h_bar_down_connect + 10 * h_bar + center_r + "\n"
+            screen += center_l + h_bar * (columns - 27) + h_bar_down_connect + h_bar * 3 + h_bar_up_connect + h_bar * 4 + h_bar_down_connect + 15 * h_bar + center_r + "\n"
 
-            screen += v_bar + " " + utc_str + " " + b_var_single + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 19) + v_bar + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
-            screen += v_bar + " " + metric_str + " " + b_var_single + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 19) + v_bar + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
-            screen += v_bar + " " + solar_str + " " + b_var_single + " " + hex_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 19) + v_bar + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
-            screen += v_bar + " " + lst_str + " " + b_var_single + " " + net_str + " " * (columns - len(lst_str + hex_str + b_clockdisp[3]) - 19) + v_bar + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
-            screen += corner_ll + h_bar * (columns - 27) + h_bar_up_connect + h_bar * 13 + h_bar_up_connect + h_bar * 10 + corner_lr + "\n"
+            screen += v_bar + " " + utc_str + " " + b_var_single + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 25) + v_bar + ' ' + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
+            screen += v_bar + " " + metric_str + " " + b_var_single + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 25) + v_bar + ' ' + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
+            screen += v_bar + " " + solar_str + " " + b_var_single + " " + hex_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 25) + v_bar + ' ' + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
+            screen += v_bar + " " + lst_str + " " + b_var_single + " " + net_str + " " * (columns - len(lst_str + hex_str + b_clockdisp[3]) - 25) + v_bar + ' ' + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
+            screen += corner_ll + h_bar * (columns - 27) + h_bar_up_connect + h_bar * 8 + h_bar_up_connect + h_bar * 15 + corner_lr + "\n"
             ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
 
