@@ -146,6 +146,18 @@ greg_months = ["JAN",
                "NOV",
                "DEC",]
 
+annus_months = ["PRI",
+                "SEC",
+                "TER",
+                "QUA",
+                "QUI",
+                "SEX",
+                "SEP",
+                "OCT",
+                "NON",
+                "DEC"
+                ]
+
 twc_month_days = [31,30,30,31,30,30,31,30,30,31,30,30]
 
 
@@ -444,9 +456,11 @@ def sunriseset(dt, offset = 0, fixed = False, event = ''): # https://en.wikipedi
         return t_noon
 
 def twc_date(dt):
-    day = day_of_year(dt) + 1
+    day = day_of_year(dt)# + 1
     if is_leap_year(dt):
-        if day > 183:
+        if day == 366:
+            return "YEAR DAY"
+        elif day > 183:
             day -= 1
         elif day == 183:
             return "LEAP DAY"
@@ -461,6 +475,22 @@ def twc_date(dt):
                 break
     return '{} {:02}-{}'.format(weekday_abbr[weekday], day, greg_months[month])
 
+def and_date(dt):
+    day = day_of_year(dt) + 1
+    month = 0
+    weekday = day % 5
+
+    if day == 366:
+        return "LEAP DAY"
+        
+    for i in range(0,5):
+        for j in [36,37]:
+            if day - j > 0:
+                day -= j
+                month += 1
+            else:
+                break
+    return '{} {:02}-{}'.format(weekday, day, annus_months[month])
 
 
 
@@ -600,7 +630,7 @@ def main():
 
             dst_str[0] = ("IFC: " + int_fix_date(_now.astimezone()))[:13]
             dst_str[1] = "TWC: " + twc_date(_now.astimezone())
-            dst_str[2] = "AND:         "
+            dst_str[2] = "AND: " + and_date(_now.astimezone())
             dst_str[3] = ("RDJ: " + float_fixed(julian_date(date = utcnow, reduced=True), 8, False))
 
             unix_int = int(utcnow.timestamp())
