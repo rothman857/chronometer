@@ -133,6 +133,21 @@ ifc_months = ["JAN",
                "NOV",
                "DEC",]
 
+greg_months = ["JAN",
+               "FEB",
+               "MAR",
+               "APR",
+               "MAY",
+               "JUN",
+               "JUL",
+               "AUG",
+               "SEP",
+               "OCT",
+               "NOV",
+               "DEC",]
+
+twc_month_days = [31,30,30,31,30,30,31,30,30,31,30,30]
+
 
 def reset_cursor():
     print("\033[0;0H", end="")
@@ -428,6 +443,24 @@ def sunriseset(dt, offset = 0, fixed = False, event = ''): # https://en.wikipedi
     elif event == 'noon':
         return t_noon
 
+def twc_date(dt):
+    day = day_of_year(dt) + 1
+    if is_leap_year(dt):
+        if day > 183:
+            day -= 1
+        elif day == 183:
+            return "LEAP DAY"
+    weekday = day % 7
+    month = 0
+    for i in range(0,4):
+        for j in [31,30,30]:
+            if day - j > 0:
+                day -= j
+                month += 1
+            else:
+                break
+    return '{} {:02}-{}'.format(weekday_abbr[weekday], day, greg_months[month])
+
 
 
 
@@ -517,9 +550,9 @@ def main():
             reset_cursor()
             u_second = now.microsecond / 1000000
             print(themes[0], end="")
-            hour_binary = divmod(now.hour, 10)
-            minute_binary = divmod(now.minute, 10)
-            second_binary = divmod(now.second, 10)
+            hour_binary = divmod(_now.astimezone().hour, 10)
+            minute_binary = divmod(_now.astimezone().minute, 10)
+            second_binary = divmod(_now.astimezone().second, 10)
 
             b_clock_mat = [bin(hour_binary[0])[2:].zfill(4),
                            bin(hour_binary[1])[2:].zfill(4),
@@ -566,9 +599,9 @@ def main():
             screen += center_l + h_bar * (columns - 23) + h_bar_down_connect + h_bar * 20 + center_r + "\n"
 
             dst_str[0] = ("IFC: " + int_fix_date(_now.astimezone()))[:13]
-            dst_str[1] = ("RDJ: " + float_fixed(julian_date(date = utcnow, reduced=True), 8, False))
-            dst_str[2] = "PAX:         "
-            dst_str[3] = "AND:         "
+            dst_str[1] = "TWC: " + twc_date(_now.astimezone())
+            dst_str[2] = "AND:         "
+            dst_str[3] = ("RDJ: " + float_fixed(julian_date(date = utcnow, reduced=True), 8, False))
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
