@@ -158,8 +158,6 @@ annus_months = ["PRI",
                 "DEC"
                 ]
 
-twc_month_days = [31,30,30,31,30,30,31,30,30,31,30,30]
-
 
 def reset_cursor():
     print("\033[0;0H", end="")
@@ -631,7 +629,7 @@ def main():
             dst_str[0] = ("IFC: " + int_fix_date(_now.astimezone()))[:13]
             dst_str[1] = "TWC: " + twc_date(_now.astimezone())
             dst_str[2] = "AND: " + and_date(_now.astimezone())
-            dst_str[3] = ("RDJ: " + float_fixed(julian_date(date = utcnow, reduced=True), 8, False))
+            dst_str[3] = ("RJD: " + float_fixed(julian_date(date = utcnow, reduced=True), 8, False))
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
