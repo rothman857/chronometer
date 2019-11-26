@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta, time
 import time as t
+import json
 import os
 import threading
 import subprocess
@@ -26,34 +27,29 @@ if args.date:
 
 here = os.path.dirname(os.path.realpath(__file__))
 
-if os.path.exists(os.path.join(here, 'chrono-config')):
-    pass
+default_config = {'latitude': 40.7128,
+                  'longitude': -74.0060,
+                  'refresh': 0.001,
+                  'timezones': {'Eastern': 'US/Eastern',
+                                'Pacific': 'US/Pacific',
+                                'GMT': 'GMT',
+                                'Australia': 'Australia/Sydney',
+                                'Germany': 'Europe/Berlin',
+                                'Hong Kong': 'Asia/Hong_Kong',
+                                'India': 'Asia/Kolkata',
+                                'Japan': 'Asia/Tokyo',
+                                'Singapore': 'Singapore',
+                                'UK': 'Europe/London'}
+}
+
+if os.path.exists(os.path.join(here, '.config')):
+    with open(os.path.join(here, '.config')) as f:
+        running_config = json.load(f)
+
 else:
-    data = (
-        """# Raspberry Pi Internet Chronometer
-
-# West longitude is negative
-longitude -73.94388889
-latitude 40.66111111
-
-# Refresh rate in seconds.  Lower value = higher CPU%
-refresh .001
-
-# Must have 10 defined timezones.
-# Syntax: timezone <pytz name> <label>
-timezone US/Eastern         'EASTERN'
-timezone US/Pacific         'PACIFIC'
-timezone GMT                'GMT'
-timezone Australia/Sydney   'AUSTRALIA'
-timezone Europe/Berlin      'GERMANY'
-timezone Asia/Hong_Kong     'HONG KONG'
-timezone Asia/Kolkata       'INDIA'
-timezone Asia/Tokyo         'JAPAN'
-timezone Singapore          'SINGAPORE'
-timezone Europe/London      'UK'"""
-)
-    with open('chrono-config', 'w+') as f:
-        f.write(data)
+    with open(os.path.join(here, '.config'), 'w') as f:
+        json.dump(default_config, f, indent=4)
+        running_config = default_config
 
 
 if args.d:
@@ -61,29 +57,23 @@ if args.d:
     dbg_override = datetime.strptime(args.date, '%b %d %Y %I:%M:%S %p')
 
 random.seed()
-time_zone_list = []
-is_connected = False
 
-config_file = os.path.join(here, "chrono-config")
-config_file = open(config_file)
-for line in config_file:
-    setting = re.search(r"^([^#]\w+)\s+([\w.\/-]+)(\s+\'([\w ]+)\')*", line)
-    if setting:
-        if (setting.group(1) == "timezone"):
-            time_zone_list.append([setting.group(4), timezone(setting.group(2))])
-        if (setting.group(1) == "longitude"):
-            lon = float(setting.group(2))
-        if (setting.group(1) == "latitude"):
-            lat = float(setting.group(2))
-        if (setting.group(1) == "refresh"):
-            refresh = float(setting.group(2))
-config_file.close()
+is_connected = False
 
 themes = [colors.bg.black,      # background
           colors.fg.white,      # text
           colors.fg.lightblue,  # table borders
           colors.bg.lightblue,  # text highlight
           colors.fg.darkgray]   # progress bar dim
+
+lat = float(running_config['latitude'])
+lon = float(running_config['longitude'])
+refresh = float(running_config['refresh'])
+
+time_zone_list = []
+for tz in sorted(running_config['timezones'].keys(), key=len):
+    time_zone_list.append([tz.upper(), timezone(running_config['timezones'][tz])])
+
 
 SECOND = 0
 MINUTE = 1
@@ -454,14 +444,19 @@ def sunriseset(dt, offset = 0, fixed = False, event = ''): # https://en.wikipedi
         return t_noon
 
 def twc_date(dt):
-    day = day_of_year(dt)# + 1
+    _day = day_of_year(dt) + 1
+    day = _day
+    
     if is_leap_year(dt):
         if day == 366:
             return "YEAR DAY"
-        elif day > 183:
-            day -= 1
         elif day == 183:
             return "LEAP DAY"
+        elif day > 183:
+            day -= 1
+        
+    if day == 365:
+        return "YEAR DAY"
     weekday = day % 7
     month = 0
     for i in range(0,4):

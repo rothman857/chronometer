@@ -2,4 +2,4 @@
 *.swp
 *.log
 .vscode/
-chrono-config
+.config
