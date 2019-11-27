@@ -1,6 +1,7 @@
 #!/bin/sh
 # This script checks for a update before running the chronometer.
 # Add the folling line to /etc/rc.local (before 'exit(0)'
+# (Assuming pi is the username)
 #
 # sudo -H -u pi sh /full/path/to/launch.sh &
 #
