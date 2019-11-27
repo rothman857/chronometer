@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta, time, date
 import time as t
 import json
 import os
@@ -35,16 +35,17 @@ default_config = {'coordinates': {
                   'refresh': 0.001,
                   'timezones': {
                     '# Note':'Format = label: time_zone. (time_zone must be valid pytz time zone names.  10 times zones are required.)',
+                    'Pacific': 'US/Pacific',
+                    'Eastern': 'US/Eastern',
                     'Israel': 'Israel',
-                    'US WEST': 'US/Pacific',
                     'London': 'Europe/London',
-                    'Australia': 'Australia/Sydney',
+                    'Sydney': 'Australia/Sydney',
                     'Germany': 'Europe/Berlin',
                     'Hong Kong': 'Asia/Hong_Kong',
                     'India': 'Asia/Kolkata',
                     'Japan': 'Asia/Tokyo',
                     'Singapore': 'Singapore',
-                    'Greenwich': 'GMT'}
+                    }
 }
 
 if os.path.exists(os.path.join(here, '.config')) and not args.reset:
@@ -108,13 +109,19 @@ ntpdly = 0
 ntpstr = "-"
 ntpid = "---"
 
-weekday_abbr = ["S",
-                "U",
-                "M",
-                "T",
-                "W",
-                "R",
-                "F"]
+weekday_abbr = ["SA",
+                "SU",
+                "MO",
+                "TU",
+                "WW",
+                "TH",
+                "FR"]
+
+annus_day_abbr = ["PR",
+                  "SE",
+                  "TE",
+                  "QA",
+                  "QI"]
 
 #               Label       value precision
 time_table = [["S",    0,    10],
@@ -125,45 +132,6 @@ time_table = [["S",    0,    10],
               ["Y",      0,    10],
               ["C",   0,    10]]
 
-ifc_months = ["JAN",
-               "FEB",
-               "MAR",
-               "APR",
-               "MAY",
-               "JUN",
-               "SOL",
-               "JUL",
-               "AUG",
-               "SEP",
-               "OCT",
-               "NOV",
-               "DEC",]
-
-greg_months = ["JAN",
-               "FEB",
-               "MAR",
-               "APR",
-               "MAY",
-               "JUN",
-               "JUL",
-               "AUG",
-               "SEP",
-               "OCT",
-               "NOV",
-               "DEC",]
-
-annus_months = ["PRI",
-                "SEC",
-                "TER",
-                "QUA",
-                "QUI",
-                "SEX",
-                "SEP",
-                "OCT",
-                "NON",
-                "DEC"
-                ]
-
 
 def reset_cursor():
     print("\033[0;0H", end="")
@@ -172,6 +140,14 @@ def reset_cursor():
 def draw_progress_bar(*, min=0, width, max, value):
     level = int((width + 1) * (value - min)/(max - min))
     return (chr(0x2550) * level + colors.fg.darkgray + (chr(0x2500) * (width - level)))
+
+def get_local_date_format():
+    today = date.today()
+    today_str = today.strftime('%x').split('/')
+    if int(today_str[0]) == today.month and int(today_str[1]) == today.day:
+        return "{month:02}/{day:02}"
+    else:
+        return "{day:02}/{month:02}"
 
 
 def timedelta_strf(t_delta, fmt):
@@ -288,9 +264,8 @@ def int_fix_date(dt):
         m = 12
     
     w = ordinal % 7
-    weekday = weekday_abbr[w]
-    month = ifc_months[m]
-    return '{w} {d:02}-{m}'.format(m=month, w = weekday, d = d)
+    return weekday_abbr[w] + ' ' + get_local_date_format().format(month=m, day=d)
+    
 
 def leap_shift(dt, fmt):
     dt = dt.replace(tzinfo=None)
@@ -407,7 +382,7 @@ def twc_date(dt):
                 month += 1
             else:
                 break
-    return '{} {:02}-{}'.format(weekday_abbr[weekday], day, greg_months[month])
+    return weekday_abbr[weekday] + ' ' + get_local_date_format().format(month=month, day=day)
 
 def and_date(dt):
     day = day_of_year(dt) + 1
@@ -426,8 +401,7 @@ def and_date(dt):
                 month += 1
             else:
                 break
-    return '{} {:02}-{}'.format(weekday, day, annus_months[month])
-
+    return annus_day_abbr[weekday] + ' ' + get_local_date_format().format(month=month, day=day)
 
 
 def acos(x):
