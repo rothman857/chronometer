@@ -579,7 +579,7 @@ def main():
             sunrise, sunset, sol_noon = sunriseset(_now)
 
             solar_str = str(solar_time(_now.astimezone(), lon, offset, "SOL: {hour:02}:{minute:02}:{second:02}"))
-            solar_str = "SOL: " + (_now.astimezone().replace(hour=12, minute=0, second=0, microsecond=0) - timedelta(seconds=sol_noon)).strftime(
+            solar_str = "SOL: " + (_now.astimezone().replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(seconds=sol_noon)).strftime(
                 '%H:%M:%S'
             )
             lst_str = sidereal_time(_now.astimezone(), lon, offset, "LST: {hour:02}:{minute:02}:{second:02}")
