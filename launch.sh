@@ -1,14 +1,17 @@
-#!/bin/bash
+#!/bin/sh
 # This script checks for a update before running the chronometer.
-# Call this script from /etc/rc.local (with a trailing '&') to
-# automatically update the chronometer on reboot
+# Add the folling line to /etc/rc.local (before 'exit(0)'
+#
+# sh /full/path/to/launcher.sh &
+#
+# 
 
 # Wait for internet connection
 while :
 do
   sleep 1
 if (nc -zw1 google.com 80); then
-    echo "Found network"
+    echo "Device is online."
     break
   else
     echo "Waiting for network..."

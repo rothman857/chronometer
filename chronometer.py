@@ -27,19 +27,22 @@ if args.date:
 
 here = os.path.dirname(os.path.realpath(__file__))
 
-default_config = {'latitude': 40.7128,
-                  'longitude': -74.0060,
+default_config = {'_comment': 'West longitude is negative.',
+                  'coordinates': {
+                    'latitude': 40.7128,
+                    'longitude': -74.0060 },
                   'refresh': 0.001,
-                  'timezones': {'Eastern': 'US/Eastern',
-                                'Pacific': 'US/Pacific',
-                                'GMT': 'GMT',
-                                'Australia': 'Australia/Sydney',
-                                'Germany': 'Europe/Berlin',
-                                'Hong Kong': 'Asia/Hong_Kong',
-                                'India': 'Asia/Kolkata',
-                                'Japan': 'Asia/Tokyo',
-                                'Singapore': 'Singapore',
-                                'UK': 'Europe/London'}
+                  'timezones': {
+                    'Israel': 'Israel',
+                    'Pacific': 'US/Pacific',
+                    'London': 'Europe/London',
+                    'Australia': 'Australia/Sydney',
+                    'Germany': 'Europe/Berlin',
+                    'Hong Kong': 'Asia/Hong_Kong',
+                    'India': 'Asia/Kolkata',
+                    'Japan': 'Asia/Tokyo',
+                    'Singapore': 'Singapore',
+                    'Jerusalem': 'Asia/Jerusalem'}
 }
 
 if os.path.exists(os.path.join(here, '.config')):
@@ -48,7 +51,7 @@ if os.path.exists(os.path.join(here, '.config')):
 
 else:
     with open(os.path.join(here, '.config'), 'w') as f:
-        json.dump(default_config, f, indent=4)
+        json.dump(default_config, f, indent=2, sort_keys=True)
         running_config = default_config
 
 
@@ -66,8 +69,8 @@ themes = [colors.bg.black,      # background
           colors.bg.lightblue,  # text highlight
           colors.fg.darkgray]   # progress bar dim
 
-lat = float(running_config['latitude'])
-lon = float(running_config['longitude'])
+lat = float(running_config['coordinates']['latitude'])
+lon = float(running_config['coordinates']['longitude'])
 refresh = float(running_config['refresh'])
 
 time_zone_list = []
