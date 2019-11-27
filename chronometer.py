@@ -18,6 +18,7 @@ import pytz
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', action='store_true', help='Debug mode')
 ap.add_argument('--date', action='store', default=None)
+ap.add_argument('-r', '--reset', action='store_true', help='Reset .config file')
 args = ap.parse_args()
 
 utc = pytz.utc
@@ -45,14 +46,18 @@ default_config = {'_comment': 'West longitude is negative.',
                     'Greenwich': 'GMT'}
 }
 
-if os.path.exists(os.path.join(here, '.config')):
+if os.path.exists(os.path.join(here, '.config')) and not args.reset:
     with open(os.path.join(here, '.config')) as f:
         running_config = json.load(f)
 
 else:
-    with open(os.path.join(here, '.config'), 'w') as f:
+    with open(os.path.join(here, '.config'), 'w+') as f:
         json.dump(default_config, f, indent=2, sort_keys=True)
         running_config = default_config
+
+if args.reset:
+    print(".config reset to defaults.")
+    exit()
 
 
 if args.d:
@@ -68,15 +73,18 @@ themes = [colors.bg.black,      # background
           colors.fg.lightblue,  # table borders
           colors.bg.lightblue,  # text highlight
           colors.fg.darkgray]   # progress bar dim
+          
+try:
+    lat = float(running_config['coordinates']['latitude'])
+    lon = float(running_config['coordinates']['longitude'])
+    refresh = float(running_config['refresh'])
+    time_zone_list = []
+    for tz in sorted(running_config['timezones'].keys(), key=len):
+        time_zone_list.append([tz.upper(), timezone(running_config['timezones'][tz])])
 
-lat = float(running_config['coordinates']['latitude'])
-lon = float(running_config['coordinates']['longitude'])
-refresh = float(running_config['refresh'])
-
-time_zone_list = []
-for tz in sorted(running_config['timezones'].keys(), key=len):
-    time_zone_list.append([tz.upper(), timezone(running_config['timezones'][tz])])
-
+except KeyError as e:
+    print("Error reading .config ({}).  Please correct or reset using --reset.".format(e))
+    exit()
 
 SECOND = 0
 MINUTE = 1
@@ -340,68 +348,6 @@ def dbg(a, b):
         input()
     return
 
-def _sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.htm  
-
-    zenith = 90.83333 # Official (90 degrees 50')
-    #zenith = 108 # Civil
-    #zenith = 102 # Nautical
-    #zenith = 108 # Astronomical
-
-
-    #dt = dt.astimezone()
-    N = day_of_year(dt.astimezone())
-    lngHour = lon / 15
-    if sunrise:
-        t = N + ((6 - lngHour) / 24)
-    else:
-        t = N + ((18 - lngHour) / 24)
-
-    M = (0.9856 * t) - 3.289
-    L = M + (1.916 * sin(M)) + (0.020 * sin(2 * M)) + 282.634
-    L %= 360
-    RA = atan(0.91764 * tan(L))
-    RA %= 360
-
-    Lquadrant  = (math.floor(L/90)) * 90
-    RAquadrant = (math.floor(RA/90)) * 90
-    RA = RA + (Lquadrant - RAquadrant)
-    RA = RA / 15
-
-    sinDec = 0.39782 * sin(L)
-    cosDec = cos(asin(sinDec))
-
-    cosH = (cos(zenith) - (sinDec * sin(lat))) / (cosDec * cos(lat))
-
-    if (cosH >  1):
-      pass
-    else:
-      pass
-
-    if sunrise:
-      H = 360 - acos(cosH)
-    else:
-      H = acos(cosH)
-
-    H = H / 15
-    T = H + RA - (0.06571 * t) - 6.622
-
-    UT = T - lngHour
-    UT %= 24
-    
-    hour = int(UT)
-    minute, second = divmod((UT-hour)*3600, 60)
-    sub = (second-int(second)) * 100000
-
-
-    suntime = time(hour=hour,
-                   minute=int(minute),
-                   second = int(second),
-                   microsecond=int(sub))
-
-    suntime = datetime.combine(dt, suntime).replace(tzinfo=utc).astimezone()
-    countdown = (suntime - dt).total_seconds()
-    
-    return countdown
 
 def sunriseset(dt, offset = 0, fixed = False, event = ''): # https://en.wikipedia.org/wiki/Sunrise_equation
     n = julian_date(dt) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
@@ -420,9 +366,9 @@ def sunriseset(dt, offset = 0, fixed = False, event = ''): # https://en.wikipedi
     J_rise =J_transit - (w_0/360)
     J_set = J_transit + (w_0/360)
 
-    t_rise = (jul_to_greg(J_rise) - dt).total_seconds()
-    t_set = (jul_to_greg(J_set) - dt).total_seconds()
-    t_noon = (jul_to_greg(J_transit) - dt).total_seconds()
+    t_rise = (dt - jul_to_greg(J_rise)).total_seconds()
+    t_set = (dt - jul_to_greg(J_set)).total_seconds()
+    t_noon = (dt - jul_to_greg(J_transit)).total_seconds()
 
     if event == '':
         return t_rise, t_set, t_noon
@@ -640,17 +586,19 @@ def main():
 
             diff = sunriseset(_now, event='sunrise', fixed=True) - sunriseset(_now, event='sunset', fixed=True)
 
-            if sunrise < -43200:
+            if sunrise > 43200:
                 sunrise = sunriseset(_now, event='sunrise', offset=1)
-            if sunset < -43200:
-                sunset = sunriseset(_now, event='sunset', offset=1)     
+            if sunset > 43200:
+                sunset = sunriseset(_now, event='sunset', offset=1)
+            if sunset > 0 and sunrise > 0:
+                sunrise = sunriseset(_now, event='sunrise', offset=1)
             
             suntime = [None, None, None]
             for i, s in enumerate([sunrise, sunset, diff]):
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
                 subs = 100000 * (seconds - int(seconds))
-                sign = '-' if s > 0 else ' '
+                sign = '-' if s < 0 else ' '
                 suntime[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
             
             leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
