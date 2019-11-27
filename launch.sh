@@ -2,7 +2,7 @@
 # This script checks for a update before running the chronometer.
 # Add the folling line to /etc/rc.local (before 'exit(0)'
 #
-# sudo -H -u pi sh /full/path/to/launcher.sh &
+# sudo -H -u pi sh /full/path/to/launch.sh &
 #
 # exit(0)
 
@@ -21,6 +21,7 @@ done
 # Pull most recent code
 script_dir="$(dirname $0)"
 cd $script_dir
+echo "Updating and starting the Internet Chronometer..."
 git pull
 
 python3 chronometer.py
