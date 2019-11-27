@@ -28,14 +28,15 @@ if args.date:
 
 here = os.path.dirname(os.path.realpath(__file__))
 
-default_config = {'_comment': 'West longitude is negative.',
-                  'coordinates': {
+default_config = {'coordinates': {
+                    '# Note': 'Decimal notation only.  West longitude is negative.',
                     'latitude': 40.7128,
                     'longitude': -74.0060 },
                   'refresh': 0.001,
                   'timezones': {
+                    '# Note':'Format = label: time_zone. (time_zone must be valid pytz time zone names.  10 times zones are required.)',
                     'Israel': 'Israel',
-                    'Pacific': 'US/Pacific',
+                    'US WEST': 'US/Pacific',
                     'London': 'Europe/London',
                     'Australia': 'Australia/Sydney',
                     'Germany': 'Europe/Berlin',
@@ -54,6 +55,8 @@ else:
     with open(os.path.join(here, '.config'), 'w+') as f:
         json.dump(default_config, f, indent=2, sort_keys=True)
         running_config = default_config
+        print("Initial .config file generated.  Please update it with coordinates and desired timezones before running chronometer.py again.")
+        exit()
 
 if args.reset:
     print(".config reset to defaults.")
@@ -80,6 +83,8 @@ try:
     refresh = float(running_config['refresh'])
     time_zone_list = []
     for tz in sorted(running_config['timezones'].keys(), key=len):
+        if tz[0] == '#':
+            continue
         time_zone_list.append([tz.upper(), timezone(running_config['timezones'][tz])])
 
 except KeyError as e:

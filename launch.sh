@@ -2,9 +2,9 @@
 # This script checks for a update before running the chronometer.
 # Add the folling line to /etc/rc.local (before 'exit(0)'
 #
-# sh /full/path/to/launcher.sh &
+# sudo -H -u pi sh /full/path/to/launcher.sh &
 #
-# 
+# exit(0)
 
 # Wait for internet connection
 while :
