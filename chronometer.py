@@ -34,7 +34,7 @@ default_config = {'coordinates': {
                     'longitude': -74.0060 },
                   'refresh': 0.001,
                   'timezones': {
-                    '# Note':'Format = label: time_zone. (time_zone must be valid pytz time zone names.  10 times zones are required.)',
+                    '# Note':'Format = label: time_zone. (time_zone must be a valid pytz time zone name.  10 times zones are required.)',
                     'Pacific': 'US/Pacific',
                     'Eastern': 'US/Eastern',
                     'Israel': 'Israel',
