@@ -614,7 +614,7 @@ def main():
 
                 flash0 = False
                 flash1 = False
-                flash_dur = .15
+                flash_dur = .1
 
                 if (time0.weekday() < 5):
                     if (time0.hour > 8 and time0.hour < 17):
