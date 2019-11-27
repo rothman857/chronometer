@@ -42,7 +42,7 @@ default_config = {'_comment': 'West longitude is negative.',
                     'India': 'Asia/Kolkata',
                     'Japan': 'Asia/Tokyo',
                     'Singapore': 'Singapore',
-                    'Jerusalem': 'Asia/Jerusalem'}
+                    'Greenwich': 'GMT'}
 }
 
 if os.path.exists(os.path.join(here, '.config')):
@@ -400,21 +400,8 @@ def _sunriseset(dt, sunrise): # https://edwilliams.org/sunrise_sunset_algorithm.
 
     suntime = datetime.combine(dt, suntime).replace(tzinfo=utc).astimezone()
     countdown = (suntime - dt).total_seconds()
-
-    # _ = dict()
-    # _['hour'], remainder = divmod(countdown, 3600)
-    # _['minute'], _['second'] = divmod(remainder, 60)
-    # _['sub'] = 100000 * (_['second'] - int(_['second']))
-    # _['sign'] = ' ' if countdown > 0 else '-'
-    # _['hour'] = abs(_['hour'])
-
-
-    # for i in _:
-    #     if isinstance(_[i], float):
-    #         _[i] = int(_[i])
     
     return countdown
-    #return suntime.strftime("%H:%M:%S.%f")[:-1]
 
 def sunriseset(dt, offset = 0, fixed = False, event = ''): # https://en.wikipedia.org/wiki/Sunrise_equation
     n = julian_date(dt) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
@@ -543,7 +530,7 @@ def main():
     h_bar_single = themes[2] + chr(0x2500) + themes[1]
     h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
     h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
-#h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
+#   h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
     corner_ll = themes[2] + chr(0x255A) + themes[1]
     corner_lr = themes[2] + chr(0x255D) + themes[1]
     corner_ul = themes[2] + chr(0x2554) + themes[1]
@@ -601,7 +588,6 @@ def main():
             else:
                 days_this_month = (datetime(now.year, now.month + 1, 1) - datetime(now.year, now.month, 1)).days
 
-            #day_of_year = (now - datetime(now.year, 1, 1)).days
             days_this_year = (datetime(now.year + 1, 1, 1) - datetime(now.year, 1, 1)).days
 
             time_table[SECOND][VALUE] = _now.astimezone().second + u_second + random.randint(0,9999)/10000000000
@@ -626,10 +612,10 @@ def main():
 
             screen += center_l + h_bar * (columns - 23) + h_bar_down_connect + h_bar * 20 + center_r + "\n"
 
-            dst_str[0] = ("IFC: " + int_fix_date(_now.astimezone()))[:13]
+            dst_str[0] = "IFC: " + int_fix_date(_now.astimezone())
             dst_str[1] = "TWC: " + twc_date(_now.astimezone())
             dst_str[2] = "AND: " + and_date(_now.astimezone())
-            dst_str[3] = ("RJD: " + float_fixed(julian_date(date = utcnow, reduced=True), 8, False))
+            dst_str[3] = "RJD: " + float_fixed(julian_date(date = utcnow, reduced=True), 8, False)
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
@@ -640,9 +626,6 @@ def main():
             day_percent_complete_cet = (cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000) / 86400
 
             sunrise, sunset, sol_noon = sunriseset(_now)
-
-            
-            
 
             solar_str = str(solar_time(_now.astimezone(), lon, offset, "SOL: {hour:02}:{minute:02}:{second:02}"))
             solar_str = "SOL: " + (_now.astimezone().replace(hour=12, minute=0, second=0, microsecond=0) - timedelta(seconds=sol_noon)).strftime(
@@ -655,21 +638,12 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
-            #sunrise = sunriseset(_now, sunrise=True)
-            #sunset = sunriseset(_now, sunrise=False)
-            
-
-            # diff0 = (sunset - sunrise)/864
-            # diff1 = 100 - diff0
-
             diff = sunriseset(_now, event='sunrise', fixed=True) - sunriseset(_now, event='sunset', fixed=True)
 
             if sunrise < -43200:
                 sunrise = sunriseset(_now, event='sunrise', offset=1)
             if sunset < -43200:
-                sunset = sunriseset(_now, event='sunset', offset=1)
-
-            
+                sunset = sunriseset(_now, event='sunset', offset=1)     
             
             suntime = [None, None, None]
             for i, s in enumerate([sunrise, sunset, diff]):
