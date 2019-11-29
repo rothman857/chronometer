@@ -580,7 +580,7 @@ def main():
                 sign = '-' if s < 0 else ' '
                 suntime[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
             
-            leap_stats = ["LD: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
+            leap_stats = ["LS: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
                           h_bar_single * 18,
                           "SR:" + suntime[0],
                           "SS:" + suntime[1],
