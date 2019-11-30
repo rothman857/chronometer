@@ -150,12 +150,6 @@ def get_local_date_format():
         return "{day:02}/{month:02}"
 
 
-def timedelta_strf(t_delta, fmt):
-    _ = {"days": t_delta.days}
-    _["hours"], remainder = divmod(t_delta.seconds, 3600)
-    _["minutes"], _["seconds"] = divmod(remainder, 60)
-    return fmt.format(**_)
-
 def day_of_year(dt):
     dt = dt.replace(tzinfo=None)
     return (dt - datetime(dt.year, 1, 1)).days
@@ -197,28 +191,6 @@ def float_fixed(flt, wd, sign = False):
     wd = str(wd)
     sign = "+" if sign else ""
     return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
-
-def ff(value, width, sign = False):
-    integer_digits = len(str(int(value)))
-    return round(value, width - integer_digits - 1)
-
-
-def get_relative_date(ordinal, weekday, month, year):
-    firstday = (datetime(year, month, 1).weekday() + 1) % 7
-    first_sunday = (7 - firstday) % 7 + 1
-    return datetime(year, month, first_sunday + weekday + 7 * (ordinal - 1))
-
-
-def solar_time(dt, lon, off, fmt):
-    dt = dt.replace(tzinfo=None)
-    lstm = 15 * off
-    d = (dt - dt.replace(day=1, month=1)).total_seconds()/(86400)
-    b = (360/365.242) * (d - 81) * math.pi/180
-    eot = 9.87 * math.sin(2 * b) - 7.53 * math.cos(b) - 1.5 * math.sin(b)
-    tc = 4 * (lon - lstm) + eot
-    lst = (dt + timedelta(hours=tc/60))
-    _ = {"hour": lst.hour, "minute": lst.minute, "second": lst.second}
-    return fmt.format(**_)
 
 
 def sidereal_time(dt, lon, off, fmt):
@@ -312,23 +284,6 @@ def leapage(dt):
     return count
 
 
-def is_dst(zonename, utc_time):
-    if zonename not in ["STD", "DST"]:
-        tz = timezone(zonename)
-        now = utc.localize(utc_time)
-        return now.astimezone(tz).dst() != timedelta(0)
-    else:
-        return False
-
-
-def dbg(a, b):
-    if(args.d):
-        print("<< DEBUG " + a + ">>  (press enter to continue)")
-        print(b)
-        input()
-    return
-
-
 def sunriseset(dt, offset = 0, fixed = False, event = ''): # https://en.wikipedia.org/wiki/Sunrise_equation
     n = julian_date(dt) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
     _n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()//86400
@@ -387,9 +342,7 @@ def twc_date(dt):
 def and_date(dt):
     day = day_of_year(dt) + 1
     month = 0
-    weekday = day % 5
-    if weekday == 0:
-        weekday = 5
+    weekday = (day-1) % 5 + 1
 
     if day == 366:
         return "LEAP DAY"
@@ -439,7 +392,6 @@ def jul_to_greg(J):
     M = ((h // 153 + 2) % 12) + 1
     Y = (e // 1461) - 4716 + (12 + 2 - M) // 12
     return (datetime(year=Y, day=D, month=M).replace(tzinfo=utc).astimezone() + timedelta(seconds = 86400 * (J - _J)))
-
 
 
 os.system("clear")
@@ -551,8 +503,6 @@ def main():
             day_percent_complete_cet = (cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000) / 86400
 
             sunrise, sunset, sol_noon = sunriseset(_now)
-
-            solar_str = str(solar_time(_now.astimezone(), lon, offset, "SOL: {hour:02}:{minute:02}:{second:02}"))
             solar_str = "SOL: " + (_now.astimezone().replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(seconds=sol_noon)).strftime(
                 '%H:%M:%S'
             )
