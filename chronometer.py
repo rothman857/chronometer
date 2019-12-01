@@ -102,7 +102,6 @@ CENTURY = 6
 
 LABEL = 0
 VALUE = 1
-PRECISION = 2
 
 ntpoff = 0
 ntpdly = 0
@@ -239,7 +238,7 @@ def int_fix_date(dt):
     return weekday_abbr[w] + ' ' + get_local_date_format().format(month=m, day=d)
     
 
-def leap_shift(dt, fmt):
+def leap_shift(dt):
     dt = dt.replace(tzinfo=None)
     ratio = 365/365.2425
     start_year = dt.year - (dt.year % 400)
@@ -254,15 +253,15 @@ def leap_shift(dt, fmt):
     seconds = (dt - start_date).total_seconds()
     actual_seconds = seconds * ratio
     diff = seconds - actual_seconds
-    drift = diff - leapage(dt) * 86400
+    shift = diff - leapage(dt) * 86400
     _ = dict()
-    _['hour'], remainder = divmod(drift, 3600)
+    _['hour'], remainder = divmod(shift, 3600)
     _['minute'], _['second'] = divmod(remainder, 60)
     _['sub'] = 100000 * (_['second'] - int(_['second']))
 
     for i in _:
         _[i] = int(_[i])
-    return fmt.format(**_)
+    return shift
 
 
 def leapage(dt):
@@ -467,20 +466,19 @@ def main():
             else:
                 days_this_month = (datetime(_now_loc.year, _now_loc.month + 1, 1) - datetime(_now_loc.year, _now_loc.month, 1)).days
 
-            #days_this_year = (datetime(now.year + 1, 1, 1) - datetime(now.year, 1, 1)).days
             days_this_year = 366 if is_leap_year(_now_loc) else 365
 
 
-            time_table[SECOND][VALUE] = _now.astimezone().second + u_second + random.randint(0,9999)/10000000000
-            time_table[MINUTE][VALUE] = _now.astimezone().minute + time_table[SECOND][VALUE] / 60 + random.randint(0,99)/10000000000
-            time_table[HOUR][VALUE] = _now.astimezone().hour + time_table[MINUTE][VALUE] / 60
-            time_table[DAY][VALUE] = _now.astimezone().day + time_table[HOUR][VALUE] / 24
-            time_table[MONTH][VALUE] = _now.astimezone().month + (time_table[DAY][VALUE] - 1)/days_this_month
-            time_table[YEAR][VALUE] = _now.astimezone().year + (day_of_year(_now.astimezone()) + time_table[DAY][VALUE] - int(time_table[DAY][VALUE])) / days_this_year
+            time_table[SECOND][VALUE] = _now_loc.second + u_second + random.randint(0,9999)/10000000000
+            time_table[MINUTE][VALUE] = _now_loc.minute + time_table[SECOND][VALUE] / 60 + random.randint(0,99)/10000000000
+            time_table[HOUR][VALUE] = _now_loc.hour + time_table[MINUTE][VALUE] / 60
+            time_table[DAY][VALUE] = _now_loc.day + time_table[HOUR][VALUE] / 24
+            time_table[MONTH][VALUE] = _now_loc.month + (time_table[DAY][VALUE] - 1)/days_this_month
+            time_table[YEAR][VALUE] = _now_loc.year + (day_of_year(_now_loc) + time_table[DAY][VALUE] - int(time_table[DAY][VALUE])) / days_this_year
             time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1) / 100 + 1
 
             screen += themes[3]
-            screen += ("{: ^" + str(columns) + "}\n").format(_now.astimezone().strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y")).upper() + themes[0]
+            screen += ("{: ^" + str(columns) + "}\n").format(_now_loc.strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y")).upper() + themes[0]
             screen += corner_ul + h_bar * (columns - 2) + corner_ur + "\n"
 
             for i in range(7):
@@ -493,9 +491,9 @@ def main():
 
             screen += center_l + h_bar * (columns - 23) + h_bar_down_connect + h_bar * 20 + center_r + "\n"
 
-            dst_str[0] = "IFC: " + int_fix_date(_now.astimezone())
-            dst_str[1] = "TWC: " + twc_date(_now.astimezone())
-            dst_str[2] = "AND: " + and_date(_now.astimezone())
+            dst_str[0] = "IFC: " + int_fix_date(_now_loc)
+            dst_str[1] = "TWC: " + twc_date(_now_loc)
+            dst_str[2] = "AND: " + and_date(_now_loc)
             dst_str[3] = "RJD: " + float_fixed(julian_date(date = utcnow, reduced=True), 8, False)
 
             unix_int = int(utcnow.timestamp())
@@ -507,10 +505,10 @@ def main():
             day_percent_complete_cet = (cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000) / 86400
 
             sunrise, sunset, sol_noon = sunriseset(_now)
-            solar_str = "SOL: " + (_now.astimezone().replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(seconds=sol_noon)).strftime(
+            solar_str = "SOL: " + (_now_loc.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(seconds=sol_noon)).strftime(
                 '%H:%M:%S'
             )
-            lst_str = sidereal_time(_now.astimezone(), lon, offset, "LST: {hour:02}:{minute:02}:{second:02}")
+            lst_str = sidereal_time(_now_loc, lon, offset, "LST: {hour:02}:{minute:02}:{second:02}")
             metric_str = metric_strf(day_percent_complete, "MET: {hours:02}:{minutes:02}:{seconds:02}")
             hex_str = hex_strf(day_percent_complete, "HEX: {hours:1X}_{minutes:02X}_{seconds:1X}.{sub:03X}")
             net_str = net_time_strf(day_percent_complete_utc, "NET: {degrees:03.0f}°{minutes:02.0f}'{seconds:02.0f}\"")
@@ -524,19 +522,19 @@ def main():
             elif sunset < 0 and sunrise < 0:
                 sunset = sunriseset(_now, event='sunset', offset=-1)
             
-            suntime = [None, None, None]
-            for i, s in enumerate([sunrise, sunset, diff]):
+            time_List = [None, None, None, None]
+            for i, s in enumerate([leap_shift(_now_loc), sunrise, sunset, diff]):
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
                 subs = 100000 * (seconds - int(seconds))
                 sign = '-' if s < 0 else ' '
-                suntime[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
+                time_List[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
             
-            leap_stats = ["LS: " + leap_shift(_now.astimezone(), fmt = "{hour:02}:{minute:02}:{second:02}.{sub:05}"),
+            leap_stats = ["LS:" + time_List[0],
                           h_bar_single * 18,
-                          "SR:" + suntime[0],
-                          "SS:" + suntime[1],
-                          "DD:" + suntime[2]
+                          "SR:" + time_List[1],
+                          "SS:" + time_List[2],
+                          "DD:" + time_List[3]
                           ]
 
             for i in range(0, len(time_zone_list), 2):
@@ -564,16 +562,16 @@ def main():
                         flash1 = not (u_second < flash_dur)
 
 
-                if time0.day > _now.astimezone().day:
+                if time0.day > _now_loc.day:
                     sign0 = "+"
-                elif time0.day < _now.astimezone().day:
+                elif time0.day < _now_loc.day:
                     sign0 = "-"
                 else:
                     sign0 = ' '
 
-                if time1.day > _now.astimezone().day:
+                if time1.day > _now_loc.day:
                     sign1 = "+"
-                elif time1.day < _now.astimezone().day:
+                elif time1.day < _now_loc.day:
                     sign1 = "-"
                 else:
                     sign1 = ' '
