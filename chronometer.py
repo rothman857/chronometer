@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from datetime import datetime, timedelta, time, date
+from datetime import datetime, timedelta, date
 import time as t
 import json
 import os
@@ -11,7 +11,6 @@ import re
 import math
 import random
 import argparse
-from pytz import timezone, utc
 import pytz
 
 ap = argparse.ArgumentParser()
@@ -81,7 +80,7 @@ try:
     for tz in sorted(running_config['timezones'].keys(), key=len):
         if tz[0] == '#':
             continue
-        time_zone_list.append([tz.upper(), timezone(running_config['timezones'][tz])])
+        time_zone_list.append([tz.upper(), pytz.timezone(running_config['timezones'][tz])])
 
 except KeyError as e:
     print("Error reading .config ({}).  Please correct or reset using --reset.".format(e))
