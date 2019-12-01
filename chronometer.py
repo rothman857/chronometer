@@ -11,7 +11,6 @@ import re
 import math
 import random
 import argparse
-from myColors import colors
 from pytz import timezone, utc
 import pytz
 
@@ -72,11 +71,7 @@ random.seed()
 
 is_connected = False
 
-themes = [colors.bg.black,      # background
-          colors.fg.white,      # text
-          colors.fg.lightblue,  # table borders
-          colors.bg.lightblue,  # text highlight
-          colors.fg.darkgray]   # progress bar dim
+
           
 try:
     lat = float(running_config['coordinates']['latitude'])
@@ -108,6 +103,20 @@ ntpdly = 0
 ntpstr = "-"
 ntpid = "---"
 
+# Terminal coloring
+BLACK_BG = "\x1b[40m"
+WHITE_FG = "\x1b[97m"
+L_BLUE_FG = "\x1b[94m"
+L_BLUE_BG = "\x1b[104m"
+D_GRAY_FG = "\x1b[90m"
+RST_COLORS = "\x1b[0m"
+
+themes = [BLACK_BG,      # background
+          WHITE_FG,      # text
+          L_BLUE_FG,    # table borders
+          L_BLUE_BG,    # text highlight
+          D_GRAY_FG]   # progress bar dim
+
 weekday_abbr = ["SA",
                 "SU",
                 "MO",
@@ -138,7 +147,7 @@ def reset_cursor():
 
 def draw_progress_bar(*, min=0, width, max, value):
     level = int((width + 1) * (value - min)/(max - min))
-    return (chr(0x2550) * level + colors.fg.darkgray + (chr(0x2500) * (width - level)))
+    return (chr(0x2550) * level + D_GRAY_FG + (chr(0x2500) * (width - level)))
 
 def get_local_date_format():
     today = date.today()
@@ -691,4 +700,4 @@ if __name__ == "__main__":
     main()
     os.system("clear")
     os.system("setterm -cursor on")
-    print(colors.reset.all, end="")
+    print(RST_COLORS, end="")
