@@ -254,13 +254,7 @@ def leap_shift(dt):
     actual_seconds = seconds * ratio
     diff = seconds - actual_seconds
     shift = diff - leapage(dt) * 86400
-    _ = dict()
-    _['hour'], remainder = divmod(shift, 3600)
-    _['minute'], _['second'] = divmod(remainder, 60)
-    _['sub'] = 100000 * (_['second'] - int(_['second']))
 
-    for i in _:
-        _[i] = int(_[i])
     return shift
 
 
