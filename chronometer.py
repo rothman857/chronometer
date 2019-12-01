@@ -341,8 +341,8 @@ def twc_date(dt):
 
 def and_date(dt):
     day = day_of_year(dt) + 1
-    month = 0
-    weekday = day % 5
+    month = 1
+    weekday = (day - 1) % 5
 
     if day == 366:
         return "LEAP DAY"
@@ -428,6 +428,8 @@ def main():
                 now = dbg_override + (start_time - dbg_start)
 
             _now = now.replace(tzinfo=utc)
+            _now_loc = _now.astimezone()
+
             utcnow = now
             cetnow = utcnow + timedelta(hours=1)
 
@@ -460,12 +462,14 @@ def main():
             for i, row in enumerate(b_clock_mat_t):
                 b_clockdisp[i] = ''.join(row).replace("0", binary[0]).replace("1", binary[1])
 
-            if (now.month == 12):
+            if (_now_loc.month == 12):
                 days_this_month = 31
             else:
-                days_this_month = (datetime(now.year, now.month + 1, 1) - datetime(now.year, now.month, 1)).days
+                days_this_month = (datetime(_now_loc.year, _now_loc.month + 1, 1) - datetime(_now_loc.year, _now_loc.month, 1)).days
 
-            days_this_year = (datetime(now.year + 1, 1, 1) - datetime(now.year, 1, 1)).days
+            #days_this_year = (datetime(now.year + 1, 1, 1) - datetime(now.year, 1, 1)).days
+            days_this_year = 366 if is_leap_year(_now_loc) else 365
+
 
             time_table[SECOND][VALUE] = _now.astimezone().second + u_second + random.randint(0,9999)/10000000000
             time_table[MINUTE][VALUE] = _now.astimezone().minute + time_table[SECOND][VALUE] / 60 + random.randint(0,99)/10000000000
@@ -515,12 +519,10 @@ def main():
 
             diff = sunriseset(_now, event='sunrise', fixed=True) - sunriseset(_now, event='sunset', fixed=True)
 
-            if sunrise > 43200:
-                sunrise = sunriseset(_now, event='sunrise', offset=1)
-            if sunset > 43200:
-                sunset = sunriseset(_now, event='sunset', offset=1)
             if sunset > 0 and sunrise > 0:
                 sunrise = sunriseset(_now, event='sunrise', offset=1)
+            elif sunset < 0 and sunrise < 0:
+                sunset = sunriseset(_now, event='sunset', offset=-1)
             
             suntime = [None, None, None]
             for i, s in enumerate([sunrise, sunset, diff]):
