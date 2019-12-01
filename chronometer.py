@@ -342,7 +342,7 @@ def twc_date(dt):
 def and_date(dt):
     day = day_of_year(dt) + 1
     month = 0
-    weekday = (day-1) % 5 + 1
+    weekday = day % 5
 
     if day == 366:
         return "LEAP DAY"
