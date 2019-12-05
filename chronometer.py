@@ -46,7 +46,7 @@ default_config = {'coordinates': {
 }
 }
 
-if os.path.exists(os.path.join(here, '.config')) and not args.reset:
+if os.path.isfile(os.path.join(here, '.config')) and not args.reset:
     with open(os.path.join(here, '.config')) as f:
         running_config = json.load(f)
 
