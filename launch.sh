@@ -11,7 +11,7 @@
 while :
 do
   sleep 1
-if (nc -zw1 google.com 80); then
+if (ping -c 4 github.com); then
     echo "Device is online."
     break
   else
