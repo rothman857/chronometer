@@ -22,7 +22,8 @@ done
 # Pull most recent code
 script_dir="$(dirname $0)"
 cd $script_dir
-echo "Updating and starting the Internet Chronometer..."
+echo "Updating Internet Chronometer..."
 git pull
-
+echo "Starting Internet Chronometer"
+sleep 3
 python3 chronometer.py
