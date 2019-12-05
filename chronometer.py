@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta, date
-import time as t
+import time
 import json
 import os
 import threading
@@ -27,23 +27,23 @@ if args.date:
 here = os.path.dirname(os.path.realpath(__file__))
 
 default_config = {'coordinates': {
-                    '# Note': 'Decimal notation only.  West longitude is negative.',
-                    'latitude': 40.7128,
-                    'longitude': -74.0060 },
-                  'refresh': 0.001,
-                  'timezones': {
-                    '# Note':'Format = label: time_zone. (time_zone must be a valid pytz time zone name.  10 times zones are required.)',
-                    'Pacific': 'US/Pacific',
-                    'Eastern': 'US/Eastern',
-                    'Israel': 'Israel',
-                    'London': 'Europe/London',
-                    'Sydney': 'Australia/Sydney',
-                    'Germany': 'Europe/Berlin',
-                    'Hong Kong': 'Asia/Hong_Kong',
-                    'India': 'Asia/Kolkata',
-                    'Japan': 'Asia/Tokyo',
-                    'Singapore': 'Singapore',
-                    }
+    '# Note': 'Decimal notation only.  West longitude is negative.',
+    'latitude': 40.7128,
+    'longitude': -74.0060},
+    'refresh': 0.001,
+    'timezones': {
+    '# Note': 'Format = label: time_zone. (time_zone must be a valid pytz time zone name.  10 times zones are required.)',
+    'Pacific': 'US/Pacific',
+    'Eastern': 'US/Eastern',
+    'Israel': 'Israel',
+    'London': 'Europe/London',
+    'Sydney': 'Australia/Sydney',
+    'Germany': 'Europe/Berlin',
+    'Hong Kong': 'Asia/Hong_Kong',
+    'India': 'Asia/Kolkata',
+    'Japan': 'Asia/Tokyo',
+    'Singapore': 'Singapore',
+}
 }
 
 if os.path.exists(os.path.join(here, '.config')) and not args.reset:
@@ -61,17 +61,13 @@ if args.reset:
     print(".config reset to defaults.")
     exit()
 
-
 if args.d:
     dbg_start = datetime.now()
     dbg_override = datetime.strptime(args.date, '%b %d %Y %I:%M:%S %p')
 
 random.seed()
-
 is_connected = False
 
-
-          
 try:
     lat = float(running_config['coordinates']['latitude'])
     lon = float(running_config['coordinates']['longitude'])
@@ -148,6 +144,7 @@ def draw_progress_bar(*, min=0, width, max, value):
     level = int((width + 1) * (value - min)/(max - min))
     return (chr(0x2550) * level + D_GRAY_FG + (chr(0x2500) * (width - level)))
 
+
 def get_local_date_format():
     today = date.today()
     today_str = today.strftime('%x').split('/')
@@ -160,6 +157,7 @@ def get_local_date_format():
 def day_of_year(dt):
     dt = dt.replace(tzinfo=None)
     return (dt - datetime(dt.year, 1, 1)).days
+
 
 def is_leap_year(dt):
     year = dt.year
@@ -194,7 +192,7 @@ def metric_strf(day_percent, fmt):
     return fmt.format(**_)
 
 
-def float_fixed(flt, wd, sign = False):
+def float_fixed(flt, wd, sign=False):
     wd = str(wd)
     sign = "+" if sign else ""
     return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
@@ -208,11 +206,12 @@ def sidereal_time(dt, lon, off, fmt):
     l2 = 2.907879 * (10 ** -13)
     l3 = -5.302 * (10 ** -22)
     theta = (l0 + (l1 * j) + (l2 * (j ** 2)) + (l3 * (j ** 3)) + lon) % 360
-    result = int(timedelta(hours = theta/15).total_seconds())
+    result = int(timedelta(hours=theta/15).total_seconds())
     _ = dict()
     _["hour"], remainder = divmod(result, 3600)
     _["minute"], _["second"] = divmod(remainder, 60)
     return fmt.format(**_)
+
 
 def julian_date(date, reduced=False):
     a = (14 - date.month) // 12
@@ -221,8 +220,9 @@ def julian_date(date, reduced=False):
 
     jdn = date.day + (153*m+2)//5 + y*365 + y//4 - y//100 + y//400 - 32045
     jd = jdn + (date.hour - 12) / 24 + date.minute / 1440 + date.second / 86400 + date.microsecond / 86400000000
-    
+
     return jd - 2400000 if reduced else jd
+
 
 def int_fix_date(dt):
     ordinal = day_of_year(dt) + 1
@@ -235,16 +235,17 @@ def int_fix_date(dt):
         return "YEAR DAY"
 
     m, d = divmod(ordinal, 28)
-    
+
     if d == 0:
         d = 28
         m -= 1
     if m == 13:
         m = 12
-    
+
     w = ordinal % 7
+
     return weekday_abbr[w] + ' ' + get_local_date_format().format(month=m, day=d)
-    
+
 
 def leap_shift(dt):
     dt = dt.replace(tzinfo=None)
@@ -285,21 +286,21 @@ def leapage(dt):
     return count
 
 
-def sunriseset(dt, offset = 0, fixed = False, event = ''): # https://en.wikipedia.org/wiki/Sunrise_equation
-    n = julian_date(dt) - 2451545.0 + .0008 # current julian day since 1/1/2000 12:00
+def sunriseset(dt, offset=0, fixed=False, event=''):  # https://en.wikipedia.org/wiki/Sunrise_equation
+    n = julian_date(dt) - 2451545.0 + .0008  # current julian day since 1/1/2000 12:00
     _n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()//86400
 
     n = n if fixed else _n
     n += offset
-    J_star = n - (lon/360) # Mean Solar Noon
-    M = (357.5291 + 0.98560028 * J_star) % 360 # Solar mean anomaly
-    C = 1.9148 * sin(M) + 0.0200*sin(2*M) + 0.0003 * sin(3*M) # Equation of the center
-    _lambda = (M + C + 180 + 102.9372) % 360 # Ecliptic Longitude
-    J_transit = 2451545.0 + J_star + 0.0053 * sin(M) - 0.0069*sin(2*_lambda) # Solar Transit
-    delta = asin(sin(_lambda) * sin(23.44)) # Declination of Sun
+    J_star = n - (lon/360)  # Mean Solar Noon
+    M = (357.5291 + 0.98560028 * J_star) % 360  # Solar mean anomaly
+    C = 1.9148 * sin(M) + 0.0200*sin(2*M) + 0.0003 * sin(3*M)  # Equation of the center
+    _lambda = (M + C + 180 + 102.9372) % 360  # Ecliptic Longitude
+    J_transit = 2451545.0 + J_star + 0.0053 * sin(M) - 0.0069*sin(2*_lambda)  # Solar Transit
+    delta = asin(sin(_lambda) * sin(23.44))  # Declination of Sun
     temp = (sin(-.83) - sin(lat) * sin(delta))/(cos(lat) * cos(delta))
-    w_0 = acos(temp) # Hour angle
-    J_rise =J_transit - (w_0/360)
+    w_0 = acos(temp)  # Hour angle
+    J_rise = J_transit - (w_0/360)
     J_set = J_transit + (w_0/360)
 
     t_rise = (dt - jul_to_greg(J_rise)).total_seconds()
@@ -315,10 +316,11 @@ def sunriseset(dt, offset = 0, fixed = False, event = ''): # https://en.wikipedi
     elif event == 'noon':
         return t_noon
 
+
 def twc_date(dt):
     _day = day_of_year(dt) + 1
     day = _day
-    
+
     if is_leap_year(dt):
         if day == 366:
             return "YEAR DAY"
@@ -326,19 +328,20 @@ def twc_date(dt):
             return "LEAP DAY"
         elif day > 183:
             day -= 1
-        
+
     if day == 365:
         return "YEAR DAY"
     weekday = day % 7
     month = 0
-    for i in range(0,4):
-        for j in [31,30,30]:
+    for i in range(0, 4):
+        for j in [31, 30, 30]:
             if day - j > 0:
                 day -= j
                 month += 1
             else:
                 break
     return weekday_abbr[weekday] + ' ' + get_local_date_format().format(month=month, day=day)
+
 
 def and_date(dt):
     day = day_of_year(dt) + 1
@@ -347,9 +350,9 @@ def and_date(dt):
 
     if day == 366:
         return "LEAP DAY"
-        
-    for i in range(0,5):
-        for j in [36,37]:
+
+    for i in range(0, 5):
+        for j in [36, 37]:
             if day - j > 0:
                 day -= j
                 month += 1
@@ -361,26 +364,34 @@ def and_date(dt):
 def acos(x):
     return degrees(math.acos(x))
 
+
 def asin(x):
     return degrees(math.asin(x))
+
 
 def atan(x):
     return degrees(math.atan(x))
 
+
 def sin(deg):
     return math.sin(radians(deg))
+
 
 def cos(deg):
     return math.cos(radians(deg))
 
+
 def tan(deg):
     return math.tan(radians(deg))
+
 
 def radians(deg):
     return deg * math.pi / 180
 
+
 def degrees(rad):
     return rad * 180 / math.pi
+
 
 def jul_to_greg(J):
     J += .5
@@ -392,7 +403,7 @@ def jul_to_greg(J):
     D = (h % 153) // 5 + 1
     M = ((h // 153 + 2) % 12) + 1
     Y = (e // 1461) - 4716 + (12 + 2 - M) // 12
-    return (datetime(year=Y, day=D, month=M).replace(tzinfo=utc).astimezone() + timedelta(seconds = 86400 * (J - _J)))
+    return (datetime(year=Y, day=D, month=M).replace(tzinfo=utc).astimezone() + timedelta(seconds=86400 * (J - _J)))
 
 
 os.system("clear")
@@ -421,9 +432,9 @@ def main():
     while True:
         ntp_id_str = str(ntpid)
         try:
-            t.sleep(refresh)
+            time.sleep(refresh)
             start_time = datetime.utcnow()
-            offset = -(t.timezone if (t.localtime().tm_isdst == 0) else t.altzone)/(3600)
+            offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
             now = start_time + loop_time
             if args.d:
                 now = dbg_override + (start_time - dbg_start)
@@ -434,9 +445,9 @@ def main():
             utcnow = now
             cetnow = utcnow + timedelta(hours=1)
 
-            is_daylight_savings = t.localtime().tm_isdst
+            is_daylight_savings = time.localtime().tm_isdst
 
-            current_tz = t.tzname[is_daylight_savings]
+            current_tz = time.tzname[is_daylight_savings]
 
             rows = os.get_terminal_size().lines
             columns = os.get_terminal_size().columns
@@ -470,9 +481,8 @@ def main():
 
             days_this_year = 366 if is_leap_year(_now_loc) else 365
 
-
-            time_table[SECOND][VALUE] = _now_loc.second + u_second + random.randint(0,9999)/10000000000
-            time_table[MINUTE][VALUE] = _now_loc.minute + time_table[SECOND][VALUE] / 60 + random.randint(0,99)/10000000000
+            time_table[SECOND][VALUE] = _now_loc.second + u_second + random.randint(0, 9999)/10000000000
+            time_table[MINUTE][VALUE] = _now_loc.minute + time_table[SECOND][VALUE] / 60 + random.randint(0, 99)/10000000000
             time_table[HOUR][VALUE] = _now_loc.hour + time_table[MINUTE][VALUE] / 60
             time_table[DAY][VALUE] = _now_loc.day + time_table[HOUR][VALUE] / 24
             time_table[MONTH][VALUE] = _now_loc.month + (time_table[DAY][VALUE] - 1)/days_this_month
@@ -486,17 +496,17 @@ def main():
             for i in range(7):
                 percent = time_table[i][VALUE] - int(time_table[i][VALUE])
                 screen += v_bar + (" {0:} " + "{2:}" + themes[1] + " {3:011.8f}% " + v_bar + "\n").format(
-                          time_table[i][LABEL],
-                          time_table[i][VALUE],
-                          draw_progress_bar(width=(columns - 19), max=1, value=percent),
-                          100 * (percent))
+                    time_table[i][LABEL],
+                    time_table[i][VALUE],
+                    draw_progress_bar(width=(columns - 19), max=1, value=percent),
+                    100 * (percent))
 
             screen += center_l + h_bar * (columns - 23) + h_bar_down_connect + h_bar * 20 + center_r + "\n"
 
             dst_str[0] = "IFC: " + int_fix_date(_now_loc)
             dst_str[1] = "TWC: " + twc_date(_now_loc)
             dst_str[2] = "AND: " + and_date(_now_loc)
-            dst_str[3] = "RJD: " + float_fixed(julian_date(date = utcnow, reduced=True), 8, False)
+            dst_str[3] = "RJD: " + float_fixed(julian_date(date=utcnow, reduced=True), 8, False)
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
@@ -523,7 +533,7 @@ def main():
                 sunrise = sunriseset(_now, event='sunrise', offset=1)
             elif sunset < 0 and sunrise < 0:
                 sunset = sunriseset(_now, event='sunset', offset=-1)
-            
+
             time_List = [None, None, None, None]
             for i, s in enumerate([leap_shift(_now_loc), sunrise, sunset, diff]):
                 hours, remainder = divmod(abs(s), 3600)
@@ -531,7 +541,7 @@ def main():
                 subs = 100000 * (seconds - int(seconds))
                 sign = '-' if s < 0 else ' '
                 time_List[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
-            
+
             leap_stats = ["LS:" + time_List[0],
                           h_bar_single * 18,
                           "SR:" + time_List[1],
@@ -560,9 +570,8 @@ def main():
                         flash1 = True
                     elif (time1.hour == 8):
                         flash1 = (u_second < flash_dur)
-                    elif  (time1.hour == 17):
+                    elif (time1.hour == 17):
                         flash1 = not (u_second < flash_dur)
-
 
                 if time0.day > _now_loc.day:
                     sign0 = "+"
@@ -583,18 +592,22 @@ def main():
 
                 padding = (columns - 60) * ' '
 
-                screen +=  v_bar + ' ' + highlight[flash0] + ("{0:>9}:{1:6}").format(time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
+                screen += v_bar + ' ' + highlight[flash0] + ("{0:>9}:{1:6}").format(time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
                 screen += ' ' + highlight[flash1] + ("{0:>9}:{1:6}").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
-                
+
                 screen += "\n"
 
             screen += center_l + h_bar * (columns - 27) + h_bar_down_connect + h_bar * 3 + h_bar_up_connect + h_bar * 4 + h_bar_down_connect + 15 * h_bar + center_r + "\n"
 
-            screen += v_bar + " " + utc_str + " " + b_var_single + " " + unix_str + " " * (columns - len(metric_str + unix_str + b_clockdisp[0]) - 25) + v_bar + ' ' + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
-            screen += v_bar + " " + metric_str + " " + b_var_single + " " + sit_str + " " * (columns - len(metric_str + sit_str + b_clockdisp[1]) - 25) + v_bar + ' ' + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
-            screen += v_bar + " " + solar_str + " " + b_var_single + " " + hex_str + " " * (columns - len(solar_str + net_str + b_clockdisp[2]) - 25) + v_bar + ' ' + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
-            screen += v_bar + " " + lst_str + " " + b_var_single + " " + net_str + " " * (columns - len(lst_str + hex_str + b_clockdisp[3]) - 25) + v_bar + ' ' + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
+            screen += v_bar + " " + utc_str + " " + b_var_single + " " + unix_str + " " * \
+                (columns - len(metric_str + unix_str + b_clockdisp[0]) - 25) + v_bar + ' ' + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
+            screen += v_bar + " " + metric_str + " " + b_var_single + " " + sit_str + " " * \
+                (columns - len(metric_str + sit_str + b_clockdisp[1]) - 25) + v_bar + ' ' + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
+            screen += v_bar + " " + solar_str + " " + b_var_single + " " + hex_str + " " * \
+                (columns - len(solar_str + net_str + b_clockdisp[2]) - 25) + v_bar + ' ' + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
+            screen += v_bar + " " + lst_str + " " + b_var_single + " " + net_str + " " * \
+                (columns - len(lst_str + hex_str + b_clockdisp[3]) - 25) + v_bar + ' ' + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
             screen += corner_ll + h_bar * (columns - 27) + h_bar_up_connect + h_bar * 8 + h_bar_up_connect + h_bar * 15 + corner_lr + "\n"
             ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
@@ -619,12 +632,12 @@ def main():
 
             ntp_str_left = "NTP:" + ntpid_temp
             ntp_str_right = ("STR:{str}/DLY:{dly}/OFF:{off}").format(
-                            str=ntpstr,
-                            dly=float_fixed(ntpdly, 6, False),
-                            off=float_fixed(ntpoff, 7, True)
-                            )
+                str=ntpstr,
+                dly=float_fixed(ntpdly, 6, False),
+                off=float_fixed(ntpoff, 7, True)
+            )
 
-            screen += themes[3] + " "+ ntp_str_left + ((columns - len(ntp_str_left + ntp_str_right)-2) * " ") + ntp_str_right + " "
+            screen += themes[3] + " " + ntp_str_left + ((columns - len(ntp_str_left + ntp_str_right)-2) * " ") + ntp_str_right + " "
             screen += themes[1]
 
             # Switch to the header color theme
@@ -691,7 +704,9 @@ def ntp_daemon():
             is_connected = False
             ntpid = e
 
-        t.sleep(15)
+        time.sleep(15)
+
+
 if __name__ == "__main__":
     thread = threading.Thread(target=ntp_daemon)
     thread.setDaemon(True)

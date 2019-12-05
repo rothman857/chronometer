@@ -13,16 +13,16 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
 
 ## Description / Abbreviations
 + TOP
-    * Completion chart for current time units (**S**econd, **M**inute, **H**our, **D**ay, **M**onth, **Y**ear, **C**entury).
+    * Completion chart for current time units ([S]econd, [M]inute, [H]our, [D]ay, [M]onth, [Y]ear, [C]entury).
 + MIDDLE
     * Left: World Clock
     * Right:
-        * LS - Leap Shift - Current time error that has to be corrected by the [leap cycle](https://en.wikipedia.org/wiki/Leap_year)
+        * LS - Leap Shift - Current time offset that has to be corrected by the [leap cycle](https://en.wikipedia.org/wiki/Leap_year)
         * SR - Sunrise Timer
         * SS - Sunset Timer
         * DD - Daylight Duration
 + BOTTOM
-    * Left (Time systems)
+    * Left: Time Systems
         * UTC - [Coordinated Universal Time](https://en.wikipedia.org/wiki/Coordinated_Universal_Time)
         * MET - [Metric Time](https://en.wikipedia.org/wiki/Metric_time)
         * SOL - [Solar Time](https://en.wikipedia.org/wiki/Solar_time)
@@ -32,7 +32,7 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
         * NET - [New Earth Time](https://en.wikipedia.org/wiki/New_Earth_Time)
         * HEX - [Hexadecimal Time](https://en.wikipedia.org/wiki/Hexadecimal_time)
         * [Binary Clock](https://en.wikipedia.org/wiki/Binary_clock)
-    * Right (Calendar systems)
+    * Right: Calendar Systems
         * IFC - [International Fixed Calendar](https://en.wikipedia.org/wiki/International_Fixed_Calendar)
         * TWC - [The World Calendar](https://en.wikipedia.org/wiki/World_Calendar)
         * AND - [Annus Novus Decimal Calendar](http://www.atlantium.org/calendaran.html)
@@ -48,9 +48,9 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
 * `pytz` module for python3: `pip3 install pytz` or from your distros repositories.
 
 ## Installation for Raspberry Pi
-1. Clone the git repository.
+1. Download the script to a folder of your choice.
     ```
-    git clone https://github.com/rothman857/chronometer.git
+    curl -O https://raw.githubusercontent.com/rothman857/chronometer/master/chronometer.py
     ```
 2. Running chronometer.py for the first time will generate a .config file with default values*:
     ```
@@ -71,14 +71,7 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
     ```
 5. If you wish to have the chronometer start at boot, add the following line to /etc/rc.local (before the `exit(0)` line):
     ```
-    python3 /full/path/to/chronometer.py &
-
-    ...
-    exit(0)
-    ```
-6. If you wish to have the chronometer start and update to the latest code at boot, add the following line to /etc/rc.local (before the `exit(0)` line:
-    ```
-    sudo -H -u pi sh /full/path/to/launch.sh &
+    python3 /path/to/chronometer.py &
 
     ...
     exit(0)
