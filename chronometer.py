@@ -116,7 +116,7 @@ weekday_abbr = ["SA",
                 "SU",
                 "MO",
                 "TU",
-                "WW",
+                "WE",
                 "TH",
                 "FR"]
 
