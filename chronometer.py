@@ -68,8 +68,9 @@ if args.d:
 random.seed()
 is_connected = False
 
+now = datetime.now()
 def my_tz_sort(tz_entry):
-    return tz_entry[1]._utcoffset
+    return tz_entry[1].utcoffset(now)
 
 try:
     lat = float(running_config['coordinates']['latitude'])
