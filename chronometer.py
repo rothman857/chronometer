@@ -68,15 +68,28 @@ if args.d:
 random.seed()
 is_connected = False
 
+def my_tz_sort(tz_entry):
+    return tz_entry[1]._utcoffset
+
 try:
     lat = float(running_config['coordinates']['latitude'])
     lon = float(running_config['coordinates']['longitude'])
     refresh = float(running_config['refresh'])
     time_zone_list = []
-    for tz in sorted(running_config['timezones'].keys(), key=len):
+    for tz in running_config['timezones']:
         if tz[0] == '#':
             continue
         time_zone_list.append([tz.upper(), pytz.timezone(running_config['timezones'][tz])])
+
+    time_zone_list.sort(key=my_tz_sort)
+    _time_zone_list = [None] * len(time_zone_list)
+
+    for i in range(0,len(time_zone_list), 2):
+        _time_zone_list[i] = time_zone_list[i//2]
+        _time_zone_list[i+1] = time_zone_list[i//2+5]
+
+    time_zone_list = _time_zone_list
+
 
 except KeyError as e:
     print("Error reading .config ({}).  Please correct or reset using --reset.".format(e))
