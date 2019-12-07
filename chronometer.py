@@ -211,6 +211,10 @@ def float_fixed(flt, wd, sign=False):
     sign = "+" if sign else ""
     return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
 
+def _float_fixed(flt, wd, sign=False):
+    sign = "+" if sign else ""
+    return sign + str(flt)[:wd-(len(sign))]
+
 
 def sidereal_time(dt, lon, off, fmt):
     dt = dt.replace(tzinfo=None)
@@ -306,21 +310,21 @@ def sunriseset(dt, offset=0, fixed=False, event=''):  # https://en.wikipedia.org
 
     n = n if fixed else _n
     n += offset
-    J_star = n - (lon/360)  # Mean Solar Noon
+    J_star = n + (-lon/360)  # Mean Solar Noon
     M = (357.5291 + 0.98560028 * J_star) % 360  # Solar mean anomaly
     C = 1.9148 * sin(M) + 0.0200*sin(2*M) + 0.0003 * sin(3*M)  # Equation of the center
     _lambda = (M + C + 180 + 102.9372) % 360  # Ecliptic Longitude
     J_transit = 2451545.0 + J_star + 0.0053 * sin(M) - 0.0069*sin(2*_lambda)  # Solar Transit
     delta = asin(sin(_lambda) * sin(23.44))  # Declination of Sun
-    temp = (sin(-.83) - sin(lat) * sin(delta))/(cos(lat) * cos(delta))
+    temp = (cos(90.83333) - sin(lat) * sin(delta))/(cos(lat) * cos(delta))
     w_0 = acos(temp)  # Hour angle
     J_rise = J_transit - (w_0/360)
     J_set = J_transit + (w_0/360)
-
+    daylight = 2 * w_0 /15 * 3600
     t_rise = (dt - jul_to_greg(J_rise)).total_seconds()
     t_set = (dt - jul_to_greg(J_set)).total_seconds()
     t_noon = (dt - jul_to_greg(J_transit)).total_seconds()
-
+ 
     if event == '':
         return t_rise, t_set, t_noon
     elif event == 'sunrise':
@@ -329,6 +333,8 @@ def sunriseset(dt, offset=0, fixed=False, event=''):  # https://en.wikipedia.org
         return t_set
     elif event == 'noon':
         return t_noon
+    elif event == 'daylight':
+        return daylight
 
 
 def twc_date(dt):
@@ -530,7 +536,7 @@ def main():
             day_percent_complete_utc = (utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000) / 86400
             day_percent_complete_cet = (cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000) / 86400
 
-            sunrise, sunset, sol_noon = sunriseset(_now)
+            sunrise, sunset, sol_noon = sunriseset(_now_loc)
             solar_str = "SOL: " + (_now_loc.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(seconds=sol_noon)).strftime(
                 '%H:%M:%S'
             )
@@ -542,6 +548,7 @@ def main():
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
             diff = sunriseset(_now, event='sunrise', fixed=True) - sunriseset(_now, event='sunset', fixed=True)
+            diff = sunriseset(_now_loc, event='daylight', fixed=True)
 
             if sunset > 0 and sunrise > 0:
                 sunrise = sunriseset(_now, event='sunrise', offset=1)
