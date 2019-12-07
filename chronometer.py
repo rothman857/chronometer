@@ -320,7 +320,7 @@ def sunriseset(dt, offset=0, fixed=False, event=''):  # https://en.wikipedia.org
     w_0 = acos(temp)  # Hour angle
     J_rise = J_transit - (w_0/360)
     J_set = J_transit + (w_0/360)
-    daylight = 2 * w_0 /15 * 3600
+    daylight = 2 * w_0 / 15 * 3600
     t_rise = (dt - jul_to_greg(J_rise)).total_seconds()
     t_set = (dt - jul_to_greg(J_set)).total_seconds()
     t_noon = (dt - jul_to_greg(J_transit)).total_seconds()
@@ -547,13 +547,12 @@ def main():
             sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
 
-            diff = sunriseset(_now, event='sunrise', fixed=True) - sunriseset(_now, event='sunset', fixed=True)
             diff = sunriseset(_now_loc, event='daylight', fixed=True)
 
             if sunset > 0 and sunrise > 0:
-                sunrise = sunriseset(_now, event='sunrise', offset=1)
+                sunrise = sunriseset(_now_loc, event='sunrise', offset=1)
             elif sunset < 0 and sunrise < 0:
-                sunset = sunriseset(_now, event='sunset', offset=-1)
+                sunset = sunriseset(_now_loc, event='sunset', offset=-1)
 
             time_List = [None, None, None, None]
             for i, s in enumerate([leap_shift(_now_loc), sunrise, sunset, diff]):
