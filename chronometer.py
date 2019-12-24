@@ -280,7 +280,7 @@ def leap_shift(dt):
     seconds = (dt - start_date).total_seconds()
     actual_seconds = seconds * ratio
     diff = seconds - actual_seconds
-    shift = diff - leapage(dt) * 86400
+    shift = leapage(dt) * 86400 - diff
 
     return shift
 
@@ -559,7 +559,7 @@ def main():
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
                 subs = 100000 * (seconds - int(seconds))
-                sign = ' ' if s < 0 or i == 3 else '+'
+                sign = '-' if s < 0 else ' '
                 time_List[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
 
             leap_stats = ["LS:" + time_List[0],
