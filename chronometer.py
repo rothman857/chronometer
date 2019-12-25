@@ -276,7 +276,7 @@ def leap_shift(dt):
     seconds = (dt - start_date).total_seconds()
     actual_seconds = seconds * ratio
     diff = seconds - actual_seconds
-    shift = diff - leapage(dt) * 86400
+    shift = leapage(dt) * 86400 - diff
 
     return shift
 
