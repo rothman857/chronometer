@@ -252,13 +252,9 @@ def int_fix_date(dt):
     if ordinal == 365:
         return "YEAR DAY"
 
-    m, d = divmod(ordinal, 28)
-
-    if d == 0:
-        d = 28
-        m -= 1
-    if m == 13:
-        m = 12
+    m, d = divmod(ordinal - 1, 28)
+    m += 1
+    d += 1
 
     w = ordinal % 7
 
@@ -352,7 +348,7 @@ def twc_date(dt):
     if day == 365:
         return "YEAR DAY"
     weekday = day % 7
-    month = 0
+    month = 1
     for i in range(0, 4):
         for j in [31, 30, 30]:
             if day - j > 0:
