@@ -126,19 +126,56 @@ themes = [BLACK_BG,      # background
           L_BLUE_BG,    # text highlight
           D_GRAY_FG]   # progress bar dim
 
-weekday_abbr = ["SA",
-                "SU",
-                "MO",
-                "TU",
-                "WE",
-                "TH",
-                "FR"]
+weekday_abbr = ["SAT",
+                "SUN",
+                "MON",
+                "TUE",
+                "WED",
+                "THU",
+                "FRI"]
 
-annus_day_abbr = ["PR",
-                  "SE",
-                  "TE",
-                  "QA",
-                  "QI"]
+annus_day_abbr = ["PRI",
+                  "SEC",
+                  "TER",
+                  "QUA",
+                  "QUI"]
+
+annus_month_abbr = ["PRI",
+                    "SEC",
+                    "TER",
+                    "QUA",
+                    "QUI",
+                    "SEX",
+                    "SEP",
+                    "NON",
+                    "DEC"]
+
+intfix_month_abbr = ["JAN",
+                     "FEB",
+                     "MAR",
+                     "APR",
+                     "MAY",
+                     "JUN",
+                     "SOL",
+                     "JUL",
+                     "AUG",
+                     "SEP",
+                     "OCT",
+                     "NOV",
+                     "DEC"]
+
+month_abbr = ["JAN",
+              "FEB",
+              "MAR",
+              "APR",
+              "MAY",
+              "JUN",
+              "JUL",
+              "AUG",
+              "SEP",
+              "OCT",
+              "NOV",
+              "DEC"]
 
 #               Label       value precision
 time_table = [["S",    0,    10],
@@ -258,7 +295,8 @@ def int_fix_date(dt):
 
     w = ordinal % 7
 
-    return weekday_abbr[w] + ' ' + get_local_date_format().format(month=m, day=d)
+    #return weekday_abbr[w] + ' ' + get_local_date_format().format(month=m, day=d)
+    return weekday_abbr[w] + ' ' + intfix_month_abbr[m-1] + " " + "{:02}".format(d)
 
 
 def leap_shift(dt):
@@ -356,7 +394,7 @@ def twc_date(dt):
                 month += 1
             else:
                 break
-    return weekday_abbr[weekday] + ' ' + get_local_date_format().format(month=month, day=day)
+    return weekday_abbr[weekday] + ' ' + month_abbr[month-1] + " " + "{:02}".format(day)
 
 
 def and_date(dt):
@@ -374,7 +412,7 @@ def and_date(dt):
                 month += 1
             else:
                 break
-    return annus_day_abbr[weekday] + ' ' + get_local_date_format().format(month=month, day=day)
+    return annus_day_abbr[weekday] + ' ' + annus_month_abbr[month-1] + " " + "{:02}".format(day)
 
 
 def acos(x):
@@ -517,31 +555,31 @@ def main():
                     draw_progress_bar(width=(columns - 19), max=1, value=percent),
                     100 * (percent))
 
-            screen += center_l + h_bar * (columns - 23) + h_bar_down_connect + h_bar * 20 + center_r + "\n"
+            screen += center_l + h_bar * (columns - 25) + h_bar_down_connect + h_bar * 22 + center_r + "\n"
 
-            dst_str[0] = "IFC: " + int_fix_date(_now_loc)
-            dst_str[1] = "TWC: " + twc_date(_now_loc)
-            dst_str[2] = "AND: " + and_date(_now_loc)
-            dst_str[3] = "RJD: " + float_fixed(julian_date(date=utcnow, reduced=True), 8, False)
+            dst_str[0] = "INTL " + int_fix_date(_now_loc)
+            dst_str[1] = "WRLD " + twc_date(_now_loc)
+            dst_str[2] = "ANNO " + and_date(_now_loc)
+            dst_str[3] = "RJUL " + float_fixed(julian_date(date=utcnow, reduced=True), 10, False)
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
-            unix_str = ("UNX: {0}").format(unix_int)
+            unix_str = ("UNX {0}").format(unix_int)
 
             day_percent_complete = time_table[DAY][VALUE] - int(time_table[DAY][VALUE])
             day_percent_complete_utc = (utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000) / 86400
             day_percent_complete_cet = (cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000) / 86400
 
             sunrise, sunset, sol_noon = sunriseset(_now_loc)
-            solar_str = "SOL: " + (_now_loc.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(seconds=sol_noon)).strftime(
+            solar_str = "SOL " + (_now_loc.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(seconds=sol_noon)).strftime(
                 '%H:%M:%S'
             )
-            lst_str = sidereal_time(_now_loc, lon, offset, "LST: {hour:02}:{minute:02}:{second:02}")
-            metric_str = metric_strf(day_percent_complete, "MET: {hours:02}:{minutes:02}:{seconds:02}")
-            hex_str = hex_strf(day_percent_complete, "HEX: {hours:1X}_{minutes:02X}_{seconds:1X}.{sub:03X}")
-            net_str = net_time_strf(day_percent_complete_utc, "NET: {degrees:03.0f}°{minutes:02.0f}'{seconds:02.0f}\"")
-            sit_str = "SIT: @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
-            utc_str = "UTC: " + utcnow.strftime("%H:%M:%S")
+            lst_str = sidereal_time(_now_loc, lon, offset, "LST {hour:02}:{minute:02}:{second:02}")
+            metric_str = metric_strf(day_percent_complete, "MET {hours:02}:{minutes:02}:{seconds:02}")
+            hex_str = hex_strf(day_percent_complete, "HEX {hours:1X}_{minutes:02X}_{seconds:1X}.{sub:03X}")
+            net_str = net_time_strf(day_percent_complete_utc, "NET {degrees:03.0f}°{minutes:02.0f}'{seconds:02.0f}\"")
+            sit_str = "SIT @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
+            utc_str = "UTC " + utcnow.strftime("%H:%M:%S")
 
             diff = sunriseset(_now_loc, event='daylight', fixed=True)
 
@@ -558,11 +596,11 @@ def main():
                 sign = '-' if s < 0 else ' '
                 time_List[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
 
-            leap_stats = ["LS:" + time_List[0],
-                          h_bar_single * 18,
-                          "SR:" + time_List[1],
-                          "SS:" + time_List[2],
-                          "DD:" + time_List[3]
+            leap_stats = ["LSHFT" + time_List[0],
+                          h_bar_single * 20,
+                          "SUNRI" + time_List[1],
+                          "SUNST" + time_List[2],
+                          "DAYLN" + time_List[3]
                           ]
 
             for i in range(0, len(time_zone_list), 2):
@@ -608,23 +646,23 @@ def main():
 
                 padding = (columns - 60) * ' '
 
-                screen += v_bar + ' ' + highlight[flash0] + ("{0:>9}:{1:6}").format(time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
-                screen += ' ' + highlight[flash1] + ("{0:>9}:{1:6}").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
+                screen += v_bar + ' ' + highlight[flash0] + ("{0:>9}{1:6}").format(time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
+                screen += ' ' + highlight[flash1] + ("{0:>9}{1:6}").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
 
                 screen += "\n"
 
-            screen += center_l + h_bar * (columns - 27) + h_bar_down_connect + h_bar * 3 + h_bar_up_connect + h_bar * 4 + h_bar_down_connect + 15 * h_bar + center_r + "\n"
+            screen += center_l + h_bar * (columns - 29) + h_bar_down_connect + h_bar * 3 + h_bar_up_connect + h_bar * 4 + h_bar_down_connect + 17 * h_bar + center_r + "\n"
 
             screen += v_bar + " " + utc_str + " " + b_var_single + " " + unix_str + " " * \
-                (columns - len(metric_str + unix_str + b_clockdisp[0]) - 25) + v_bar + ' ' + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
+                (columns - len(metric_str + unix_str + b_clockdisp[0]) - 27) + v_bar + ' ' + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
             screen += v_bar + " " + metric_str + " " + b_var_single + " " + sit_str + " " * \
-                (columns - len(metric_str + sit_str + b_clockdisp[1]) - 25) + v_bar + ' ' + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
+                (columns - len(metric_str + sit_str + b_clockdisp[1]) - 27) + v_bar + ' ' + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
             screen += v_bar + " " + solar_str + " " + b_var_single + " " + hex_str + " " * \
-                (columns - len(solar_str + net_str + b_clockdisp[2]) - 25) + v_bar + ' ' + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
+                (columns - len(solar_str + net_str + b_clockdisp[2]) - 27) + v_bar + ' ' + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
             screen += v_bar + " " + lst_str + " " + b_var_single + " " + net_str + " " * \
-                (columns - len(lst_str + hex_str + b_clockdisp[3]) - 25) + v_bar + ' ' + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
-            screen += corner_ll + h_bar * (columns - 27) + h_bar_up_connect + h_bar * 8 + h_bar_up_connect + h_bar * 15 + corner_lr + "\n"
+                (columns - len(lst_str + hex_str + b_clockdisp[3]) - 27) + v_bar + ' ' + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
+            screen += corner_ll + h_bar * (columns - 29) + h_bar_up_connect + h_bar * 8 + h_bar_up_connect + h_bar * 17 + corner_lr + "\n"
             ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
 
