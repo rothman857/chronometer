@@ -285,9 +285,9 @@ def int_fix_date(dt):
         if ordinal > 169:
             ordinal -= 1
         elif ordinal == 169:
-            return "LEAP DAY"
+            return "*LEAP DAY*"
     if ordinal == 365:
-        return "YEAR DAY"
+        return "*YEAR DAY*"
 
     m, d = divmod(ordinal - 1, 28)
     m += 1
@@ -377,14 +377,14 @@ def twc_date(dt):
 
     if is_leap_year(dt):
         if day == 366:
-            return "YEAR DAY"
+            return "*YEAR DAY*"
         elif day == 183:
-            return "LEAP DAY"
+            return "*LEAP DAY*"
         elif day > 183:
             day -= 1
 
     if day == 365:
-        return "YEAR DAY"
+        return "*YEAR DAY*"
     weekday = day % 7
     month = 1
     for i in range(0, 4):
@@ -403,7 +403,7 @@ def and_date(dt):
     weekday = (day - 1) % 5
 
     if day == 366:
-        return "LEAP DAY"
+        return "*LEAP DAY*"
 
     for i in range(0, 5):
         for j in [36, 37]:
