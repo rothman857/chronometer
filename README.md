@@ -17,10 +17,10 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
 + MIDDLE
     * Left: World Clock
     * Right:
-        * LS - Leap Shift - Current time offset that has to be corrected by the [leap cycle](https://en.wikipedia.org/wiki/Leap_year)
-        * SR - Sunrise Timer
-        * SS - Sunset Timer
-        * DD - Daylight Duration
+        * LPSHFT - Leap Shift - Current time offset that has to be corrected by the [leap cycle](https://en.wikipedia.org/wiki/Leap_year)
+        * SUNRI - Sunrise Timer
+        * SUNST - Sunset Timer
+        * DAYLN - Daylight Duration
 + BOTTOM
     * Left: Time Systems
         * UTC - [Coordinated Universal Time](https://en.wikipedia.org/wiki/Coordinated_Universal_Time)
@@ -33,16 +33,17 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
         * HEX - [Hexadecimal Time](https://en.wikipedia.org/wiki/Hexadecimal_time)
         * [Binary Clock](https://en.wikipedia.org/wiki/Binary_clock)
     * Right: Calendar Systems
-        * IFC - [International Fixed Calendar](https://en.wikipedia.org/wiki/International_Fixed_Calendar)
-        * TWC - [The World Calendar](https://en.wikipedia.org/wiki/World_Calendar)
-        * AND - [Annus Novus Decimal Calendar](http://www.atlantium.org/calendaran.html)
-        * RJD - [Reduced Julian Date](https://en.wikipedia.org/wiki/Julian_day)
+        * INTL - [International Fixed Calendar](https://en.wikipedia.org/wiki/International_Fixed_Calendar)
+        * WRLD - [The World Calendar](https://en.wikipedia.org/wiki/World_Calendar)
+        * ANNO - [Annus Novus Decimal Calendar](http://www.atlantium.org/calendaran.html)
+        * RJUL - [Reduced Julian Date](https://en.wikipedia.org/wiki/Julian_day)
     * [NTP](https://en.wikipedia.org/wiki/Network_Time_Protocol) Status (Server, Stratum, Delay, Offset)
 
 
 ## Requirements
 
-* In order to get the HDMI display to work with this code, you need to set the resolution to 480x320 and set the console font to VGA 8x14.
+* In order to get the HDMI display to work with this code, you need to set the resolution to 480x320 and set the console font to VGA 8x14.  Run `sudo dpkg-reconfigure console-setup` to configure these settings.
+
 * NTP daemon needs to be running as a background service: `sudo apt install ntp`
 * Python3 (Should already be installed on RPi): `sudo apt install python3`
 * `pytz` module for python3: `pip3 install pytz` or from your distros repositories.
