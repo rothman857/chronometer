@@ -147,6 +147,7 @@ annus_month_abbr = ["PRI",
                     "QUI",
                     "SEX",
                     "SEP",
+                    "OCT",
                     "NON",
                     "DEC"]
 
@@ -405,12 +406,16 @@ def and_date(dt):
     if day == 366:
         return "*LEAP DAY*"
 
+    exit_loop = False
     for i in range(0, 5):
+        if exit_loop:
+            break
         for j in [36, 37]:
             if day - j > 0:
                 day -= j
                 month += 1
             else:
+                exit_loop = True
                 break
     return annus_day_abbr[weekday] + ' ' + annus_month_abbr[month-1] + " " + "{:02}".format(day)
 
