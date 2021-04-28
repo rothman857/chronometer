@@ -36,7 +36,7 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
         * INTL - [International Fixed Calendar](https://en.wikipedia.org/wiki/International_Fixed_Calendar)
         * WRLD - [The World Calendar](https://en.wikipedia.org/wiki/World_Calendar)
         * ANNO - [Annus Novus Decimal Calendar](http://www.atlantium.org/calendaran.html)
-        * RJUL - [Reduced Julian Date](https://en.wikipedia.org/wiki/Julian_day)
+        * JULN - [Julian Date](https://en.wikipedia.org/wiki/Julian_day)
     * [NTP](https://en.wikipedia.org/wiki/Network_Time_Protocol) Status (Server, Stratum, Delay, Offset)
 
 

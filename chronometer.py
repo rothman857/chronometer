@@ -565,7 +565,7 @@ def main():
             dst_str[0] = "INTL " + int_fix_date(_now_loc)
             dst_str[1] = "WRLD " + twc_date(_now_loc)
             dst_str[2] = "ANNO " + and_date(_now_loc)
-            dst_str[3] = "RJUL " + float_fixed(julian_date(date=utcnow, reduced=True), 10, False)
+            dst_str[3] = "JULN " + float_fixed(julian_date(date=utcnow, reduced=False), 10, False)
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
