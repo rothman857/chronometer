@@ -468,7 +468,6 @@ def jul_to_greg(J):
 os.system("clear")
 os.system("setterm -cursor off")
 
-
 def main():
     loop_time = timedelta(0)
     dst_str = ["", "", "", ""]
@@ -478,7 +477,6 @@ def main():
     h_bar_single = themes[2] + chr(0x2500) + themes[1]
     h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
     h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
-#   h_bar_up_connect_single = themes[2] + chr(0x2567) + themes[1]
     corner_ll = themes[2] + chr(0x255A) + themes[1]
     corner_lr = themes[2] + chr(0x255D) + themes[1]
     corner_ul = themes[2] + chr(0x2554) + themes[1]
@@ -492,7 +490,7 @@ def main():
         ntp_id_str = str(ntpid)
         try:
             time.sleep(refresh)
-            start_time = datetime.utcnow()
+            start_time = datetime.now()
             offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
             now = start_time + loop_time
             if args.d:
@@ -609,8 +607,8 @@ def main():
                           ]
 
             for i in range(0, len(time_zone_list), 2):
-                time0 = _now.astimezone(time_zone_list[i][1])
-                time1 = _now.astimezone(time_zone_list[i+1][1])
+                time0 = time_zone_list[i][1].utcoffset(now) + now
+                time1 = time_zone_list[i+1][1].utcoffset(now) + now
 
                 flash0 = False
                 flash1 = False
@@ -632,19 +630,19 @@ def main():
                     elif (time1.hour == 17):
                         flash1 = not (u_second < flash_dur)
 
-                if time0.day > _now_loc.day:
+                if time0 > now and time0.day != now.day:
                     sign0 = "+"
-                elif time0.day < _now_loc.day:
+                elif time0 < now and time0.day != now.day:
                     sign0 = "-"
                 else:
-                    sign0 = ' '
+                    sign0 = " "
 
-                if time1.day > _now_loc.day:
+                if time1 > now and time1.day != now.day:
                     sign1 = "+"
-                elif time1.day < _now_loc.day:
+                elif time1 < now and time1.day != now.day:
                     sign1 = "-"
                 else:
-                    sign1 = ' '
+                    sign1 = " "
 
                 time_str0 = sign0 + time0.strftime("%H:%M").upper()
                 time_str1 = sign1 + time1.strftime("%H:%M").upper()
