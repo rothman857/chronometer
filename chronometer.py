@@ -519,9 +519,12 @@ def main():
     highlight = [themes[0], themes[3]]
     binary = "-#"
 
+    i = 0
     while ntpid == "---":
-        print('Waiting for NPT')
-        time.sleep(1)
+        reset_cursor()
+        print(f'Waiting for clock sync{"."*(i % 10)} {" " * (10 - (i % 10))}')
+        i += 1
+        time.sleep(.5)
 
     while True:
         ntp_id_str = str(ntpid)
