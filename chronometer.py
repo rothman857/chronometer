@@ -522,9 +522,10 @@ def main():
     i = 0
     while ntpid == "---":
         reset_cursor()
-        print(f'Waiting for clock sync{"."*(i % 10)} {" " * (10 - (i % 10))}')
+        rotator = ['/','-', '\\', '|']
+        print('Waiting for clock sync ' + rotator[i%4])
         i += 1
-        time.sleep(.5)
+        time.sleep(.1)
 
     while True:
         ntp_id_str = str(ntpid)
