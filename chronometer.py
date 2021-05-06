@@ -836,9 +836,7 @@ def ntp_daemon():
             ntpq_sh = subprocess.run(['ntpq', '-p'], stdout=subprocess.PIPE)
 
             ntpq = ntpq.stdout.decode('utf-8')
-            ntpq_sh = ntpq_sh.stdout.decode('utf-8')
-
-            ntpout = ntpq_sh
+            ntpout = ntpq_sh.stdout.decode('utf-8')
 
             current_server = re.search(r"\*.+", ntpq)
             current_server = pattern.search(ntpq)
