@@ -537,13 +537,11 @@ def main():
     print("Connected to internet")
 
     i = 0
-    # while ntpid == "---":
-    while True:
+    while ntpid == "---":
         reset_cursor()
         rotator = ['/','-', '\\', '|']
         print('Waiting for clock sync ' + rotator[i%4])
         print(ntpout)
-        # move_cursor_up()
         i += 1
         time.sleep(.1)
 
