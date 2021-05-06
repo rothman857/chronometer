@@ -519,6 +519,14 @@ def main():
     highlight = [themes[0], themes[3]]
     binary = "-#"
 
+    while not socket_attempt:
+        reset_cursor()
+        rotator = ['/','-', '\\', '|']
+        print('Waiting for clock sync ' + rotator[i%4])
+        i += 1
+        time.sleep(5)
+        
+        
     i = 0
     while ntpid == "---":
         reset_cursor()
@@ -795,16 +803,7 @@ def ntp_daemon():
     global ntpid
     global is_connected
 
-    def socket_attempt(address, port):
-        is_successful = False
-        for _ in range(0, 3):
-            try:
-                socket.create_connection((address, port), 2)
-                is_successful = is_successful or True
-            except:
-                pass
-
-        return is_successful
+    
 
     pattern = re.compile(
         r"\*([\w+\-\.(): ]+)\s+" +  # 1 - Server ID
@@ -840,6 +839,17 @@ def ntp_daemon():
 
         time.sleep(15)
 
+
+def socket_attempt(address, port):
+        is_successful = False
+        for _ in range(0, 3):
+            try:
+                socket.create_connection((address, port), 2)
+                is_successful = is_successful or True
+            except:
+                pass
+
+        return is_successful
 
 if __name__ == "__main__":
     thread = threading.Thread(target=ntp_daemon)
