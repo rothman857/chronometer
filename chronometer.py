@@ -519,14 +519,13 @@ def main():
     highlight = [themes[0], themes[3]]
     binary = "-#"
 
-    while not socket_attempt:
+    while not socket_attempt("8.8.8.8", 53):
         reset_cursor()
         rotator = ['/','-', '\\', '|']
-        print('Waiting for clock sync ' + rotator[i%4])
+        print('Waiting for connection ' + rotator[i%4])
         i += 1
         time.sleep(5)
-        
-        
+
     i = 0
     while ntpid == "---":
         reset_cursor()
