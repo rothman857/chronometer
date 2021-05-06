@@ -833,6 +833,7 @@ def ntp_daemon():
         try:
             is_connected = socket_attempt("8.8.8.8", 53)
             ntpq = subprocess.run(['ntpq', '-pw'], stdout=subprocess.PIPE)
+            ntpq_sh = subprocess.run(['ntpq', '-p'], stdout=subprocess.PIPE)
             ntpq = ntpq.stdout.decode('utf-8')
             current_server = re.search(r"\*.+", ntpq)
             current_server = pattern.search(ntpq)
