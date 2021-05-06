@@ -26,24 +26,25 @@ if args.date:
 
 here = os.path.dirname(os.path.realpath(__file__))
 
-default_config = {'coordinates': {
-    '# Note': 'Decimal notation only.  West longitude is negative.',
-    'latitude': 40.7128,
-    'longitude': -74.0060},
-    'refresh': 0.001,
-    'timezones': {
-    '# Note': 'Format = label: time_zone. (time_zone must be a valid pytz time zone name.  10 times zones are required.)',
-    'Pacific': 'US/Pacific',
-    'Eastern': 'US/Eastern',
-    'Israel': 'Israel',
-    'London': 'Europe/London',
-    'Sydney': 'Australia/Sydney',
-    'Germany': 'Europe/Berlin',
-    'Hong Kong': 'Asia/Hong_Kong',
-    'India': 'Asia/Kolkata',
-    'Japan': 'Asia/Tokyo',
-    'Singapore': 'Singapore',
-}
+default_config = {
+    'coordinates': {
+        '# Note': 'Decimal notation only.  West longitude is negative.',
+        'latitude': 40.7128,
+        'longitude': -74.0060},
+        'refresh': 0.001,
+        'timezones': {
+        '# Note': 'Format = label: time_zone. (time_zone must be a valid pytz time zone name.  10 times zones are required.)',
+        'Pacific': 'US/Pacific',
+        'Eastern': 'US/Eastern',
+        'Israel': 'Israel',
+        'London': 'Europe/London',
+        'Sydney': 'Australia/Sydney',
+        'Germany': 'Europe/Berlin',
+        'Hong Kong': 'Asia/Hong_Kong',
+        'India': 'Asia/Kolkata',
+        'Japan': 'Asia/Tokyo',
+        'Singapore': 'Singapore',
+    }
 }
 
 if os.path.isfile(os.path.join(here, '.config')) and not args.reset:
@@ -120,72 +121,86 @@ L_BLUE_BG = "\x1b[104m"
 D_GRAY_FG = "\x1b[90m"
 RST_COLORS = "\x1b[0m"
 
-themes = [BLACK_BG,      # background
-          WHITE_FG,      # text
-          L_BLUE_FG,    # table borders
-          L_BLUE_BG,    # text highlight
-          D_GRAY_FG]   # progress bar dim
+themes = [
+    BLACK_BG,  # background
+    WHITE_FG,  # text
+    L_BLUE_FG, # table borders
+    L_BLUE_BG, # text highlight
+    D_GRAY_FG  # progress bar dim
+]  
 
-weekday_abbr = ["SAT",
-                "SUN",
-                "MON",
-                "TUE",
-                "WED",
-                "THU",
-                "FRI"]
+weekday_abbr = [
+    "SAT",
+    "SUN",
+    "MON",
+    "TUE",
+    "WED",
+    "THU",
+    "FRI"
+]
 
-annus_day_abbr = ["PRI",
-                  "SEC",
-                  "TER",
-                  "QUA",
-                  "QUI"]
+annus_day_abbr = [
+    "PRI",
+    "SEC",
+    "TER",
+    "QUA",
+    "QUI"
+]
 
-annus_month_abbr = ["PRI",
-                    "SEC",
-                    "TER",
-                    "QUA",
-                    "QUI",
-                    "SEX",
-                    "SEP",
-                    "OCT",
-                    "NON",
-                    "DEC"]
+annus_month_abbr = [
+    "PRI",
+    "SEC",
+    "TER",
+    "QUA",
+    "QUI",
+    "SEX",
+    "SEP",
+    "OCT",
+    "NON",
+    "DEC"
+]
 
-intfix_month_abbr = ["JAN",
-                     "FEB",
-                     "MAR",
-                     "APR",
-                     "MAY",
-                     "JUN",
-                     "SOL",
-                     "JUL",
-                     "AUG",
-                     "SEP",
-                     "OCT",
-                     "NOV",
-                     "DEC"]
+intfix_month_abbr = [
+    "JAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAY",
+    "JUN",
+    "SOL",
+    "JUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC"
+]
 
-month_abbr = ["JAN",
-              "FEB",
-              "MAR",
-              "APR",
-              "MAY",
-              "JUN",
-              "JUL",
-              "AUG",
-              "SEP",
-              "OCT",
-              "NOV",
-              "DEC"]
+month_abbr = [
+    "JAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC"
+]
 
-#               Label       value precision
-time_table = [["S",    0,    10],
-              ["M",    0,    10],
-              ["H",      0,    10],
-              ["D",       0,    10],
-              ["M",     0,    10],
-              ["Y",      0,    10],
-              ["C",   0,    10]]
+# Label, value, precision
+time_table = [
+    ["S", 0, 10],
+    ["M", 0, 10],
+    ["H", 0, 10],
+    ["D", 0, 10],
+    ["M", 0, 10],
+    ["Y", 0, 10],
+    ["C", 0, 10]
+]
 
 
 def reset_cursor():
@@ -464,6 +479,24 @@ def jul_to_greg(J):
     Y = (e // 1461) - 4716 + (12 + 2 - M) // 12
     return (datetime(year=Y, day=D, month=M).replace(tzinfo=utc).astimezone() + timedelta(seconds=86400 * (J - _J)))
 
+class Screen:
+    def __init__(self):
+        self.content = ''
+    
+    def __add__(self, string):
+        self.content += string
+
+    def render(self):
+        return content
+
+    def printable_length(content):
+        l = 0
+        for regex in ['\[\d+m','\\x1b']:
+            for i in re.findall(regex, content):
+                l += (len(i))
+        return l
+
+
 
 os.system("clear")
 os.system("setterm -cursor off")
@@ -486,12 +519,20 @@ def main():
     highlight = [themes[0], themes[3]]
     binary = "-#"
 
+    while ntpid == "---":
+        print('Waiting for NPT')
+        time.sleep(1)
+
     while True:
         ntp_id_str = str(ntpid)
         try:
             time.sleep(refresh)
             start_time = datetime.now()
-            offset = -(time.timezone if (time.localtime().tm_isdst == 0) else time.altzone)/(3600)
+            offset = -(
+                time.timezone if 
+                (time.localtime().tm_isdst == 0) else 
+                time.altzone
+            )/(3600)
             now = start_time + loop_time
             if args.d:
                 now = dbg_override + (start_time - dbg_start)
@@ -517,34 +558,65 @@ def main():
             minute_binary = divmod(_now.astimezone().minute, 10)
             second_binary = divmod(_now.astimezone().second, 10)
 
-            b_clock_mat = [bin(hour_binary[0])[2:].zfill(4),
-                           bin(hour_binary[1])[2:].zfill(4),
-                           bin(minute_binary[0])[2:].zfill(4),
-                           bin(minute_binary[1])[2:].zfill(4),
-                           bin(second_binary[0])[2:].zfill(4),
-                           bin(second_binary[1])[2:].zfill(4),
-                           ]
+            b_clock_mat = [
+                bin(hour_binary[0])[2:].zfill(4),
+                bin(hour_binary[1])[2:].zfill(4),
+                bin(minute_binary[0])[2:].zfill(4),
+                bin(minute_binary[1])[2:].zfill(4),
+                bin(second_binary[0])[2:].zfill(4),
+                bin(second_binary[1])[2:].zfill(4),
+            ]
 
             b_clock_mat_t = [*zip(*b_clock_mat)]
             b_clockdisp = ['', '', '', '']
 
             for i, row in enumerate(b_clock_mat_t):
-                b_clockdisp[i] = ''.join(row).replace("0", binary[0]).replace("1", binary[1])
+                b_clockdisp[i] = (
+                    ''.join(row).replace("0", binary[0]).replace("1", binary[1])
+                )
 
             if (_now_loc.month == 12):
                 days_this_month = 31
             else:
-                days_this_month = (datetime(_now_loc.year, _now_loc.month + 1, 1) - datetime(_now_loc.year, _now_loc.month, 1)).days
+                days_this_month = (
+                    datetime(_now_loc.year, _now_loc.month + 1, 1) - 
+                    datetime(_now_loc.year, _now_loc.month, 1)
+                ).days
 
             days_this_year = 366 if is_leap_year(_now_loc) else 365
 
-            time_table[SECOND][VALUE] = _now_loc.second + u_second + random.randint(0, 9999)/10000000000
-            time_table[MINUTE][VALUE] = _now_loc.minute + time_table[SECOND][VALUE] / 60 + random.randint(0, 99)/10000000000
-            time_table[HOUR][VALUE] = _now_loc.hour + time_table[MINUTE][VALUE] / 60
-            time_table[DAY][VALUE] = _now_loc.day + time_table[HOUR][VALUE] / 24
-            time_table[MONTH][VALUE] = _now_loc.month + (time_table[DAY][VALUE] - 1)/days_this_month
-            time_table[YEAR][VALUE] = _now_loc.year + (day_of_year(_now_loc) + time_table[DAY][VALUE] - int(time_table[DAY][VALUE])) / days_this_year
-            time_table[CENTURY][VALUE] = (time_table[YEAR][VALUE] - 1) / 100 + 1
+            time_table[SECOND][VALUE] = (
+                _now_loc.second + 
+                u_second + 
+                random.randint(0, 9999)/10000000000
+            )
+            time_table[MINUTE][VALUE] = (
+                _now_loc.minute + 
+                time_table[SECOND][VALUE] / 60 + 
+                random.randint(0, 99)/10000000000
+            )
+            time_table[HOUR][VALUE] = (
+                _now_loc.hour + 
+                time_table[MINUTE][VALUE] / 60
+            )
+            time_table[DAY][VALUE] =(
+                _now_loc.day + 
+                time_table[HOUR][VALUE] / 24
+            )
+            time_table[MONTH][VALUE] =(
+                _now_loc.month + 
+                (time_table[DAY][VALUE] - 1)/days_this_month
+            )
+            time_table[YEAR][VALUE] = (
+                _now_loc.year + (
+                    day_of_year(_now_loc) + 
+                    time_table[DAY][VALUE] - 
+                    int(time_table[DAY][VALUE])
+                ) / days_this_year
+            )
+            time_table[CENTURY][VALUE] = (
+                time_table[YEAR][VALUE] - 1
+            ) / 100 + 1
 
             screen += themes[3]
             screen += ("{: ^" + str(columns) + "}\n").format(_now_loc.strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y")).upper() + themes[0]
@@ -599,12 +671,13 @@ def main():
                 sign = '-' if s < 0 else ' '
                 time_List[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
 
-            leap_stats = ["LSHFT" + time_List[0],
-                          h_bar_single * 20,
-                          "SUNRI" + time_List[1],
-                          "SUNST" + time_List[2],
-                          "DAYLN" + time_List[3]
-                          ]
+            leap_stats = [
+                "LSHFT" + time_List[0],
+                h_bar_single * 20,
+                "SUNRI" + time_List[1],
+                "SUNST" + time_List[2],
+                "DAYLN" + time_List[3]
+            ]
 
             for i in range(0, len(time_zone_list), 2):
                 time0 = time_zone_list[i][1].utcoffset(now) + now
