@@ -206,6 +206,12 @@ time_table = [
 def reset_cursor():
     print("\033[0;0H", end="")
 
+def move_cursor_down():
+    print('\033[1B', end='')
+
+def move_cursor_up():
+    print('\033[1A', end='')
+
 
 def draw_progress_bar(*, min=0, width, max, value):
     level = int((width + 1) * (value - min)/(max - min))
@@ -519,19 +525,21 @@ def main():
     highlight = [themes[0], themes[3]]
     binary = "-#"
 
+
+    reset_cursor()
     while not socket_attempt("8.8.8.8", 53):
-        reset_cursor()
         print('Waiting for connection ' + rotator[i%4])
+        move_cursor_up()
         i += 1
         time.sleep(5)
 
-    time.sleep(5)
+    print("Connected to internet")
 
     i = 0
     while ntpid == "---":
-        reset_cursor()
         rotator = ['/','-', '\\', '|']
         print('Waiting for clock sync ' + rotator[i%4])
+        move_cursor_up()
         i += 1
         time.sleep(.1)
 
