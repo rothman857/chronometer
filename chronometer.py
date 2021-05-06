@@ -112,6 +112,7 @@ ntpoff = 0
 ntpdly = 0
 ntpstr = "-"
 ntpid = "---"
+ntpout = ""
 
 # Terminal coloring
 BLACK_BG = "\x1b[40m"
@@ -536,10 +537,13 @@ def main():
     print("Connected to internet")
 
     i = 0
-    while ntpid == "---":
+    # while ntpid == "---":
+    while True:
+        reset_cursor()
         rotator = ['/','-', '\\', '|']
         print('Waiting for clock sync ' + rotator[i%4])
-        move_cursor_up()
+        print(ntpout)
+        # move_cursor_up()
         i += 1
         time.sleep(.1)
 
@@ -809,6 +813,7 @@ def ntp_daemon():
     global ntpoff
     global ntpstr
     global ntpid
+    global ntpout
     global is_connected
 
     
@@ -832,6 +837,7 @@ def ntp_daemon():
 
             ntpq = subprocess.run(['ntpq', '-pw'], stdout=subprocess.PIPE)
             ntpq = ntpq.stdout.decode('utf-8')
+            ntpout = ntpq
             current_server = re.search(r"\*.+", ntpq)
             current_server = pattern.search(ntpq)
 
