@@ -541,7 +541,7 @@ def main():
         reset_cursor()
         rotator = ['/','-', '\\', '|']
         print('Waiting for clock sync ' + rotator[i%4])
-        print(ntpout)
+        # print(ntpout)
         i += 1
         time.sleep(.1)
 
@@ -832,12 +832,8 @@ def ntp_daemon():
     while(True):
         try:
             is_connected = socket_attempt("8.8.8.8", 53)
-
             ntpq = subprocess.run(['ntpq', '-pw'], stdout=subprocess.PIPE)
-            ntpq_sm = subprocess.run(['ntpq', '-p'], stdout=subprocess.PIPE)
             ntpq = ntpq.stdout.decode('utf-8')
-            ntpq_sm = ntpq.stdout.decode('utf-8')
-            ntpout = ntpq_sm
             current_server = re.search(r"\*.+", ntpq)
             current_server = pattern.search(ntpq)
 
