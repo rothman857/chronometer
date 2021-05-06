@@ -541,7 +541,7 @@ def main():
         reset_cursor()
         rotator = ['/','-', '\\', '|']
         print('Waiting for clock sync ' + rotator[i%4])
-        # print(ntpout)
+        print(ntpout)
         i += 1
         time.sleep(.1)
 
