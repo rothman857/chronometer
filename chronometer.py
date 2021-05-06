@@ -206,11 +206,11 @@ time_table = [
 def reset_cursor():
     print("\033[0;0H", end="")
 
-def move_cursor_down():
-    print('\033[1B', end='')
+def move_cursor_down(n=1):
+    print('\033['+ str(n) + 'B', end='')
 
-def move_cursor_up():
-    print('\033[1A', end='')
+def move_cursor_up(n=1):
+    print('\033['+ str(n) + 'A', end='')
 
 
 def draw_progress_bar(*, min=0, width, max, value):
