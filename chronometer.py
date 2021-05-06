@@ -496,7 +496,7 @@ class Screen:
                 l += (len(i))
         return l
 
-
+rotator = ['/','-', '\\', '|']
 
 os.system("clear")
 os.system("setterm -cursor off")
@@ -521,10 +521,11 @@ def main():
 
     while not socket_attempt("8.8.8.8", 53):
         reset_cursor()
-        rotator = ['/','-', '\\', '|']
         print('Waiting for connection ' + rotator[i%4])
         i += 1
         time.sleep(5)
+
+    time.sleep(5)
 
     i = 0
     while ntpid == "---":
