@@ -709,7 +709,7 @@ def main():
             for i, s in enumerate([leap_shift(_now_loc), sunrise, sunset, diff, nighttime]):
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
-                subs = 100000 * (seconds - int(seconds))
+                subs = 1000000 * (seconds - int(seconds))
                 sign = '-' if s < 0 else ' '
                 time_List[i] = '{}{:02}:{:02}:{:02}.{:06}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
 
