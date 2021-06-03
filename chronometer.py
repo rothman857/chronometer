@@ -31,8 +31,8 @@ default_config = {
         '# Note': 'Decimal notation only.  West longitude is negative.',
         'latitude': 40.7128,
         'longitude': -74.0060},
-        'refresh': 0.001,
-        'timezones': {
+    'refresh': 0.001,
+    'timezones': {
         '# Note': 'Format = label: time_zone. (time_zone must be a valid pytz time zone name.  10 times zones are required.)',
         'Pacific': 'US/Pacific',
         'Eastern': 'US/Eastern',
@@ -70,8 +70,11 @@ random.seed()
 is_connected = False
 
 now = datetime.now()
+
+
 def my_tz_sort(tz_entry):
     return tz_entry[1].utcoffset(now)
+
 
 try:
     lat = float(running_config['coordinates']['latitude'])
@@ -86,7 +89,7 @@ try:
     time_zone_list.sort(key=my_tz_sort)
     _time_zone_list = [None] * len(time_zone_list)
 
-    for i in range(0,len(time_zone_list), 2):
+    for i in range(0, len(time_zone_list), 2):
         _time_zone_list[i] = time_zone_list[i//2]
         _time_zone_list[i+1] = time_zone_list[i//2+5]
 
@@ -125,10 +128,10 @@ RST_COLORS = "\x1b[0m"
 themes = [
     BLACK_BG,  # background
     WHITE_FG,  # text
-    L_BLUE_FG, # table borders
-    L_BLUE_BG, # text highlight
+    L_BLUE_FG,  # table borders
+    L_BLUE_BG,  # text highlight
     D_GRAY_FG  # progress bar dim
-]  
+]
 
 weekday_abbr = [
     "SAT",
@@ -207,11 +210,13 @@ time_table = [
 def reset_cursor():
     print("\033[0;0H", end="")
 
+
 def move_cursor_down(n=1):
-    print('\033['+ str(n) + 'B', end='')
+    print('\033[' + str(n) + 'B', end='')
+
 
 def move_cursor_up(n=1):
-    print('\033['+ str(n) + 'A', end='')
+    print('\033[' + str(n) + 'A', end='')
 
 
 def draw_progress_bar(*, min=0, width, max, value):
@@ -271,6 +276,7 @@ def float_fixed(flt, wd, sign=False):
     sign = "+" if sign else ""
     return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
 
+
 def _float_fixed(flt, wd, sign=False):
     sign = "+" if sign else ""
     return sign + str(flt)[:wd-(len(sign))]
@@ -295,10 +301,14 @@ def julian_date(date, reduced=False):
     a = (14 - date.month) // 12
     y = date.year + 4800 - a
     m = date.month + 12 * a - 3
-
     jdn = date.day + (153*m+2)//5 + y*365 + y//4 - y//100 + y//400 - 32045
-    jd = jdn + (date.hour - 12) / 24 + date.minute / 1440 + date.second / 86400 + date.microsecond / 86400000000
-
+    jd = (
+        jdn +
+        (date.hour - 12) / 24 +
+        date.minute / 1440 +
+        date.second / 86400 +
+        date.microsecond / 86400000000
+    )
     return jd - 2400000 if reduced else jd
 
 
@@ -311,14 +321,10 @@ def int_fix_date(dt):
             return "*LEAP DAY*"
     if ordinal == 365:
         return "*YEAR DAY*"
-
     m, d = divmod(ordinal - 1, 28)
     m += 1
     d += 1
-
     w = ordinal % 7
-
-    #return weekday_abbr[w] + ' ' + get_local_date_format().format(month=m, day=d)
     return weekday_abbr[w] + ' ' + intfix_month_abbr[m-1] + " " + "{:02}".format(d)
 
 
@@ -350,7 +356,9 @@ def leapage(dt):
 
     if is_leap_year(dt):
         if dt.month == 2 and dt.day == 29:
-            percent_complete = (dt - datetime(month=2, day=29, year=dt.year)).total_seconds()/86400
+            percent_complete = (
+                dt - datetime(month=2, day=29, year=dt.year)
+            ).total_seconds()/86400
             count += percent_complete
         elif dt >= datetime(month=3, day=1, year=dt.year):
             count += 1
@@ -364,7 +372,6 @@ def leapage(dt):
 def sunriseset(dt, offset=0, fixed=False, event=''):  # https://en.wikipedia.org/wiki/Sunrise_equation
     n = julian_date(dt) - 2451545.0 + .0008  # current julian day since 1/1/2000 12:00
     _n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()//86400
-
     n = n if fixed else _n
     n += offset
     J_star = n + (-lon/360)  # Mean Solar Noon
@@ -378,10 +385,10 @@ def sunriseset(dt, offset=0, fixed=False, event=''):  # https://en.wikipedia.org
     J_rise = J_transit - (w_0/360)
     J_set = J_transit + (w_0/360)
     daylight = 2 * w_0 / 15 * 3600
+    nighttime = 86400 - daylight
     t_rise = (dt - jul_to_greg(J_rise)).total_seconds()
     t_set = (dt - jul_to_greg(J_set)).total_seconds()
     t_noon = (dt - jul_to_greg(J_transit)).total_seconds()
- 
     if event == '':
         return t_rise, t_set, t_noon
     elif event == 'sunrise':
@@ -392,6 +399,8 @@ def sunriseset(dt, offset=0, fixed=False, event=''):  # https://en.wikipedia.org
         return t_noon
     elif event == 'daylight':
         return daylight
+    elif event == 'nighttime':
+        return nighttime
 
 
 def twc_date(dt):
@@ -484,12 +493,20 @@ def jul_to_greg(J):
     D = (h % 153) // 5 + 1
     M = ((h // 153 + 2) % 12) + 1
     Y = (e // 1461) - 4716 + (12 + 2 - M) // 12
-    return (datetime(year=Y, day=D, month=M).replace(tzinfo=utc).astimezone() + timedelta(seconds=86400 * (J - _J)))
+    return (
+        datetime(
+            year=Y,
+            day=D,
+            month=M
+        ).replace(
+            tzinfo=utc
+        ).astimezone() + timedelta(seconds=86400 * (J - _J)))
+
 
 class Screen:
     def __init__(self):
         self.content = ''
-    
+
     def __add__(self, string):
         self.content += string
 
@@ -498,15 +515,17 @@ class Screen:
 
     def printable_length(content):
         l = 0
-        for regex in ['\[\d+m','\\x1b']:
+        for regex in ['\[\d+m', '\\x1b']:
             for i in re.findall(regex, content):
                 l += (len(i))
         return l
 
-rotator = ['/','-', '\\', '|']
+
+
 
 os.system("clear")
 os.system("setterm -cursor off")
+
 
 def main():
     loop_time = timedelta(0)
@@ -525,22 +544,22 @@ def main():
     center_r = themes[2] + chr(0x2563) + themes[1]
     highlight = [themes[0], themes[3]]
     binary = "-#"
+    rotator = ['/', '-', '\\', '|']
 
+    ntp_thread = threading.Thread(target=ntp_daemon)
+    ntp_thread.setDaemon(True)
+    i = 0
 
     reset_cursor()
     while not socket_attempt("8.8.8.8", 53):
-        print('Waiting for connection ' + rotator[i%4])
-        move_cursor_up()
+        print(f'Waiting for internet connection{"." * (i % 3 + 1)}')
         i += 1
-        time.sleep(5)
 
-    print("Connected to internet")
-
-    i = 0
+    ntp_thread.start()
+    
     while ntpid == "---":
         reset_cursor()
-        rotator = ['/','-', '\\', '|']
-        print('Waiting for clock sync ' + rotator[i%4])
+        print('Waiting for clock sync ' + rotator[i % 4])
         print(ntpout)
         i += 1
         time.sleep(.1)
@@ -551,8 +570,8 @@ def main():
             time.sleep(refresh)
             start_time = datetime.now()
             offset = -(
-                time.timezone if 
-                (time.localtime().tm_isdst == 0) else 
+                time.timezone if
+                (time.localtime().tm_isdst == 0) else
                 time.altzone
             )/(3600)
             now = start_time + loop_time
@@ -601,38 +620,38 @@ def main():
                 days_this_month = 31
             else:
                 days_this_month = (
-                    datetime(_now_loc.year, _now_loc.month + 1, 1) - 
+                    datetime(_now_loc.year, _now_loc.month + 1, 1) -
                     datetime(_now_loc.year, _now_loc.month, 1)
                 ).days
 
             days_this_year = 366 if is_leap_year(_now_loc) else 365
 
             time_table[SECOND][VALUE] = (
-                _now_loc.second + 
-                u_second + 
+                _now_loc.second +
+                u_second +
                 random.randint(0, 9999)/10000000000
             )
             time_table[MINUTE][VALUE] = (
-                _now_loc.minute + 
-                time_table[SECOND][VALUE] / 60 + 
+                _now_loc.minute +
+                time_table[SECOND][VALUE] / 60 +
                 random.randint(0, 99)/10000000000
             )
             time_table[HOUR][VALUE] = (
-                _now_loc.hour + 
+                _now_loc.hour +
                 time_table[MINUTE][VALUE] / 60
             )
-            time_table[DAY][VALUE] =(
-                _now_loc.day + 
+            time_table[DAY][VALUE] = (
+                _now_loc.day +
                 time_table[HOUR][VALUE] / 24
             )
-            time_table[MONTH][VALUE] =(
-                _now_loc.month + 
+            time_table[MONTH][VALUE] = (
+                _now_loc.month +
                 (time_table[DAY][VALUE] - 1)/days_this_month
             )
             time_table[YEAR][VALUE] = (
                 _now_loc.year + (
-                    day_of_year(_now_loc) + 
-                    time_table[DAY][VALUE] - 
+                    day_of_year(_now_loc) +
+                    time_table[DAY][VALUE] -
                     int(time_table[DAY][VALUE])
                 ) / days_this_year
             )
@@ -652,7 +671,7 @@ def main():
                     draw_progress_bar(width=(columns - 19), max=1, value=percent),
                     100 * (percent))
 
-            screen += center_l + h_bar * (columns - 25) + h_bar_down_connect + h_bar * 22 + center_r + "\n"
+            screen += center_l + h_bar * (columns - 23) + h_bar_down_connect + h_bar * 20 + center_r + "\n"
 
             dst_str[0] = "INTL " + int_fix_date(_now_loc)
             dst_str[1] = "WRLD " + twc_date(_now_loc)
@@ -679,26 +698,27 @@ def main():
             utc_str = "UTC " + utcnow.strftime("%H:%M:%S")
 
             diff = sunriseset(_now_loc, event='daylight', fixed=True)
+            nighttime = sunriseset(_now_loc, event='nighttime', fixed=True)
 
             if sunset > 0 and sunrise > 0:
                 sunrise = sunriseset(_now_loc, event='sunrise', offset=1)
             elif sunset < 0 and sunrise < 0:
                 sunset = sunriseset(_now_loc, event='sunset', offset=-1)
 
-            time_List = [None, None, None, None]
-            for i, s in enumerate([leap_shift(_now_loc), sunrise, sunset, diff]):
+            time_List = [None, None, None, None, None]
+            for i, s in enumerate([leap_shift(_now_loc), sunrise, sunset, diff, nighttime]):
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
                 subs = 100000 * (seconds - int(seconds))
                 sign = '-' if s < 0 else ' '
-                time_List[i] = '{}{:02}:{:02}:{:02}.{:05}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
+                time_List[i] = '{}{:02}:{:02}:{:02}.{:06}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
 
             leap_stats = [
-                "LSHFT" + time_List[0],
-                h_bar_single * 20,
-                "SUNRI" + time_List[1],
-                "SUNST" + time_List[2],
-                "DAYLN" + time_List[3]
+                "LS" + time_List[0],
+                "SR" + time_List[1],
+                "SS" + time_List[2],
+                "DL" + time_List[3],
+                "NL" + time_List[4]
             ]
 
             for i in range(0, len(time_zone_list), 2):
@@ -744,13 +764,13 @@ def main():
 
                 padding = (columns - 60) * ' '
 
-                screen += v_bar + ' ' + highlight[flash0] + ("{0:>9}{1:6}").format(time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
-                screen += ' ' + highlight[flash1] + ("{0:>9}{1:6}").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
+                screen += v_bar + ' ' + highlight[flash0] + ("{0:>10}{1:6}").format(time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
+                screen += ' ' + highlight[flash1] + ("{0:>10}{1:6}").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
 
                 screen += "\n"
 
-            screen += center_l + h_bar * (columns - 29) + h_bar_down_connect + h_bar * 3 + h_bar_up_connect + h_bar * 4 + h_bar_down_connect + 17 * h_bar + center_r + "\n"
+            screen += center_l + h_bar * (columns - 29) + h_bar_down_connect + h_bar * 5 + h_bar_up_connect + h_bar * 2 + h_bar_down_connect + 17 * h_bar + center_r + "\n"
 
             screen += v_bar + " " + utc_str + " " + b_var_single + " " + unix_str + " " * \
                 (columns - len(metric_str + unix_str + b_clockdisp[0]) - 27) + v_bar + ' ' + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
@@ -814,8 +834,6 @@ def ntp_daemon():
     global ntpout
     global is_connected
 
-    
-
     pattern = re.compile(
         r"\*([\w+\-\.(): ]+)\s+" +  # 1 - Server ID
         r"([\w\.]+)\s+" +           # 2 - Reference ID
@@ -855,20 +873,21 @@ def ntp_daemon():
 
 
 def socket_attempt(address, port):
-        is_successful = False
-        for _ in range(0, 3):
-            try:
-                socket.create_connection((address, port), 2)
-                is_successful = is_successful or True
-            except:
-                pass
+    is_successful = False
+    for _ in range(0, 3):
+        try:
+            socket.create_connection((address, port), 2)
+            is_successful = is_successful or True
+        except:
+            pass
 
-        return is_successful
+    return is_successful
+
 
 if __name__ == "__main__":
-    thread = threading.Thread(target=ntp_daemon)
-    thread.setDaemon(True)
-    thread.start()
+    # thread = threading.Thread(target=ntp_daemon)
+    # thread.setDaemon(True)
+    # thread.start()
     main()
     os.system("clear")
     os.system("setterm -cursor on")
