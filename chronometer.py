@@ -543,7 +543,7 @@ def main():
     center_l = themes[2] + chr(0x2560) + themes[1]
     center_r = themes[2] + chr(0x2563) + themes[1]
     highlight = [themes[0], themes[3]]
-    binary = "-#"
+    binary = ("-", chr(0x25fc))#"
     rotator = ['/', '-', '\\', '|']
 
     ntp_thread = threading.Thread(target=ntp_daemon)
