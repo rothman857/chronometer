@@ -552,7 +552,7 @@ def main():
 
     reset_cursor()
     while not socket_attempt("8.8.8.8", 53):
-        print(f'Waiting for internet connection{"." * (i % 3 + 1)}')
+        print('Waiting for internet connection...')
         i += 1
 
     ntp_thread.start()
