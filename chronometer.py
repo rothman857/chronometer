@@ -90,8 +90,8 @@ try:
     _time_zone_list = [None] * len(time_zone_list)
 
     for i in range(0, len(time_zone_list), 2):
-        _time_zone_list[i] = time_zone_list[i//2]
-        _time_zone_list[i+1] = time_zone_list[i//2+5]
+        _time_zone_list[i] = time_zone_list[i//2][:10]
+        _time_zone_list[i+1] = time_zone_list[i//2+5][:10]
 
     time_zone_list = _time_zone_list
 
@@ -764,8 +764,8 @@ def main():
 
                 padding = (columns - 60) * ' '
 
-                screen += v_bar + ' ' + highlight[flash0] + ("{0:>10}{1:6}").format(time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
-                screen += ' ' + highlight[flash1] + ("{0:>10}{1:6}").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
+                screen += v_bar + ' ' + highlight[flash0] + ("{0:<10}{1:6}").format(time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
+                screen += ' ' + highlight[flash1] + ("{0:<10}{1:6}").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
 
                 screen += "\n"
