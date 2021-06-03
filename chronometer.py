@@ -385,7 +385,7 @@ def sunriseset(dt, offset=0, fixed=False, event=''):  # https://en.wikipedia.org
     J_rise = J_transit - (w_0/360)
     J_set = J_transit + (w_0/360)
     daylight = 2 * w_0 / 15 * 3600
-    nighttime = 86400 - daylight
+    nighttime = 2 * (180-w_0) / 15 * 3600
     t_rise = (dt - jul_to_greg(J_rise)).total_seconds()
     t_set = (dt - jul_to_greg(J_set)).total_seconds()
     t_noon = (dt - jul_to_greg(J_transit)).total_seconds()
@@ -714,11 +714,11 @@ def main():
                 time_List[i] = '{}{:02}:{:02}:{:02}.{:06}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
 
             leap_stats = [
-                "LS" + time_List[0],
+                "LD" + time_List[0],
                 "SR" + time_List[1],
                 "SS" + time_List[2],
-                "DL" + time_List[3],
-                "NL" + time_List[4]
+                "DD" + time_List[3],
+                "ND" + time_List[4]
             ]
 
             for i in range(0, len(time_zone_list), 2):
