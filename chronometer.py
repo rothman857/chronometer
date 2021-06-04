@@ -743,16 +743,16 @@ def main():
                     elif (time1.hour == 17):
                         flash1 = not (u_second < flash_dur)
 
-                if time0.day > _now_loc.day:
+                if time0.date() > _now_loc.date():
                     sign0 = "+"
-                elif time0.day < _now_loc.day:
+                elif time0.date() < _now_loc.date():
                     sign0 = "-"
                 else:
                     sign0 = " "
 
-                if time1.day > _now_loc.day:
+                if time1.date() > _now_loc.date():
                     sign1 = "+"
-                elif time1.day < _now_loc.day:
+                elif time1.date() < _now_loc.date():
                     sign1 = "-"
                 else:
                     sign1 = " "
