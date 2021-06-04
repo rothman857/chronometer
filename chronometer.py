@@ -521,8 +521,6 @@ class Screen:
         return l
 
 
-
-
 os.system("clear")
 os.system("setterm -cursor off")
 
@@ -543,7 +541,7 @@ def main():
     center_l = themes[2] + chr(0x2560) + themes[1]
     center_r = themes[2] + chr(0x2563) + themes[1]
     highlight = [themes[0], themes[3]]
-    binary = ("-", chr(0x25fc))#"
+    binary = ("-", chr(0x25fc))  # "
     rotator = ['/', '-', '\\', '|']
 
     ntp_thread = threading.Thread(target=ntp_daemon)
@@ -556,7 +554,7 @@ def main():
         i += 1
 
     ntp_thread.start()
-    
+
     while ntpid == "---":
         reset_cursor()
         print('Waiting for clock sync ' + rotator[i % 4])
@@ -568,7 +566,7 @@ def main():
         ntp_id_str = str(ntpid)
         try:
             time.sleep(refresh)
-            start_time = datetime.now()
+            start_time = datetime.now(pytz.utc)
             offset = -(
                 time.timezone if
                 (time.localtime().tm_isdst == 0) else
@@ -722,8 +720,8 @@ def main():
             ]
 
             for i in range(0, len(time_zone_list), 2):
-                time0 = time_zone_list[i][1].utcoffset(now) + now
-                time1 = time_zone_list[i+1][1].utcoffset(now) + now
+                time0 = now.astimezone(time_zone_list[i][1])
+                time1 = now.astimezone(time_zone_list[i+1][1])
 
                 flash0 = False
                 flash1 = False
@@ -745,16 +743,16 @@ def main():
                     elif (time1.hour == 17):
                         flash1 = not (u_second < flash_dur)
 
-                if time0 > now and time0.day != now.day:
+                if time0.day > _now_loc.day:
                     sign0 = "+"
-                elif time0 < now and time0.day != now.day:
+                elif time0.day < _now_loc.day:
                     sign0 = "-"
                 else:
                     sign0 = " "
 
-                if time1 > now and time1.day != now.day:
+                if time1.day > _now_loc.day:
                     sign1 = "+"
-                elif time1 < now and time1.day != now.day:
+                elif time1.day < _now_loc.day:
                     sign1 = "-"
                 else:
                     sign1 = " "
@@ -819,7 +817,7 @@ def main():
             for i in range(22, rows):
                 screen += " " * columns
 
-            loop_time = datetime.utcnow() - start_time
+            loop_time = datetime.now(pytz.utc) - start_time
             print(screen, end="")
 
         except KeyboardInterrupt:
