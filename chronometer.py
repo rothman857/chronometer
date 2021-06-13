@@ -561,7 +561,7 @@ def main():
 
     ntp_thread.start()
     ping_thread.start()
-
+    ntp_started = False
     counter = 0
     while ntpid == "---":
         counter += 1
@@ -576,7 +576,10 @@ def main():
         if not internet_connected:
             continue
 
-        print('Waiting for time synchronization...')
+        print('Starting time synchronization...')
+        if not ntp_started:
+            subprocess.run(['sudo', 'systemctl', 'start', 'ntp'], stdout=subprocess.PIPE)
+            ntp_started = True
 
         ntpq_info = ntpq_pattern.findall(ntpout)
 
@@ -878,6 +881,7 @@ def main():
             print(screen, end="")
 
         except KeyboardInterrupt:
+            os.system("setterm -cursor on")
             return
 
 def socket_attempt(address, port):
