@@ -609,13 +609,14 @@ def main():
         ]
 
         ntpq_table += [
-            [
-                r[header] for header in ntpq_table_headers] for r in ntpq_table_data
+            [r[header] for header in ntpq_table_headers] for r in ntpq_table_data
         ]
         
         if ntpq_table_data:
-            print('Polling NTP servers...\n')
-            for row in ntpq_table[:(rows-12)]:
+            print('Polling NTP servers...')
+            print('NTP Peers:')
+            print('_' * columns)
+            for row in ntpq_table[:(rows-14)]:
                 row_array = []
                 for i, item in enumerate(row):
                     row_array.append((' {:>'+ str(ntpq_table_column_widths[i]) +'} ').format(item[:ntpq_table_column_widths[i]]))
