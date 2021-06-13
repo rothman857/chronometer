@@ -564,7 +564,7 @@ def main():
 
     counter = 0
     
-    while True: #ntpid == "---":
+    while ntpid == "---":
         reset_cursor()
         columns = os.get_terminal_size().columns
         print(title)
@@ -612,12 +612,11 @@ def main():
         
         if ntpq_table_data:
             print('Polling NTP servers...\n')
-            for row in ntpq_table:
+            for row in ntpq_table[:9]:
                 row_array = []
                 for i, item in enumerate(row):
                     row_array.append((' {:>'+ str(ntpq_table_column_widths[i]) +'} ').format(item[:ntpq_table_column_widths[i]]))
                 print(('{:' + str(columns) + '}').format('|'.join(row_array)))
-
         counter += 1
         time.sleep(0.01)
 
