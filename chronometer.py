@@ -939,7 +939,7 @@ def ntp_daemon():
             is_connected = False
             ntpid = e
 
-        time.sleep(15)
+        time.sleep(3)
 
 def ping_daemon():
     global internet_connected
