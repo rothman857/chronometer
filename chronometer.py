@@ -557,7 +557,7 @@ def main():
  / ___/ / *_______  ___ *___  __ _  ___ / /____:____
 / /__/ _ \/ __/ _ \/ _ \/ _ \/  ' \/ -_) __/ -_) __/
 \___/_//_/_/  \___/_//_/\___/_/_/_/\__/\__/\__/_/   
-'''[1:-1]
+'''
 
     ntp_thread.start()
     ping_thread.start()
@@ -568,12 +568,12 @@ def main():
         reset_cursor()
         columns = os.get_terminal_size().columns
         rows = os.get_terminal_size().lines
-        print(title)
+        print(title[1:-1])
         print((' ' * (counter % (columns+1)) + '~')[:columns-4])
         print('Waiting for internet connection...')
 
-        while not internet_connected:
-            pass
+        if not internet_connected:
+            continue
 
         print('Waiting for time synchronization...')
 
