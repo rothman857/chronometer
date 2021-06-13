@@ -1,6 +1,17 @@
-# Raspberry Pi Chronometer
+# Raspberry Pi Internet Chronometer
+```
+   ____  *  __           +       __            :     
+  /  _/__  / /____*_______  ___ / /_   *   '.  !  .'
+ _/ // _ \/ __/ -_) __/ _ \/ -_) __/         \ | /   
+/___/_//_/\__/\__/_/ /_//_/\__/\__/      - --= ◼ =-- -    
+  ____ __         +            x      .  __  / | \    
+ / ___/ / *_______  ___ *___  __ _  ___ / /____:____
+/ /__/ _ \/ __/ _ \/ _ \/ _ \/  ' \/ -_) __/ -_) __/
+\___/_//_/_/  \___/_//_/\___/_/_/_/\__/\__/\__/_/  
 
-![Chronometer Display](screen.jpg "Chronometer Display")
+```
+
+![Chronometer Display](https://lh3.googleusercontent.com/pw/ACtC-3dTc4qFYXb1VZ5asWX3zkcmGdybv_9RxN-eFhaCydgFejC0V5QL_Z8R-ibALL2UDRl8ymyWEnKTpom78gh1ZyuwHCXdF5ySYRMPVaBWpUWxtjUx-uajAeqgPL5lXY5AAljDiX87ssLdZ5cRDxXRhNs3mw=w1135-h843-no "Chronometer Display")
 
 Turn your RaspberryPi in to an [Internet Chronometer](https://www.reddit.com/r/raspberry_pi/comments/bb8ddc/made_a_rpi_desk_clock_as_a_means_of_learning/).
 
@@ -17,10 +28,11 @@ Display is a [UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product
 + MIDDLE
     * Left: World Clock
     * Right:
-        * LPSHFT - Leap Shift - Current time offset that has to be corrected by the [leap cycle](https://en.wikipedia.org/wiki/Leap_year)
-        * SUNRI - Sunrise Timer
-        * SUNST - Sunset Timer
-        * DAYLN - Daylight Duration
+        * LD - Leap Drift - Current time offset that has to be corrected by the [leap cycle](https://en.wikipedia.org/wiki/Leap_year)
+        * SR - Sunrise Timer
+        * SS - Sunset Timer
+        * DD - Daytime Duration
+        * ND - Nighttime Duration
 + BOTTOM
     * Left: Time Systems
         * UTC - [Coordinated Universal Time](https://en.wikipedia.org/wiki/Coordinated_Universal_Time)
