@@ -567,6 +567,7 @@ def main():
     while ntpid == "---":
         reset_cursor()
         columns = os.get_terminal_size().columns
+        rows = os.get_terminal_size().lines
         print(title)
         print((' ' * (counter % (columns+1)) + '~')[:columns-4])
         print('Waiting for internet connection...')
@@ -596,9 +597,6 @@ def main():
             } for n in ntpq_info
         ]
 
-        # ntpq_table_column_widths = [
-        #     max([len(row.get(header)) for row in ntpq_table_data] + [len(ntpq_table_headers[i])]) for i, header in enumerate(ntpq_table_headers) if ntpq_table_data
-        # ]
         ntpq_table_column_widths = [16, 15, 2, 6, 6]
         
         ntpq_table = [
@@ -607,12 +605,13 @@ def main():
         ]
 
         ntpq_table += [
-            [r[header] for header in ntpq_table_headers] for r in ntpq_table_data
+            [
+                r[header] for header in ntpq_table_headers] for r in ntpq_table_data
         ]
         
         if ntpq_table_data:
             print('Polling NTP servers...\n')
-            for row in ntpq_table[:9]:
+            for row in ntpq_table[:(rows-12)]:
                 row_array = []
                 for i, item in enumerate(row):
                     row_array.append((' {:>'+ str(ntpq_table_column_widths[i]) +'} ').format(item[:ntpq_table_column_widths[i]]))
