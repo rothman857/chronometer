@@ -565,6 +565,7 @@ def main():
     counter = 0
     while ntpid == "---":
         counter += 1
+        time.sleep(0.01)
         reset_cursor()
         columns = os.get_terminal_size().columns
         rows = os.get_terminal_size().lines
@@ -616,8 +617,7 @@ def main():
                 for i, item in enumerate(row):
                     row_array.append((' {:>'+ str(ntpq_table_column_widths[i]) +'} ').format(item[:ntpq_table_column_widths[i]]))
                 print(('{:' + str(columns) + '}').format('|'.join(row_array)))
-        
-        time.sleep(0.01)
+
 
     while True:
         ntp_id_str = str(ntpid)
