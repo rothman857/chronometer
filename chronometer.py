@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta, date
+from collections import OrderedDict
 import time
 import json
 import os
@@ -205,6 +206,20 @@ time_table = [
     ["Y", 0, 10],
     ["C", 0, 10]
 ]
+
+ntpq_pattern = re.compile(
+    r"([\*\#\+\-\~ ])" +          # 0 - Peer Status
+    r"([\w+\-\.(): ]+)\s+" +    # 1 - Server ID
+    r"([\w\.]+)\s+" +           # 2 - Reference ID
+    r"(\d+)\s+" +               # 3 - Stratum
+    r"(\w+)\s+" +               # 4 - Type
+    r"(\d+)\s+" +               # 5 - When
+    r"(\d+)\s+" +               # 6 - Poll
+    r"(\d+)\s+" +               # 7 - Reach
+    r"([\d\.]+)\s+" +           # 8 - Delay
+    r"([-\d\.]+)\s+" +          # 9 - Offset
+    r"([\d\.]+)"                # 10- Jitter
+)
 
 
 def reset_cursor():
@@ -502,28 +517,10 @@ def jul_to_greg(J):
             tzinfo=utc
         ).astimezone() + timedelta(seconds=86400 * (J - _J)))
 
-
-class Screen:
-    def __init__(self):
-        self.content = ''
-
-    def __add__(self, string):
-        self.content += string
-
-    def render(self):
-        return content
-
-    def printable_length(content):
-        l = 0
-        for regex in ['\[\d+m', '\\x1b']:
-            for i in re.findall(regex, content):
-                l += (len(i))
-        return l
-
-
 os.system("clear")
 os.system("setterm -cursor off")
 
+internet_connected = False
 
 def main():
     loop_time = timedelta(0)
@@ -541,26 +538,88 @@ def main():
     center_l = themes[2] + chr(0x2560) + themes[1]
     center_r = themes[2] + chr(0x2563) + themes[1]
     highlight = [themes[0], themes[3]]
-    binary = ("-", chr(0x25fc))  # "
-    rotator = ['/', '-', '\\', '|']
+    diamond = chr(0x25fc)
+    binary = ("-", diamond)  # "
 
     ntp_thread = threading.Thread(target=ntp_daemon)
     ntp_thread.setDaemon(True)
+    ping_thread = threading.Thread(target=ping_daemon)
+    ntp_thread.setDaemon(True)
+
     i = 0
 
-    reset_cursor()
-    while not socket_attempt("8.8.8.8", 53):
-        print('Waiting for internet connection...')
-        i += 1
+    title = '''
+   ____  *  __           +       __            :     
+  /  _/__  / /____*_______  ___ / /_   *   '.  !  .'
+ _/ // _ \/ __/ -_) __/ _ \/ -_) __/         \ | /   
+/___/_//_/\__/\__/_/ /_//_/\__/\__/      - --= ◼ =-- -    
+  ____ __         +            x      .  __  / | \    
+ / ___/ / *_______  ___ *___  __ _  ___ / /____:____
+/ /__/ _ \/ __/ _ \/ _ \/ _ \/  ' \/ -_) __/ -_) __/
+\___/_//_/_/  \___/_//_/\___/_/_/_/\__/\__/\__/_/   
+'''[1:-1]
 
     ntp_thread.start()
+    ping_thread.start()
 
-    while ntpid == "---":
+    counter = 0
+    
+    while True: #ntpid == "---":
         reset_cursor()
-        print('Waiting for clock sync ' + rotator[i % 4])
-        print(ntpout)
-        i += 1
-        time.sleep(.1)
+        columns = os.get_terminal_size().columns
+        print(title)
+        print((' ' * (counter % (columns+1)) + '~')[:columns-4])
+        print('Waiting for internet connection...')
+
+        while not internet_connected:
+            pass
+
+        print('Waiting for time synchronization...')
+
+        ntpq_info = ntpq_pattern.findall(ntpout)
+
+        ntpq_table_headers = [
+            'remote',
+            'refid',
+            'st',
+            'delay',
+            'offset'
+        ]
+
+        ntpq_table_data = [
+            {    
+                ntpq_table_headers[0]: n[0] + n[1], 
+                ntpq_table_headers[1]: n[2], 
+                ntpq_table_headers[2]: n[3], 
+                ntpq_table_headers[3]: n[8], 
+                ntpq_table_headers[4]: n[9],
+            } for n in ntpq_info
+        ]
+
+        # ntpq_table_column_widths = [
+        #     max([len(row.get(header)) for row in ntpq_table_data] + [len(ntpq_table_headers[i])]) for i, header in enumerate(ntpq_table_headers) if ntpq_table_data
+        # ]
+        ntpq_table_column_widths = [16, 15, 2, 6, 6]
+        
+        ntpq_table = [
+            [h.upper() for h in ntpq_table_headers], 
+            ['-' * w for w in ntpq_table_column_widths],    
+        ]
+
+        ntpq_table += [
+            [r[header] for header in ntpq_table_headers] for r in ntpq_table_data
+        ]
+        
+        if ntpq_table_data:
+            print('Polling NTP servers...\n')
+            for row in ntpq_table:
+                row_array = []
+                for i, item in enumerate(row):
+                    row_array.append((' {:>'+ str(ntpq_table_column_widths[i]) +'} ').format(item[:ntpq_table_column_widths[i]]))
+                print(('{:' + str(columns) + '}').format('|'.join(row_array)))
+
+        counter += 1
+        time.sleep(0.01)
 
     while True:
         ntp_id_str = str(ntpid)
@@ -823,6 +882,16 @@ def main():
         except KeyboardInterrupt:
             return
 
+def socket_attempt(address, port):
+    is_successful = False
+    for _ in range(0, 3):
+        try:
+            socket.create_connection((address, port), 2)
+            is_successful = is_successful or True
+        except:
+            pass
+
+    return is_successful
 
 def ntp_daemon():
     global ntpdly
@@ -832,7 +901,7 @@ def ntp_daemon():
     global ntpout
     global is_connected
 
-    pattern = re.compile(
+    selected_ntpq_pattern = re.compile(
         r"\*([\w+\-\.(): ]+)\s+" +  # 1 - Server ID
         r"([\w\.]+)\s+" +           # 2 - Reference ID
         r"(\d+)\s+" +               # 3 - Stratum
@@ -855,7 +924,7 @@ def ntp_daemon():
             ntpout = ntpq_sh.stdout.decode('utf-8')
 
             current_server = re.search(r"\*.+", ntpq)
-            current_server = pattern.search(ntpq)
+            current_server = selected_ntpq_pattern.search(ntpq)
 
             if(current_server):
                 ntpoff = float(current_server.group(9))
@@ -869,17 +938,14 @@ def ntp_daemon():
 
         time.sleep(15)
 
+def ping_daemon():
+    global internet_connected
 
-def socket_attempt(address, port):
-    is_successful = False
-    for _ in range(0, 3):
-        try:
-            socket.create_connection((address, port), 2)
-            is_successful = is_successful or True
-        except:
-            pass
+    while not internet_connected:
+        internet_connected = socket_attempt("8.8.8.8", 53)
+        time.sleep(3)
 
-    return is_successful
+
 
 
 if __name__ == "__main__":
