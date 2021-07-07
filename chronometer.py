@@ -207,7 +207,7 @@ time_table = [
 ]
 
 ntpq_pattern = re.compile(
-    r"([\*\#\+\-\~ ])" +          # 0 - Peer Status
+    r"([\*\#\+\-\~ ])" +        # 0 - Peer Status
     r"([\w+\-\.(): ]+)\s+" +    # 1 - Server ID
     r"([\w\.]+)\s+" +           # 2 - Reference ID
     r"(\d+)\s+" +               # 3 - Stratum
@@ -516,10 +516,12 @@ def jul_to_greg(J):
             tzinfo=utc
         ).astimezone() + timedelta(seconds=86400 * (J - _J)))
 
+
 os.system("clear")
 os.system("setterm -cursor off")
 
 internet_connected = False
+
 
 def main():
     loop_time = timedelta(0)
@@ -546,30 +548,17 @@ def main():
     ntp_thread.setDaemon(True)
 
     i = 0
-
-    title = '''
-   ____  *  __           +       __            :     
-  /  _/__  / /____*_______  ___ / /_   *   '.  !  .'
- _/ // _ \/ __/ -_) __/ _ \/ -_) __/         \ | /   
-/___/_//_/\__/\__/_/ /_//_/\__/\__/      - --= ◼ =-- -    
-  ____ __         +            x      .  __  / | \    
- / ___/ / *_______  ___ *___  __ _  ___ / /____:____
-/ /__/ _ \/ __/ _ \/ _ \/ _ \/  ' \/ -_) __/ -_) __/
-\___/_//_/_/  \___/_//_/\___/_/_/_/\__/\__/\__/_/   
-'''
-
     ntp_thread.start()
     ping_thread.start()
     ntp_started = False
     counter = 0
     while ntpid == "---":
         counter += 1
-        time.sleep(0.01)
+        time.sleep(1)
         reset_cursor()
         columns = os.get_terminal_size().columns
         rows = os.get_terminal_size().lines
-        print(title[1:-1])
-        print((' ' * (counter % (columns+1)) + '~')[:columns-4])
+        print('Starting Internet Chronometer...')
         print('Waiting for internet connection...')
 
         if not internet_connected:
@@ -591,36 +580,33 @@ def main():
         ]
 
         ntpq_table_data = [
-            {    
-                ntpq_table_headers[0]: n[0] + n[1], 
-                ntpq_table_headers[1]: n[2], 
-                ntpq_table_headers[2]: n[3], 
-                ntpq_table_headers[3]: n[8], 
+            {
+                ntpq_table_headers[0]: n[0] + n[1],
+                ntpq_table_headers[1]: n[2],
+                ntpq_table_headers[2]: n[3],
+                ntpq_table_headers[3]: n[8],
                 ntpq_table_headers[4]: n[9],
             } for n in ntpq_info
         ]
-
+        ntpq_table_data = sorted(ntpq_table_data, key=lambda i: (i['st'], float(i['delay'])))
         ntpq_table_column_widths = [16, 15, 2, 6, 6]
-        
         ntpq_table = [
-            [h.upper() for h in ntpq_table_headers], 
-            ['-' * w for w in ntpq_table_column_widths],    
+            [h.upper() for h in ntpq_table_headers],
+            ['-' * w for w in ntpq_table_column_widths],
         ]
-
         ntpq_table += [
             [r[header] for header in ntpq_table_headers] for r in ntpq_table_data
         ]
-        
         if ntpq_table_data:
             print('Polling NTP servers...')
             print('NTP Peers:')
             print('_' * columns)
-            for row in ntpq_table[:(rows-14)]:
+            for row in ntpq_table[:(rows-7)]:
                 row_array = []
                 for i, item in enumerate(row):
-                    row_array.append((' {:>'+ str(ntpq_table_column_widths[i]) +'} ').format(item[:ntpq_table_column_widths[i]]))
+                    row_array.append(
+                        (' {:>' + str(ntpq_table_column_widths[i]) + '} ').format(item[:ntpq_table_column_widths[i]]))
                 print(('{:' + str(columns) + '}').format('|'.join(row_array)))
-
 
     while True:
         ntp_id_str = str(ntpid)
@@ -635,17 +621,12 @@ def main():
             now = start_time + loop_time
             if args.d:
                 now = dbg_override + (start_time - dbg_start)
-
             _now = now.replace(tzinfo=utc)
             _now_loc = _now.astimezone()
-
             utcnow = now
             cetnow = utcnow + timedelta(hours=1)
-
             is_daylight_savings = time.localtime().tm_isdst
-
             current_tz = time.tzname[is_daylight_savings]
-
             rows = os.get_terminal_size().lines
             columns = os.get_terminal_size().columns
             half_cols = int(((columns - 1) / 2) // 1)
@@ -656,7 +637,6 @@ def main():
             hour_binary = divmod(_now.astimezone().hour, 10)
             minute_binary = divmod(_now.astimezone().minute, 10)
             second_binary = divmod(_now.astimezone().second, 10)
-
             b_clock_mat = [
                 bin(hour_binary[0])[2:].zfill(4),
                 bin(hour_binary[1])[2:].zfill(4),
@@ -668,12 +648,10 @@ def main():
 
             b_clock_mat_t = [*zip(*b_clock_mat)]
             b_clockdisp = ['', '', '', '']
-
             for i, row in enumerate(b_clock_mat_t):
                 b_clockdisp[i] = (
                     ''.join(row).replace("0", binary[0]).replace("1", binary[1])
                 )
-
             if (_now_loc.month == 12):
                 days_this_month = 31
             else:
@@ -681,9 +659,7 @@ def main():
                     datetime(_now_loc.year, _now_loc.month + 1, 1) -
                     datetime(_now_loc.year, _now_loc.month, 1)
                 ).days
-
             days_this_year = 366 if is_leap_year(_now_loc) else 365
-
             time_table[SECOND][VALUE] = (
                 _now_loc.second +
                 u_second +
@@ -716,20 +692,27 @@ def main():
             time_table[CENTURY][VALUE] = (
                 time_table[YEAR][VALUE] - 1
             ) / 100 + 1
-
             screen += themes[3]
-            screen += ("{: ^" + str(columns) + "}\n").format(_now_loc.strftime("%I:%M:%S %p " + current_tz + " - %A %B %d, %Y")).upper() + themes[0]
+            screen += (
+                "{: ^" + str(columns) + "}\n").format(
+                    _now_loc.strftime(
+                        "%I:%M:%S %p " + current_tz + " - %A %B %d, %Y"
+                    )
+            ).upper() + themes[0]
             screen += corner_ul + h_bar * (columns - 2) + corner_ur + "\n"
 
             for i in range(7):
                 percent = time_table[i][VALUE] - int(time_table[i][VALUE])
-                screen += v_bar + (" {0:} " + "{2:}" + themes[1] + " {3:011.8f}% " + v_bar + "\n").format(
-                    time_table[i][LABEL],
-                    time_table[i][VALUE],
-                    draw_progress_bar(width=(columns - 19), max=1, value=percent),
-                    100 * (percent))
+                screen += v_bar + (
+                    " {0:} " + "{2:}" + themes[1] + " {3:011.8f}% " + v_bar + "\n").format(
+                        time_table[i][LABEL],
+                        time_table[i][VALUE],
+                        draw_progress_bar(width=(columns - 19), max=1, value=percent),
+                        100 * (percent)
+                )
 
-            screen += center_l + h_bar * (columns - 23) + h_bar_down_connect + h_bar * 20 + center_r + "\n"
+            screen += center_l + h_bar * (columns - 23) + \
+                h_bar_down_connect + h_bar * 20 + center_r + "\n"
 
             dst_str[0] = "INTL " + int_fix_date(_now_loc)
             dst_str[1] = "WRLD " + twc_date(_now_loc)
@@ -741,17 +724,30 @@ def main():
             unix_str = ("UNX {0}").format(unix_int)
 
             day_percent_complete = time_table[DAY][VALUE] - int(time_table[DAY][VALUE])
-            day_percent_complete_utc = (utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000) / 86400
-            day_percent_complete_cet = (cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000) / 86400
+            day_percent_complete_utc = (
+                utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000
+            ) / 86400
+            day_percent_complete_cet = (
+                cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000
+            ) / 86400
 
             sunrise, sunset, sol_noon = sunriseset(_now_loc)
             solar_str = "SOL " + (_now_loc.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(seconds=sol_noon)).strftime(
                 '%H:%M:%S'
             )
             lst_str = sidereal_time(_now_loc, lon, offset, "LST {hour:02}:{minute:02}:{second:02}")
-            metric_str = metric_strf(day_percent_complete, "MET {hours:02}:{minutes:02}:{seconds:02}")
-            hex_str = hex_strf(day_percent_complete, "HEX {hours:1X}_{minutes:02X}_{seconds:1X}.{sub:03X}")
-            net_str = net_time_strf(day_percent_complete_utc, "NET {degrees:03.0f}°{minutes:02.0f}'{seconds:02.0f}\"")
+            metric_str = metric_strf(
+                day_percent_complete,
+                "MET {hours:02}:{minutes:02}:{seconds:02}"
+            )
+            hex_str = hex_strf(
+                day_percent_complete,
+                "HEX {hours:1X}_{minutes:02X}_{seconds:1X}.{sub:03X}"
+            )
+            net_str = net_time_strf(
+                day_percent_complete_utc,
+                "NET {degrees:03.0f}°{minutes:02.0f}'{seconds:02.0f}\""
+            )
             sit_str = "SIT @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC " + utcnow.strftime("%H:%M:%S")
 
@@ -769,7 +765,8 @@ def main():
                 minutes, seconds = divmod(remainder, 60)
                 subs = 1000000 * (seconds - int(seconds))
                 sign = '-' if s < 0 else ' '
-                time_List[i] = '{}{:02}:{:02}:{:02}.{:06}'.format(sign, int(hours), int(minutes), int(seconds), int(subs))
+                time_List[i] = '{}{:02}:{:02}:{:02}.{:06}'.format(
+                    sign, int(hours), int(minutes), int(seconds), int(subs))
 
             leap_stats = [
                 "LD" + time_List[0],
@@ -822,23 +819,31 @@ def main():
 
                 padding = (columns - 60) * ' '
 
-                screen += v_bar + ' ' + highlight[flash0] + ("{0:<10}{1:6}").format(time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
-                screen += ' ' + highlight[flash1] + ("{0:<10}{1:6}").format(time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
+                screen += v_bar + ' ' + highlight[flash0] + ("{0:<10}{1:6}").format(
+                    time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
+                screen += ' ' + highlight[flash1] + ("{0:<10}{1:6}").format(
+                    time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
 
                 screen += "\n"
 
-            screen += center_l + h_bar * (columns - 29) + h_bar_down_connect + h_bar * 5 + h_bar_up_connect + h_bar * 2 + h_bar_down_connect + 17 * h_bar + center_r + "\n"
+            screen += center_l + h_bar * (columns - 29) + h_bar_down_connect + h_bar * 5 + \
+                h_bar_up_connect + h_bar * 2 + h_bar_down_connect + 17 * h_bar + center_r + "\n"
 
             screen += v_bar + " " + utc_str + " " + b_var_single + " " + unix_str + " " * \
-                (columns - len(metric_str + unix_str + b_clockdisp[0]) - 27) + v_bar + ' ' + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
+                (columns - len(metric_str + unix_str + b_clockdisp[0]) - 27) + v_bar + \
+                ' ' + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
             screen += v_bar + " " + metric_str + " " + b_var_single + " " + sit_str + " " * \
-                (columns - len(metric_str + sit_str + b_clockdisp[1]) - 27) + v_bar + ' ' + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
+                (columns - len(metric_str + sit_str + b_clockdisp[1]) - 27) + v_bar + \
+                ' ' + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
             screen += v_bar + " " + solar_str + " " + b_var_single + " " + hex_str + " " * \
-                (columns - len(solar_str + net_str + b_clockdisp[2]) - 27) + v_bar + ' ' + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
+                (columns - len(solar_str + net_str + b_clockdisp[2]) - 27) + v_bar + \
+                ' ' + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
             screen += v_bar + " " + lst_str + " " + b_var_single + " " + net_str + " " * \
-                (columns - len(lst_str + hex_str + b_clockdisp[3]) - 27) + v_bar + ' ' + b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
-            screen += corner_ll + h_bar * (columns - 29) + h_bar_up_connect + h_bar * 8 + h_bar_up_connect + h_bar * 17 + corner_lr + "\n"
+                (columns - len(lst_str + hex_str + b_clockdisp[3]) - 27) + v_bar + ' ' + \
+                b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
+            screen += corner_ll + h_bar * (columns - 29) + h_bar_up_connect + \
+                h_bar * 8 + h_bar_up_connect + h_bar * 17 + corner_lr + "\n"
             ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
 
@@ -858,16 +863,18 @@ def main():
                 elif(current_stage >= (stages - 8)):
                     ntpid_temp = ntp_id_str[(len(ntp_id_str)-ntpid_max_width):]
                 else:
-                    ntpid_temp = ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
+                    ntpid_temp = ntp_id_str[(current_stage - 8)
+                                             :(current_stage - 8 + ntpid_max_width)]
 
             ntp_str_left = "NTP:" + ntpid_temp
-            ntp_str_right = ("STR:{str}/DLY:{dly}/OFF:{off}").format(
+            ntp_str_right = ("STR:{str} DLY:{dly} OFF:{off}").format(
                 str=ntpstr,
-                dly=float_fixed(ntpdly, 6, False),
-                off=float_fixed(ntpoff, 7, True)
+                dly=float_fixed(float(ntpdly), 6, False),
+                off=float_fixed(float(ntpoff), 7, True)
             )
 
-            screen += themes[3] + " " + ntp_str_left + ((columns - len(ntp_str_left + ntp_str_right)-2) * " ") + ntp_str_right + " "
+            screen += themes[3] + " " + ntp_str_left + \
+                ((columns - len(ntp_str_left + ntp_str_right)-2) * " ") + ntp_str_right + " "
             screen += themes[1]
 
             # Switch to the header color theme
@@ -884,6 +891,7 @@ def main():
             os.system("setterm -cursor on")
             return
 
+
 def socket_attempt(address, port):
     is_successful = False
     for _ in range(0, 3):
@@ -895,6 +903,7 @@ def socket_attempt(address, port):
 
     return is_successful
 
+
 def ntp_daemon():
     global ntpdly
     global ntpoff
@@ -903,36 +912,21 @@ def ntp_daemon():
     global ntpout
     global is_connected
 
-    selected_ntpq_pattern = re.compile(
-        r"\*([\w+\-\.(): ]+)\s+" +  # 1 - Server ID
-        r"([\w\.]+)\s+" +           # 2 - Reference ID
-        r"(\d+)\s+" +               # 3 - Stratum
-        r"(\w+)\s+" +               # 4 - Type
-        r"(\d+)\s+" +               # 5 - When
-        r"(\d+)\s+" +               # 6 - Poll
-        r"(\d+)\s+" +               # 7 - Reach
-        r"([\d\.]+)\s+" +           # 8 - Delay
-        r"([-\d\.]+)\s+" +          # 9 - Offset
-        r"([\d\.]+)"                # 10- Jitter
-    )
-
     while(True):
         try:
             is_connected = socket_attempt("8.8.8.8", 53)
             ntpq = subprocess.run(['ntpq', '-pw'], stdout=subprocess.PIPE)
             ntpq_sh = subprocess.run(['ntpq', '-p'], stdout=subprocess.PIPE)
-
             ntpq = ntpq.stdout.decode('utf-8')
             ntpout = ntpq_sh.stdout.decode('utf-8')
-
-            current_server = re.search(r"\*.+", ntpq)
-            current_server = selected_ntpq_pattern.search(ntpq)
+            current_server = [n for n in ntpq_pattern.findall(ntpq) if n[0] == '*']
 
             if(current_server):
-                ntpoff = float(current_server.group(9))
-                ntpdly = float(current_server.group(8))
-                ntpstr = current_server.group(3)
-                ntpid = current_server.group(1)
+                current_server = current_server[0]
+                ntpid = current_server[1]
+                ntpstr = current_server[3]
+                ntpdly = current_server[8]
+                ntpoff = current_server[9]
 
         except Exception as e:
             is_connected = False
@@ -940,20 +934,15 @@ def ntp_daemon():
 
         time.sleep(3)
 
+
 def ping_daemon():
     global internet_connected
-
     while not internet_connected:
         internet_connected = socket_attempt("8.8.8.8", 53)
         time.sleep(3)
 
 
-
-
 if __name__ == "__main__":
-    # thread = threading.Thread(target=ntp_daemon)
-    # thread.setDaemon(True)
-    # thread.start()
     main()
     os.system("clear")
     os.system("setterm -cursor on")
