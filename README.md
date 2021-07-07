@@ -11,7 +11,7 @@
 
 ```
 
-![Chronometer Display](https://i.imgur.com/rJbnwv8.jpg "Chronometer Display")
+![Chronometer Display](https://i.imgur.com/Lju7Ows.png "Chronometer Display")
 
 Turn your RaspberryPi in to an [Internet Chronometer](https://www.reddit.com/r/raspberry_pi/comments/bb8ddc/made_a_rpi_desk_clock_as_a_means_of_learning/).
 
