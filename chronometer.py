@@ -114,16 +114,6 @@ except KeyError as e:
     exit()
 
 
-class Time:
-    second: str = 's'
-    minute: str = 'm'
-    hour: str = 'h'
-    day: str = 'd'
-    month: str = 'm'
-    year: str = 'y'
-    century: str = 'c'
-
-
 ntpoff = 0
 ntpdly = 0
 ntpstr = "-"
@@ -209,25 +199,15 @@ month_abbr = [
 ]
 
 
-time_table: Dict[str, float] = {
-    's': 0,
-    'm': 0,
-    'h': 0,
-    'd': 0,
-    'm': 0,
-    'y': 0,
-    'c': 0
-}
+class time_table:
+    second: float
+    minute: float
+    hour: float
+    day: float
+    month: float
+    year: float
+    century: float
 
-
-class _time_table:
-    second: int = 0
-    minute: int = 0
-    hour: int = 0
-    day: int = 0
-    month: int = 0
-    year: int = 0
-    century: int = 0
 
 ntpq_pattern = re.compile(
     r"([\*\#\+\-\~ ])" +        # 0 - Peer Status
@@ -246,14 +226,6 @@ ntpq_pattern = re.compile(
 
 def reset_cursor():
     print("\033[0;0H", end="")
-
-
-def move_cursor_down(n: int = 1):
-    print('\033[' + str(n) + 'B', end='')
-
-
-def move_cursor_up(n: int = 1):
-    print('\033[' + str(n) + 'A', end='')
 
 
 def draw_progress_bar(*, min: int = 0, width: int, max: int, value: float) -> str:
@@ -431,20 +403,6 @@ def sunriseset(dt: datetime, offset: int = 0, fixed: bool = False) -> Dict[str, 
         'daylight': daylight,
         'nighttime': nighttime
     }
-    # if event == '':
-    #     return t_rise, t_set, t_noon
-    # elif event == 'sunrise':
-    #     return t_rise
-    # elif event == 'sunset':
-    #     return t_set
-    # elif event == 'noon':
-    #     return t_noon
-    # elif event == 'daylight':
-    #     return daylight
-    # elif event == 'nighttime':
-    #     return nighttime
-    # else:
-    #     return 0
 
 
 def twc_date(dt: datetime) -> str:
@@ -690,37 +648,37 @@ def main():
                     datetime(_now_loc.year, _now_loc.month, 1)
                 ).days
             days_this_year = 366 if is_leap_year(_now_loc) else 365
-            time_table[Time.second] = (
+            time_table.second = (
                 _now_loc.second +
                 u_second +
                 random.randint(0, 9999)/10000000000
             )
-            time_table[Time.minute] = (
+            time_table.minute = (
                 _now_loc.minute +
-                time_table[Time.second] / 60 +
+                time_table.second / 60 +
                 random.randint(0, 99)/10000000000
             )
-            time_table[Time.hour] = (
+            time_table.hour = (
                 _now_loc.hour +
-                time_table[Time.minute] / 60
+                time_table.minute / 60
             )
-            time_table[Time.day] = (
+            time_table.day = (
                 _now_loc.day +
-                time_table[Time.hour] / 24
+                time_table.hour / 24
             )
-            time_table[Time.month] = (
+            time_table.month = (
                 _now_loc.month +
-                (time_table[Time.day] - 1)/days_this_month
+                (time_table.day - 1)/days_this_month
             )
-            time_table[Time.year] = (
+            time_table.year = (
                 _now_loc.year + (
                     day_of_year(_now_loc) +
-                    time_table[Time.day] -
-                    int(time_table[Time.day])
+                    time_table.day -
+                    int(time_table.day)
                 ) / days_this_year
             )
-            time_table[Time.century] = (
-                time_table[Time.year] - 1
+            time_table.century = (
+                time_table.year - 1
             ) / 100 + 1
             screen += themes[3]
             screen += (
@@ -731,13 +689,14 @@ def main():
             ).upper() + themes[0]
             screen += corner_ul + h_bar * (columns - 2) + corner_ur + "\n"
 
-            for i in 'smhdmyc':
-                percent = time_table[i] - int(time_table[i])
+            for i in time_table.__dict__['__annotations__']:
+                value = time_table.__dict__[i]
+                percent = value - int(value)
                 screen += v_bar + (
                     " {0:} " + "{2:}" + themes[1] + " {3:011.8f}% " + v_bar + "\n").format(
                         # time_table[i][LABEL],
-                        i.upper(),
-                        time_table[i],
+                        i[0].upper(),
+                        time_table.__dict__[i],
                         draw_progress_bar(width=(columns - 19), max=1, value=percent),
                         100 * (percent)
                 )
@@ -754,7 +713,7 @@ def main():
             unix_exact = unix_int + u_second
             unix_str = ("UNX {0}").format(unix_int)
 
-            day_percent_complete = time_table[Time.day] - int(time_table[Time.day])
+            day_percent_complete = time_table.day - int(time_table.day)
             day_percent_complete_utc = (
                 utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000
             ) / 86400
