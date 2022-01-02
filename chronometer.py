@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, tzinfo
 import time
 import json
 import os
@@ -11,7 +11,11 @@ import re
 import math
 import random
 import argparse
+from typing import Dict, List
 import pytz
+from dataclasses import dataclass
+from copy import deepcopy
+
 
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', action='store_true', help='Debug mode')
@@ -71,27 +75,40 @@ is_connected = False
 
 now = datetime.now()
 
+@dataclass
+class timezone_entry:
+    name: str
+    time_zone: tzinfo
 
-def my_tz_sort(tz_entry):
-    return tz_entry[1].utcoffset(now)
 
+def my_tz_sort(tz_entry: timezone_entry) -> timedelta:
+    result = tz_entry.time_zone.utcoffset(now)
+    if result:
+        return result
+    else:
+        return timedelta()
 
 try:
     lat = float(running_config['coordinates']['latitude'])
     lon = float(running_config['coordinates']['longitude'])
     refresh = float(running_config['refresh'])
-    time_zone_list = []
+    time_zone_list: List[timezone_entry] = []
     for tz in running_config['timezones']:
         if tz[0] == '#':
             continue
-        time_zone_list.append([tz.upper(), pytz.timezone(running_config['timezones'][tz])])
+        time_zone_list.append(
+            timezone_entry(
+                name=tz.upper(),
+                time_zone=pytz.timezone(running_config['timezones'][tz])
+            )
+        )
 
     time_zone_list.sort(key=my_tz_sort)
-    _time_zone_list = [None] * len(time_zone_list)
+    _time_zone_list: List[timezone_entry] = deepcopy(time_zone_list)
 
-    for i in range(0, len(time_zone_list), 2):
-        _time_zone_list[i] = time_zone_list[i//2][:10]
-        _time_zone_list[i+1] = time_zone_list[i//2+5][:10]
+    for _ in range(0, len(time_zone_list), 2):
+        _time_zone_list[_].name = time_zone_list[_//2].name[:10]
+        _time_zone_list[_+1].name = time_zone_list[_//2+5].name[:10]
 
     time_zone_list = _time_zone_list
 
@@ -100,13 +117,20 @@ except KeyError as e:
     print("Error reading .config ({}).  Please correct or reset using --reset.".format(e))
     exit()
 
-SECOND = 0
-MINUTE = 1
-HOUR = 2
-DAY = 3
-MONTH = 4
-YEAR = 5
-CENTURY = 6
+
+class Time:
+    second: str = 's'
+    minute: str = 'm'
+    hour: str = 'h'
+    day: str = 'd'
+    month: str = 'm'
+    year: str = 'y'
+    century: str = 'c'
+
+print(Time.__dict__)
+for a in Time.__dict__['__annotations__']:
+    print(a)
+
 
 LABEL = 0
 VALUE = 1
@@ -196,15 +220,25 @@ month_abbr = [
 ]
 
 # Label, value, precision
-time_table = [
-    ["S", 0, 10],
-    ["M", 0, 10],
-    ["H", 0, 10],
-    ["D", 0, 10],
-    ["M", 0, 10],
-    ["Y", 0, 10],
-    ["C", 0, 10]
-]
+# time_table: List[List[Union[str, int, float]]] = [
+#     ["S", 0, 10],
+#     ["M", 0, 10],
+#     ["H", 0, 10],
+#     ["D", 0, 10],
+#     ["M", 0, 10],
+#     ["Y", 0, 10],
+#     ["C", 0, 10]
+# ]
+
+time_table: Dict[str, List[float]] = {
+    's': [0,10],
+    'm': [0,10],
+    'h': [0,10],
+    'd': [0,10],
+    'm': [0,10],
+    'y': [0,10],
+    'c': [0,10],
+}
 
 ntpq_pattern = re.compile(
     r"([\*\#\+\-\~ ])" +        # 0 - Peer Status
@@ -225,15 +259,15 @@ def reset_cursor():
     print("\033[0;0H", end="")
 
 
-def move_cursor_down(n=1):
+def move_cursor_down(n: int = 1):
     print('\033[' + str(n) + 'B', end='')
 
 
-def move_cursor_up(n=1):
+def move_cursor_up(n: int = 1):
     print('\033[' + str(n) + 'A', end='')
 
 
-def draw_progress_bar(*, min=0, width, max, value):
+def draw_progress_bar(*, min: int = 0, width: int, max: int, value: float) -> str:
     level = int((width + 1) * (value - min)/(max - min))
     return (chr(0x2550) * level + D_GRAY_FG + (chr(0x2500) * (width - level)))
 
@@ -247,12 +281,12 @@ def get_local_date_format():
         return "{day:02}/{month:02}"
 
 
-def day_of_year(dt):
+def day_of_year(dt: datetime) -> int:
     dt = dt.replace(tzinfo=None)
     return (dt - datetime(dt.year, 1, 1)).days
 
 
-def is_leap_year(dt):
+def is_leap_year(dt: datetime) -> bool:
     year = dt.year
     if year % 400 == 0:
         return True
@@ -260,43 +294,40 @@ def is_leap_year(dt):
         return False
     if year % 4 == 0:
         return True
+    else:
+        return False
 
 
-def net_time_strf(day_percent, fmt):
-    _ = dict()
+def net_time_strf(day_percent: float, fmt: str) -> str:
+    _: Dict[str, int] = dict()
     _["degrees"], remainder = divmod(int(1296000*day_percent), 3600)
     _["degrees"], remainder = int(_["degrees"]), int(remainder)
     _["minutes"], _["seconds"] = divmod(remainder, 60)
     return fmt.format(**_)
 
 
-def hex_strf(day_percent, fmt):
-    _ = dict()
+def hex_strf(day_percent: float, fmt: str) -> str:
+    _: Dict[str, int] = dict()
     _["hours"], remainder = divmod(int(day_percent * 268435456), 16777216)
     _["minutes"], _["seconds"] = divmod(remainder, 65536)
     _["seconds"], _["sub"] = divmod(_["seconds"], 4096)
     return fmt.format(**_)
 
 
-def metric_strf(day_percent, fmt):
-    _ = dict()
+def metric_strf(day_percent: float, fmt: str) -> str:
+    _: Dict[str, int] = dict()
     _["hours"], remainder = divmod(int(day_percent * 100000), 10000)
     _["minutes"], _["seconds"] = divmod(remainder, 100)
     return fmt.format(**_)
 
 
-def float_fixed(flt, wd, sign=False):
-    wd = str(wd)
-    sign = "+" if sign else ""
-    return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
+def float_fixed(flt: float, wd: int, sign: bool = False) -> str:
+    width = str(wd)
+    s = "+" if sign else ""
+    return ('{:.' + width + 's}').format(('{:' + s + '.' + width + 'f}').format(flt))
 
 
-def _float_fixed(flt, wd, sign=False):
-    sign = "+" if sign else ""
-    return sign + str(flt)[:wd-(len(sign))]
-
-
-def sidereal_time(dt, lon, off, fmt):
+def sidereal_time(dt: datetime, lon: float, off: float, fmt: str) -> str:
     dt = dt.replace(tzinfo=None)
     j = ((dt - datetime(year=2000, month=1, day=1)) - timedelta(hours=off)).total_seconds()/86400
     l0 = 99.967794687
@@ -305,13 +336,13 @@ def sidereal_time(dt, lon, off, fmt):
     l3 = -5.302 * (10 ** -22)
     theta = (l0 + (l1 * j) + (l2 * (j ** 2)) + (l3 * (j ** 3)) + lon) % 360
     result = int(timedelta(hours=theta/15).total_seconds())
-    _ = dict()
+    _: Dict[str, int] = dict()
     _["hour"], remainder = divmod(result, 3600)
     _["minute"], _["second"] = divmod(remainder, 60)
     return fmt.format(**_)
 
 
-def julian_date(date, reduced=False):
+def julian_date(date: datetime, reduced: bool = False) -> float:
     a = (14 - date.month) // 12
     y = date.year + 4800 - a
     m = date.month + 12 * a - 3
@@ -326,7 +357,7 @@ def julian_date(date, reduced=False):
     return jd - 2400000 if reduced else jd
 
 
-def int_fix_date(dt):
+def int_fix_date(dt: datetime) -> str:
     ordinal = day_of_year(dt) + 1
     if is_leap_year(dt):
         if ordinal > 169:
@@ -342,7 +373,7 @@ def int_fix_date(dt):
     return weekday_abbr[w] + ' ' + intfix_month_abbr[m-1] + " " + "{:02}".format(d)
 
 
-def leap_shift(dt):
+def leap_shift(dt: datetime) -> float:
     dt = dt.replace(tzinfo=None)
     ratio = 365/365.2425
     start_year = dt.year - (dt.year % 400)
@@ -362,7 +393,7 @@ def leap_shift(dt):
     return shift
 
 
-def leapage(dt):
+def leapage(dt: datetime) -> float:
     years = (dt.year-1) % 400
     count = years // 4
     count -= years // 100
@@ -383,7 +414,8 @@ def leapage(dt):
     return count
 
 
-def sunriseset(dt, offset=0, fixed=False, event=''):  # https://en.wikipedia.org/wiki/Sunrise_equation
+def sunriseset(dt: datetime, offset: int = 0, fixed: bool = False) -> Dict[str, float]:
+    # https://en.wikipedia.org/wiki/Sunrise_equation
     n = julian_date(dt) - 2451545.0 + .0008  # current julian day since 1/1/2000 12:00
     _n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()//86400
     n = n if fixed else _n
@@ -403,21 +435,30 @@ def sunriseset(dt, offset=0, fixed=False, event=''):  # https://en.wikipedia.org
     t_rise = (dt - jul_to_greg(J_rise)).total_seconds()
     t_set = (dt - jul_to_greg(J_set)).total_seconds()
     t_noon = (dt - jul_to_greg(J_transit)).total_seconds()
-    if event == '':
-        return t_rise, t_set, t_noon
-    elif event == 'sunrise':
-        return t_rise
-    elif event == 'sunset':
-        return t_set
-    elif event == 'noon':
-        return t_noon
-    elif event == 'daylight':
-        return daylight
-    elif event == 'nighttime':
-        return nighttime
+    return {
+        'sunrise': t_rise,
+        'sunset': t_set,
+        'noon': t_noon,
+        'daylight': daylight,
+        'nighttime': nighttime
+    }
+    # if event == '':
+    #     return t_rise, t_set, t_noon
+    # elif event == 'sunrise':
+    #     return t_rise
+    # elif event == 'sunset':
+    #     return t_set
+    # elif event == 'noon':
+    #     return t_noon
+    # elif event == 'daylight':
+    #     return daylight
+    # elif event == 'nighttime':
+    #     return nighttime
+    # else:
+    #     return 0
 
 
-def twc_date(dt):
+def twc_date(dt: datetime) -> str:
     _day = day_of_year(dt) + 1
     day = _day
 
@@ -433,7 +474,7 @@ def twc_date(dt):
         return "*YEAR DAY*"
     weekday = day % 7
     month = 1
-    for i in range(0, 4):
+    for _ in range(0, 4):
         for j in [31, 30, 30]:
             if day - j > 0:
                 day -= j
@@ -443,7 +484,7 @@ def twc_date(dt):
     return weekday_abbr[weekday] + ' ' + month_abbr[month-1] + " " + "{:02}".format(day)
 
 
-def and_date(dt):
+def and_date(dt: datetime) -> str:
     day = day_of_year(dt) + 1
     month = 1
     weekday = (day - 1) % 5
@@ -452,7 +493,7 @@ def and_date(dt):
         return "*LEAP DAY*"
 
     exit_loop = False
-    for i in range(0, 5):
+    for _ in range(0, 5):
         if exit_loop:
             break
         for j in [36, 37]:
@@ -465,39 +506,39 @@ def and_date(dt):
     return annus_day_abbr[weekday] + ' ' + annus_month_abbr[month-1] + " " + "{:02}".format(day)
 
 
-def acos(x):
+def acos(x: float) -> float:
     return degrees(math.acos(x))
 
 
-def asin(x):
+def asin(x: float) -> float:
     return degrees(math.asin(x))
 
 
-def atan(x):
+def atan(x: float) -> float:
     return degrees(math.atan(x))
 
 
-def sin(deg):
+def sin(deg: float) -> float:
     return math.sin(radians(deg))
 
 
-def cos(deg):
+def cos(deg: float) -> float:
     return math.cos(radians(deg))
 
 
-def tan(deg):
+def tan(deg: float) -> float:
     return math.tan(radians(deg))
 
 
-def radians(deg):
+def radians(deg: float) -> float:
     return deg * math.pi / 180
 
 
-def degrees(rad):
+def degrees(rad: float) -> float:
     return rad * 180 / math.pi
 
 
-def jul_to_greg(J):
+def jul_to_greg(J: float) -> datetime:
     J += .5
     _J = int(J)
     f = _J + 1401 + (((4 * _J + 274277) // 146097) * 3) // 4 - 38
@@ -529,7 +570,7 @@ def main():
     v_bar = themes[2] + chr(0x2551) + themes[1]
     b_var_single = themes[2] + chr(0x2502) + themes[1]
     h_bar = themes[2] + chr(0x2550) + themes[1]
-    h_bar_single = themes[2] + chr(0x2500) + themes[1]
+    # h_bar_single = themes[2] + chr(0x2500) + themes[1]
     h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
     h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
     corner_ll = themes[2] + chr(0x255A) + themes[1]
@@ -602,7 +643,7 @@ def main():
             print('NTP Peers:')
             print('_' * columns)
             for row in ntpq_table[:(rows-7)]:
-                row_array = []
+                row_array: List[str] = []
                 for i, item in enumerate(row):
                     row_array.append(
                         (' {:>' + str(ntpq_table_column_widths[i]) + '} ').format(item[:ntpq_table_column_widths[i]]))
@@ -660,37 +701,37 @@ def main():
                     datetime(_now_loc.year, _now_loc.month, 1)
                 ).days
             days_this_year = 366 if is_leap_year(_now_loc) else 365
-            time_table[SECOND][VALUE] = (
+            time_table[Time.second][VALUE] = (
                 _now_loc.second +
                 u_second +
                 random.randint(0, 9999)/10000000000
             )
-            time_table[MINUTE][VALUE] = (
+            time_table[Time.minute][VALUE] = (
                 _now_loc.minute +
-                time_table[SECOND][VALUE] / 60 +
+                time_table[Time.second][VALUE] / 60 +
                 random.randint(0, 99)/10000000000
             )
-            time_table[HOUR][VALUE] = (
+            time_table[Time.hour][VALUE] = (
                 _now_loc.hour +
-                time_table[MINUTE][VALUE] / 60
+                time_table[Time.minute][VALUE] / 60
             )
-            time_table[DAY][VALUE] = (
+            time_table[Time.day][VALUE] = (
                 _now_loc.day +
-                time_table[HOUR][VALUE] / 24
+                time_table[Time.hour][VALUE] / 24
             )
-            time_table[MONTH][VALUE] = (
+            time_table[Time.month][VALUE] = (
                 _now_loc.month +
-                (time_table[DAY][VALUE] - 1)/days_this_month
+                (time_table[Time.day][VALUE] - 1)/days_this_month
             )
-            time_table[YEAR][VALUE] = (
+            time_table[Time.year][VALUE] = (
                 _now_loc.year + (
                     day_of_year(_now_loc) +
-                    time_table[DAY][VALUE] -
-                    int(time_table[DAY][VALUE])
+                    time_table[Time.day][VALUE] -
+                    int(time_table[Time.day][VALUE])
                 ) / days_this_year
             )
-            time_table[CENTURY][VALUE] = (
-                time_table[YEAR][VALUE] - 1
+            time_table[Time.century][VALUE] = (
+                time_table[Time.year][VALUE] - 1
             ) / 100 + 1
             screen += themes[3]
             screen += (
@@ -701,11 +742,12 @@ def main():
             ).upper() + themes[0]
             screen += corner_ul + h_bar * (columns - 2) + corner_ur + "\n"
 
-            for i in range(7):
+            for i in 'smhdmyc':
                 percent = time_table[i][VALUE] - int(time_table[i][VALUE])
                 screen += v_bar + (
                     " {0:} " + "{2:}" + themes[1] + " {3:011.8f}% " + v_bar + "\n").format(
-                        time_table[i][LABEL],
+                        # time_table[i][LABEL],
+                        i.upper(),
                         time_table[i][VALUE],
                         draw_progress_bar(width=(columns - 19), max=1, value=percent),
                         100 * (percent)
@@ -723,7 +765,7 @@ def main():
             unix_exact = unix_int + u_second
             unix_str = ("UNX {0}").format(unix_int)
 
-            day_percent_complete = time_table[DAY][VALUE] - int(time_table[DAY][VALUE])
+            day_percent_complete = time_table[Time.day][VALUE] - int(time_table[Time.day][VALUE])
             day_percent_complete_utc = (
                 utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000
             ) / 86400
@@ -731,7 +773,13 @@ def main():
                 cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000
             ) / 86400
 
-            sunrise, sunset, sol_noon = sunriseset(_now_loc)
+            # sunrise, sunset, sol_noon = *sunriseset(_now_loc)
+            sun_stats = sunriseset(_now_loc)
+            sunrise = sun_stats['sunrise']
+            sunset = sun_stats['sunset']
+            sol_noon = sun_stats['noon']
+            
+
             solar_str = "SOL " + (_now_loc.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(seconds=sol_noon)).strftime(
                 '%H:%M:%S'
             )
@@ -751,15 +799,15 @@ def main():
             sit_str = "SIT @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
             utc_str = "UTC " + utcnow.strftime("%H:%M:%S")
 
-            diff = sunriseset(_now_loc, event='daylight', fixed=True)
-            nighttime = sunriseset(_now_loc, event='nighttime', fixed=True)
+            diff = sunriseset(_now_loc, fixed=True)['daylight']
+            nighttime = sunriseset(_now_loc, fixed=True)['nighttime']
 
             if sunset > 0 and sunrise > 0:
-                sunrise = sunriseset(_now_loc, event='sunrise', offset=1)
+                sunrise = sunriseset(_now_loc, offset=1)['sunrise']
             elif sunset < 0 and sunrise < 0:
-                sunset = sunriseset(_now_loc, event='sunset', offset=-1)
+                sunset = sunriseset(_now_loc, offset=-1)['sunset']
 
-            time_List = [None, None, None, None, None]
+            time_List = [str()] * 6
             for i, s in enumerate([leap_shift(_now_loc), sunrise, sunset, diff, nighttime]):
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
@@ -768,7 +816,7 @@ def main():
                 time_List[i] = '{}{:02}:{:02}:{:02}.{:06}'.format(
                     sign, int(hours), int(minutes), int(seconds), int(subs))
 
-            leap_stats = [
+            leap_stats: List[str] = [
                 "LD" + time_List[0],
                 "SR" + time_List[1],
                 "SS" + time_List[2],
@@ -777,8 +825,8 @@ def main():
             ]
 
             for i in range(0, len(time_zone_list), 2):
-                time0 = now.astimezone(time_zone_list[i][1])
-                time1 = now.astimezone(time_zone_list[i+1][1])
+                time0 = now.astimezone(time_zone_list[i].time_zone)
+                time1 = now.astimezone(time_zone_list[i+1].time_zone)
 
                 flash0 = False
                 flash1 = False
@@ -820,9 +868,9 @@ def main():
                 padding = (columns - 60) * ' '
 
                 screen += v_bar + ' ' + highlight[flash0] + ("{0:<10}{1:6}").format(
-                    time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
+                    time_zone_list[i].name, time_str0) + highlight[0] + ' ' + b_var_single
                 screen += ' ' + highlight[flash1] + ("{0:<10}{1:6}").format(
-                    time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
+                    time_zone_list[i + 1].name, time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
 
                 screen += "\n"
@@ -863,8 +911,7 @@ def main():
                 elif(current_stage >= (stages - 8)):
                     ntpid_temp = ntp_id_str[(len(ntp_id_str)-ntpid_max_width):]
                 else:
-                    ntpid_temp = ntp_id_str[(current_stage - 8)
-                                             :(current_stage - 8 + ntpid_max_width)]
+                    ntpid_temp = ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
 
             ntp_str_left = "NTP:" + ntpid_temp
             ntp_str_right = ("STR:{str} DLY:{dly} OFF:{off}").format(
@@ -892,7 +939,7 @@ def main():
             return
 
 
-def socket_attempt(address, port):
+def socket_attempt(address: str, port: int) -> bool:
     is_successful = False
     for _ in range(0, 3):
         try:
