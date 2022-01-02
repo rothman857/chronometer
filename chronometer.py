@@ -14,7 +14,6 @@ import argparse
 from typing import Dict, List
 import pytz
 from dataclasses import dataclass
-from copy import deepcopy
 
 
 ap = argparse.ArgumentParser()
@@ -75,6 +74,7 @@ is_connected = False
 
 now = datetime.now()
 
+
 @dataclass
 class timezone_entry:
     name: str
@@ -87,6 +87,7 @@ def my_tz_sort(tz_entry: timezone_entry) -> timedelta:
         return result
     else:
         return timedelta()
+
 
 try:
     lat = float(running_config['coordinates']['latitude'])
@@ -104,14 +105,9 @@ try:
         )
 
     time_zone_list.sort(key=my_tz_sort)
-    _time_zone_list: List[timezone_entry] = deepcopy(time_zone_list)
 
-    for _ in range(0, len(time_zone_list), 2):
-        _time_zone_list[_].name = time_zone_list[_//2].name[:10]
-        _time_zone_list[_+1].name = time_zone_list[_//2+5].name[:10]
-
-    time_zone_list = _time_zone_list
-
+    for tz in time_zone_list:
+        tz.name = tz.name[:10]
 
 except KeyError as e:
     print("Error reading .config ({}).  Please correct or reset using --reset.".format(e))
@@ -127,13 +123,6 @@ class Time:
     year: str = 'y'
     century: str = 'c'
 
-print(Time.__dict__)
-for a in Time.__dict__['__annotations__']:
-    print(a)
-
-
-LABEL = 0
-VALUE = 1
 
 ntpoff = 0
 ntpdly = 0
@@ -219,26 +208,26 @@ month_abbr = [
     "DEC"
 ]
 
-# Label, value, precision
-# time_table: List[List[Union[str, int, float]]] = [
-#     ["S", 0, 10],
-#     ["M", 0, 10],
-#     ["H", 0, 10],
-#     ["D", 0, 10],
-#     ["M", 0, 10],
-#     ["Y", 0, 10],
-#     ["C", 0, 10]
-# ]
 
-time_table: Dict[str, List[float]] = {
-    's': [0,10],
-    'm': [0,10],
-    'h': [0,10],
-    'd': [0,10],
-    'm': [0,10],
-    'y': [0,10],
-    'c': [0,10],
+time_table: Dict[str, float] = {
+    's': 0,
+    'm': 0,
+    'h': 0,
+    'd': 0,
+    'm': 0,
+    'y': 0,
+    'c': 0
 }
+
+
+class _time_table:
+    second: int = 0
+    minute: int = 0
+    hour: int = 0
+    day: int = 0
+    month: int = 0
+    year: int = 0
+    century: int = 0
 
 ntpq_pattern = re.compile(
     r"([\*\#\+\-\~ ])" +        # 0 - Peer Status
@@ -701,37 +690,37 @@ def main():
                     datetime(_now_loc.year, _now_loc.month, 1)
                 ).days
             days_this_year = 366 if is_leap_year(_now_loc) else 365
-            time_table[Time.second][VALUE] = (
+            time_table[Time.second] = (
                 _now_loc.second +
                 u_second +
                 random.randint(0, 9999)/10000000000
             )
-            time_table[Time.minute][VALUE] = (
+            time_table[Time.minute] = (
                 _now_loc.minute +
-                time_table[Time.second][VALUE] / 60 +
+                time_table[Time.second] / 60 +
                 random.randint(0, 99)/10000000000
             )
-            time_table[Time.hour][VALUE] = (
+            time_table[Time.hour] = (
                 _now_loc.hour +
-                time_table[Time.minute][VALUE] / 60
+                time_table[Time.minute] / 60
             )
-            time_table[Time.day][VALUE] = (
+            time_table[Time.day] = (
                 _now_loc.day +
-                time_table[Time.hour][VALUE] / 24
+                time_table[Time.hour] / 24
             )
-            time_table[Time.month][VALUE] = (
+            time_table[Time.month] = (
                 _now_loc.month +
-                (time_table[Time.day][VALUE] - 1)/days_this_month
+                (time_table[Time.day] - 1)/days_this_month
             )
-            time_table[Time.year][VALUE] = (
+            time_table[Time.year] = (
                 _now_loc.year + (
                     day_of_year(_now_loc) +
-                    time_table[Time.day][VALUE] -
-                    int(time_table[Time.day][VALUE])
+                    time_table[Time.day] -
+                    int(time_table[Time.day])
                 ) / days_this_year
             )
-            time_table[Time.century][VALUE] = (
-                time_table[Time.year][VALUE] - 1
+            time_table[Time.century] = (
+                time_table[Time.year] - 1
             ) / 100 + 1
             screen += themes[3]
             screen += (
@@ -743,12 +732,12 @@ def main():
             screen += corner_ul + h_bar * (columns - 2) + corner_ur + "\n"
 
             for i in 'smhdmyc':
-                percent = time_table[i][VALUE] - int(time_table[i][VALUE])
+                percent = time_table[i] - int(time_table[i])
                 screen += v_bar + (
                     " {0:} " + "{2:}" + themes[1] + " {3:011.8f}% " + v_bar + "\n").format(
                         # time_table[i][LABEL],
                         i.upper(),
-                        time_table[i][VALUE],
+                        time_table[i],
                         draw_progress_bar(width=(columns - 19), max=1, value=percent),
                         100 * (percent)
                 )
@@ -765,7 +754,7 @@ def main():
             unix_exact = unix_int + u_second
             unix_str = ("UNX {0}").format(unix_int)
 
-            day_percent_complete = time_table[Time.day][VALUE] - int(time_table[Time.day][VALUE])
+            day_percent_complete = time_table[Time.day] - int(time_table[Time.day])
             day_percent_complete_utc = (
                 utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000
             ) / 86400
@@ -778,7 +767,6 @@ def main():
             sunrise = sun_stats['sunrise']
             sunset = sun_stats['sunset']
             sol_noon = sun_stats['noon']
-            
 
             solar_str = "SOL " + (_now_loc.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(seconds=sol_noon)).strftime(
                 '%H:%M:%S'
