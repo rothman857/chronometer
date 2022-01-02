@@ -120,23 +120,43 @@ ntpstr = "-"
 ntpid = "---"
 ntpout = ""
 
-# Terminal coloring
-BLACK_BG = "\x1b[40m"
-WHITE_FG = "\x1b[97m"
-L_BLUE_FG = "\x1b[94m"
-L_BLUE_BG = "\x1b[104m"
-D_GRAY_FG = "\x1b[90m"
-RST_COLORS = "\x1b[0m"
 
-themes = [
-    BLACK_BG,  # background
-    WHITE_FG,  # text
-    L_BLUE_FG,  # table borders
-    L_BLUE_BG,  # text highlight
-    D_GRAY_FG  # progress bar dim
-]
+class Color:
+    BLACK_BG = "\x1b[40m"
+    WHITE_FG = "\x1b[97m"
+    L_BLUE_FG = "\x1b[94m"
+    L_BLUE_BG = "\x1b[104m"
+    D_GRAY_FG = "\x1b[90m"
+    RST_COLORS = "\x1b[0m"
 
-weekday_abbr = [
+
+class Theme:
+    background = Color.BLACK_BG
+    text = Color.WHITE_FG
+    table = Color.L_BLUE_FG
+    highlight = Color.L_BLUE_BG
+    dim_bar = Color.D_GRAY_FG
+
+
+class Symbol:
+    v_bar = Theme.table + chr(0x2551) + Theme.text
+    b_var_single = Theme.table + chr(0x2502) + Theme.text
+    h_bar = Theme.table + chr(0x2550) + Theme.text
+    # h_bar_single = Theme.table + chr(0x2500) + Theme.text
+    h_bar_up_connect = Theme.table + chr(0x2569) + Theme.text
+    h_bar_down_connect = Theme.table + chr(0x2566) + Theme.text
+    corner_ll = Theme.table + chr(0x255A) + Theme.text
+    corner_lr = Theme.table + chr(0x255D) + Theme.text
+    corner_ul = Theme.table + chr(0x2554) + Theme.text
+    corner_ur = Theme.table + chr(0x2557) + Theme.text
+    center_l = Theme.table + chr(0x2560) + Theme.text
+    center_r = Theme.table + chr(0x2563) + Theme.text
+    highlight = [Theme.background, Theme.highlight]
+    diamond = chr(0x25fc)
+    binary = ("-", diamond)  # "
+
+
+weekday_abbr = (
     "SAT",
     "SUN",
     "MON",
@@ -144,17 +164,17 @@ weekday_abbr = [
     "WED",
     "THU",
     "FRI"
-]
+)
 
-annus_day_abbr = [
+annus_day_abbr = (
     "PRI",
     "SEC",
     "TER",
     "QUA",
     "QUI"
-]
+)
 
-annus_month_abbr = [
+annus_month_abbr = (
     "PRI",
     "SEC",
     "TER",
@@ -165,9 +185,9 @@ annus_month_abbr = [
     "OCT",
     "NON",
     "DEC"
-]
+)
 
-intfix_month_abbr = [
+intfix_month_abbr = (
     "JAN",
     "FEB",
     "MAR",
@@ -181,9 +201,9 @@ intfix_month_abbr = [
     "OCT",
     "NOV",
     "DEC"
-]
+)
 
-month_abbr = [
+month_abbr = (
     "JAN",
     "FEB",
     "MAR",
@@ -196,7 +216,7 @@ month_abbr = [
     "OCT",
     "NOV",
     "DEC"
-]
+)
 
 
 class time_table:
@@ -230,10 +250,10 @@ def reset_cursor():
 
 def draw_progress_bar(*, min: int = 0, width: int, max: int, value: float) -> str:
     level = int((width + 1) * (value - min)/(max - min))
-    return (chr(0x2550) * level + D_GRAY_FG + (chr(0x2500) * (width - level)))
+    return (chr(0x2550) * level + Color.D_GRAY_FG + (chr(0x2500) * (width - level)))
 
 
-def get_local_date_format():
+def get_local_date_format() -> str:
     today = date.today()
     today_str = today.strftime('%x').split('/')
     if int(today_str[0]) == today.month and int(today_str[1]) == today.day:
@@ -513,29 +533,13 @@ internet_connected = False
 
 def main():
     loop_time = timedelta(0)
-    dst_str = ["", "", "", ""]
-    v_bar = themes[2] + chr(0x2551) + themes[1]
-    b_var_single = themes[2] + chr(0x2502) + themes[1]
-    h_bar = themes[2] + chr(0x2550) + themes[1]
-    # h_bar_single = themes[2] + chr(0x2500) + themes[1]
-    h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
-    h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
-    corner_ll = themes[2] + chr(0x255A) + themes[1]
-    corner_lr = themes[2] + chr(0x255D) + themes[1]
-    corner_ul = themes[2] + chr(0x2554) + themes[1]
-    corner_ur = themes[2] + chr(0x2557) + themes[1]
-    center_l = themes[2] + chr(0x2560) + themes[1]
-    center_r = themes[2] + chr(0x2563) + themes[1]
-    highlight = [themes[0], themes[3]]
-    diamond = chr(0x25fc)
-    binary = ("-", diamond)  # "
 
     ntp_thread = threading.Thread(target=ntp_daemon)
     ntp_thread.setDaemon(True)
     ping_thread = threading.Thread(target=ping_daemon)
     ntp_thread.setDaemon(True)
 
-    i = 0
+    _ = 0
     ntp_thread.start()
     ping_thread.start()
     ntp_started = False
@@ -591,9 +595,9 @@ def main():
             print('_' * columns)
             for row in ntpq_table[:(rows-7)]:
                 row_array: List[str] = []
-                for i, item in enumerate(row):
+                for _, item in enumerate(row):
                     row_array.append(
-                        (' {:>' + str(ntpq_table_column_widths[i]) + '} ').format(item[:ntpq_table_column_widths[i]]))
+                        (' {:>' + str(ntpq_table_column_widths[_]) + '} ').format(item[:ntpq_table_column_widths[_]]))
                 print(('{:' + str(columns) + '}').format('|'.join(row_array)))
 
     while True:
@@ -621,7 +625,7 @@ def main():
             screen = ""
             reset_cursor()
             u_second = now.microsecond / 1000000
-            print(themes[0], end="")
+            print(Theme.background, end="")
             hour_binary = divmod(_now.astimezone().hour, 10)
             minute_binary = divmod(_now.astimezone().minute, 10)
             second_binary = divmod(_now.astimezone().second, 10)
@@ -636,9 +640,9 @@ def main():
 
             b_clock_mat_t = [*zip(*b_clock_mat)]
             b_clockdisp = ['', '', '', '']
-            for i, row in enumerate(b_clock_mat_t):
-                b_clockdisp[i] = (
-                    ''.join(row).replace("0", binary[0]).replace("1", binary[1])
+            for _, row in enumerate(b_clock_mat_t):
+                b_clockdisp[_] = (
+                    ''.join(row).replace("0", Symbol.binary[0]).replace("1", Symbol.binary[1])
                 )
             if (_now_loc.month == 12):
                 days_this_month = 31
@@ -680,34 +684,41 @@ def main():
             time_table.century = (
                 time_table.year - 1
             ) / 100 + 1
-            screen += themes[3]
+            screen += Theme.highlight
             screen += (
                 "{: ^" + str(columns) + "}\n").format(
                     _now_loc.strftime(
                         "%I:%M:%S %p " + current_tz + " - %A %B %d, %Y"
                     )
-            ).upper() + themes[0]
-            screen += corner_ul + h_bar * (columns - 2) + corner_ur + "\n"
+            ).upper() + Theme.background
+            screen += Symbol.corner_ul + Symbol.h_bar * (columns - 2) + Symbol.corner_ur + "\n"
 
-            for i in time_table.__dict__['__annotations__']:
-                value = time_table.__dict__[i]
+            for _ in time_table.__dict__['__annotations__']:
+                value = time_table.__dict__[_]
                 percent = value - int(value)
-                screen += v_bar + (
-                    " {0:} " + "{2:}" + themes[1] + " {3:011.8f}% " + v_bar + "\n").format(
+                screen += Symbol.v_bar + (
+                    " {0:} " + "{2:}" + Theme.text + " {3:011.8f}% " + Symbol.v_bar + "\n").format(
                         # time_table[i][LABEL],
-                        i[0].upper(),
-                        time_table.__dict__[i],
+                        _[0].upper(),
+                        time_table.__dict__[_],
                         draw_progress_bar(width=(columns - 19), max=1, value=percent),
                         100 * (percent)
                 )
 
-            screen += center_l + h_bar * (columns - 23) + \
-                h_bar_down_connect + h_bar * 20 + center_r + "\n"
+            screen += Symbol.center_l + Symbol.h_bar * (columns - 23) + \
+                Symbol.h_bar_down_connect + Symbol.h_bar * 20 + Symbol.center_r + "\n"
 
-            dst_str[0] = "INTL " + int_fix_date(_now_loc)
-            dst_str[1] = "WRLD " + twc_date(_now_loc)
-            dst_str[2] = "ANNO " + and_date(_now_loc)
-            dst_str[3] = "JULN " + float_fixed(julian_date(date=utcnow, reduced=False), 10, False)
+            dst_str = [
+                "INTL " + int_fix_date(_now_loc),
+                "WRLD " + twc_date(_now_loc),
+                "ANNO " + and_date(_now_loc),
+                "JULN " + float_fixed(julian_date(date=utcnow, reduced=False), 10, False)
+            ]
+
+            # dst_str[0] = "INTL " + int_fix_date(_now_loc)
+            # dst_str[1] = "WRLD " + twc_date(_now_loc)
+            # dst_str[2] = "ANNO " + and_date(_now_loc)
+            # dst_str[3] = "JULN " + float_fixed(julian_date(date=utcnow, reduced=False), 10, False)
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
@@ -715,10 +726,16 @@ def main():
 
             day_percent_complete = time_table.day - int(time_table.day)
             day_percent_complete_utc = (
-                utcnow.hour * 3600 + utcnow.minute * 60 + utcnow.second + utcnow.microsecond / 1000000
+                utcnow.hour * 3600 +
+                utcnow.minute * 60 +
+                utcnow.second +
+                utcnow.microsecond / 1000000
             ) / 86400
             day_percent_complete_cet = (
-                cetnow.hour * 3600 + cetnow.minute * 60 + cetnow.second + cetnow.microsecond / 1000000
+                cetnow.hour * 3600 +
+                cetnow.minute * 60 +
+                cetnow.second +
+                cetnow.microsecond / 1000000
             ) / 86400
 
             # sunrise, sunset, sol_noon = *sunriseset(_now_loc)
@@ -727,9 +744,11 @@ def main():
             sunset = sun_stats['sunset']
             sol_noon = sun_stats['noon']
 
-            solar_str = "SOL " + (_now_loc.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(seconds=sol_noon)).strftime(
-                '%H:%M:%S'
-            )
+            solar_str = "SOL " + (
+                _now_loc.replace(hour=12, minute=0, second=0, microsecond=0) +
+                timedelta(seconds=sol_noon)
+            ).strftime('%H:%M:%S')
+
             lst_str = sidereal_time(_now_loc, lon, offset, "LST {hour:02}:{minute:02}:{second:02}")
             metric_str = metric_strf(
                 day_percent_complete,
@@ -755,12 +774,12 @@ def main():
                 sunset = sunriseset(_now_loc, offset=-1)['sunset']
 
             time_List = [str()] * 6
-            for i, s in enumerate([leap_shift(_now_loc), sunrise, sunset, diff, nighttime]):
+            for _, s in enumerate([leap_shift(_now_loc), sunrise, sunset, diff, nighttime]):
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
                 subs = 1000000 * (seconds - int(seconds))
                 sign = '-' if s < 0 else ' '
-                time_List[i] = '{}{:02}:{:02}:{:02}.{:06}'.format(
+                time_List[_] = '{}{:02}:{:02}:{:02}.{:06}'.format(
                     sign, int(hours), int(minutes), int(seconds), int(subs))
 
             leap_stats: List[str] = [
@@ -771,9 +790,9 @@ def main():
                 "ND" + time_List[4]
             ]
 
-            for i in range(0, len(time_zone_list), 2):
-                time0 = now.astimezone(time_zone_list[i].time_zone)
-                time1 = now.astimezone(time_zone_list[i+1].time_zone)
+            for _ in range(0, len(time_zone_list), 2):
+                time0 = now.astimezone(time_zone_list[_].time_zone)
+                time1 = now.astimezone(time_zone_list[_+1].time_zone)
 
                 flash0 = False
                 flash1 = False
@@ -814,38 +833,60 @@ def main():
 
                 padding = (columns - 60) * ' '
 
-                screen += v_bar + ' ' + highlight[flash0] + ("{0:<10}{1:6}").format(
-                    time_zone_list[i].name, time_str0) + highlight[0] + ' ' + b_var_single
-                screen += ' ' + highlight[flash1] + ("{0:<10}{1:6}").format(
-                    time_zone_list[i + 1].name, time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
+                screen += Symbol.v_bar + ' ' + Symbol.highlight[flash0] + ("{0:<10}{1:6}").format(
+                    time_zone_list[_].name, time_str0) + Symbol.highlight[0] + ' ' + Symbol.b_var_single
+                screen += ' ' + Symbol.highlight[flash1] + ("{0:<10}{1:6}").format(
+                    time_zone_list[_ + 1].name, time_str1) + Symbol.highlight[0] + ' ' + padding + Symbol.v_bar + ' ' + leap_stats[_//2] + ' ' + Symbol.v_bar
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
 
                 screen += "\n"
 
-            screen += center_l + h_bar * (columns - 29) + h_bar_down_connect + h_bar * 5 + \
-                h_bar_up_connect + h_bar * 2 + h_bar_down_connect + 17 * h_bar + center_r + "\n"
+            screen += (
+                Symbol.center_l +
+                Symbol.h_bar * (columns - 29) +
+                Symbol.h_bar_down_connect +
+                Symbol.h_bar * 5 +
+                Symbol.h_bar_up_connect +
+                Symbol.h_bar * 2 +
+                Symbol.h_bar_down_connect +
+                Symbol.h_bar * 17 +
+                Symbol.center_r + "\n"
+            )
 
-            screen += v_bar + " " + utc_str + " " + b_var_single + " " + unix_str + " " * \
-                (columns - len(metric_str + unix_str + b_clockdisp[0]) - 27) + v_bar + \
-                ' ' + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
-            screen += v_bar + " " + metric_str + " " + b_var_single + " " + sit_str + " " * \
-                (columns - len(metric_str + sit_str + b_clockdisp[1]) - 27) + v_bar + \
-                ' ' + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
-            screen += v_bar + " " + solar_str + " " + b_var_single + " " + hex_str + " " * \
-                (columns - len(solar_str + net_str + b_clockdisp[2]) - 27) + v_bar + \
-                ' ' + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
-            screen += v_bar + " " + lst_str + " " + b_var_single + " " + net_str + " " * \
-                (columns - len(lst_str + hex_str + b_clockdisp[3]) - 27) + v_bar + ' ' + \
-                b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
-            screen += corner_ll + h_bar * (columns - 29) + h_bar_up_connect + \
-                h_bar * 8 + h_bar_up_connect + h_bar * 17 + corner_lr + "\n"
+            for _, clock in enumerate(
+                (
+                    (utc_str, unix_str),
+                    (metric_str, sit_str),
+                    (solar_str, net_str),
+                    (lst_str, hex_str),
+                )
+            ):
+                screen += (
+                    Symbol.v_bar + " " +
+                    clock[0] + " " +
+                    Symbol.b_var_single + " " +
+                    clock[1] + " " * (columns - len(clock[0] + clock[1] + b_clockdisp[_]) - 27) +
+                    Symbol.v_bar + ' ' +
+                    b_clockdisp[_] + " " +
+                    Symbol.v_bar + " " +
+                    dst_str[_] + " " +
+                    Symbol.v_bar + "\n"
+                )
+
+            screen += (
+                Symbol.corner_ll +
+                Symbol.h_bar * (columns - 29) +
+                Symbol.h_bar_up_connect +
+                Symbol.h_bar * 8 +
+                Symbol.h_bar_up_connect +
+                Symbol.h_bar * 17 +
+                Symbol.corner_lr + "\n"
+            )
+
             ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
 
-            if(is_connected):
-                screen += themes[1]
-            else:
-                screen += themes[4]
+            screen += Theme.text if is_connected else Theme.dim_bar
 
             # Calculate NTP server ID scrolling if string is too large
             if(len(ntp_id_str) > ntpid_max_width):
@@ -867,15 +908,15 @@ def main():
                 off=float_fixed(float(ntpoff), 7, True)
             )
 
-            screen += themes[3] + " " + ntp_str_left + \
+            screen += Theme.highlight + " " + ntp_str_left + \
                 ((columns - len(ntp_str_left + ntp_str_right)-2) * " ") + ntp_str_right + " "
-            screen += themes[1]
+            screen += Theme.text
 
             # Switch to the header color theme
-            screen += themes[0]
+            screen += Theme.background
 
             # Append blank lines to fill out the bottom of the screen
-            for i in range(22, rows):
+            for _ in range(22, rows):
                 screen += " " * columns
 
             loop_time = datetime.now(pytz.utc) - start_time
