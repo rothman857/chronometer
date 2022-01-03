@@ -703,13 +703,6 @@ def main():
             for _ in time_table.__dict__['__annotations__']:
                 value = time_table.__dict__[_]
                 percent = value - int(value)
-                # screen += Symbol.v_bar + (
-                #     " {0:} " + "{2:}" + Theme.text + " {3:011.8f}% " + Symbol.v_bar + "\n").format(
-                #         _[0].upper(),
-                #         time_table.__dict__[_],
-                #         draw_progress_bar(width=(columns - 19), max=1, value=percent),
-                #         100 * (percent)
-                # )
                 screen += (
                     f'{Symbol.v_bar} '
                     f'{_[0].upper()} '
