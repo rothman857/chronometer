@@ -122,20 +122,20 @@ ntpout = ""
 
 
 class Color:
-    BLACK_BG = "\x1b[40m"
-    WHITE_FG = "\x1b[97m"
-    L_BLUE_FG = "\x1b[94m"
-    L_BLUE_BG = "\x1b[104m"
-    D_GRAY_FG = "\x1b[90m"
-    RST_COLORS = "\x1b[0m"
+    black_bg = "\x1b[40m"
+    white_fg = "\x1b[97m"
+    l_blue_fg = "\x1b[94m"
+    l_blue_bg = "\x1b[104m"
+    d_gray_fg = "\x1b[90m"
+    reset = "\x1b[0m"
 
 
 class Theme:
-    background = Color.BLACK_BG
-    text = Color.WHITE_FG
-    table = Color.L_BLUE_FG
-    highlight = Color.L_BLUE_BG
-    dim_bar = Color.D_GRAY_FG
+    background = Color.black_bg
+    text = Color.white_fg
+    table = Color.l_blue_fg
+    highlight = Color.l_blue_bg
+    dim_bar = Color.d_gray_fg
 
 
 class Symbol:
@@ -250,7 +250,7 @@ def reset_cursor():
 
 def draw_progress_bar(*, min: int = 0, width: int, max: int, value: float) -> str:
     level = int((width + 1) * (value - min)/(max - min))
-    return (chr(0x2550) * level + Color.D_GRAY_FG + (chr(0x2500) * (width - level)))
+    return f'{chr(0x2550) * level}{Color.d_gray_fg}{(chr(0x2500) * (width - level))}'
 
 
 def get_local_date_format() -> str:
@@ -279,36 +279,35 @@ def is_leap_year(dt: datetime) -> bool:
         return False
 
 
-def net_time_strf(day_percent: float, fmt: str) -> str:
-    _: Dict[str, int] = dict()
-    _["degrees"], remainder = divmod(int(1296000*day_percent), 3600)
-    _["degrees"], remainder = int(_["degrees"]), int(remainder)
-    _["minutes"], _["seconds"] = divmod(remainder, 60)
-    return fmt.format(**_)
+def net_time_strf(day_percent: float) -> str:
+    degrees, remainder = divmod(int(1296000*day_percent), 3600)
+    degrees, remainder = int(degrees), int(remainder)
+    minutes, seconds = divmod(remainder, 60)
+    return f'NET {degrees:03.0f}°{minutes:02.0f}\'{seconds:02.0f}\"'
 
 
-def hex_strf(day_percent: float, fmt: str) -> str:
-    _: Dict[str, int] = dict()
-    _["hours"], remainder = divmod(int(day_percent * 268435456), 16777216)
-    _["minutes"], _["seconds"] = divmod(remainder, 65536)
-    _["seconds"], _["sub"] = divmod(_["seconds"], 4096)
-    return fmt.format(**_)
+def hex_strf(day_percent: float) -> str:
+    hours, remainder = divmod(int(day_percent * 268435456), 16777216)
+    minutes, seconds = divmod(remainder, 65536)
+    seconds, sub = divmod(seconds, 4096)
+    return f'HEX {hours:1X}_{minutes:02X}_{seconds:1X}.{sub:03X}'
 
 
-def metric_strf(day_percent: float, fmt: str) -> str:
-    _: Dict[str, int] = dict()
-    _["hours"], remainder = divmod(int(day_percent * 100000), 10000)
-    _["minutes"], _["seconds"] = divmod(remainder, 100)
-    return fmt.format(**_)
+def metric_strf(day_percent: float) -> str:
+    hours, remainder = divmod(int(day_percent * 100000), 10000)
+    minutes, seconds = divmod(remainder, 100)
+    return f'MET {hours:02}:{minutes:02}:{seconds:02}'
 
 
 def float_fixed(flt: float, wd: int, sign: bool = False) -> str:
-    width = str(wd)
-    s = "+" if sign else ""
-    return ('{:.' + width + 's}').format(('{:' + s + '.' + width + 'f}').format(flt))
+    int_len = len(str(int(flt)))
+    round_amt = wd - int_len - 1
+    if sign:
+        round_amt -= 1
+    return f'{"+" if sign else ""}{round(flt, round_amt)}'
 
 
-def sidereal_time(dt: datetime, lon: float, off: float, fmt: str) -> str:
+def sidereal_time(dt: datetime, lon: float, off: float) -> str:
     dt = dt.replace(tzinfo=None)
     j = ((dt - datetime(year=2000, month=1, day=1)) - timedelta(hours=off)).total_seconds()/86400
     l0 = 99.967794687
@@ -318,12 +317,12 @@ def sidereal_time(dt: datetime, lon: float, off: float, fmt: str) -> str:
     theta = (l0 + (l1 * j) + (l2 * (j ** 2)) + (l3 * (j ** 3)) + lon) % 360
     result = int(timedelta(hours=theta/15).total_seconds())
     _: Dict[str, int] = dict()
-    _["hour"], remainder = divmod(result, 3600)
-    _["minute"], _["second"] = divmod(remainder, 60)
-    return fmt.format(**_)
+    hour, remainder = divmod(result, 3600)
+    minute, second = divmod(remainder, 60)
+    return f'LST {hour:02}:{minute:02}:{second:02}'
 
 
-def julian_date(date: datetime, reduced: bool = False) -> float:
+def julian_date(date: datetime) -> float:
     a = (14 - date.month) // 12
     y = date.year + 4800 - a
     m = date.month + 12 * a - 3
@@ -335,7 +334,7 @@ def julian_date(date: datetime, reduced: bool = False) -> float:
         date.second / 86400 +
         date.microsecond / 86400000000
     )
-    return jd - 2400000 if reduced else jd
+    return jd
 
 
 def int_fix_date(dt: datetime) -> str:
@@ -351,7 +350,7 @@ def int_fix_date(dt: datetime) -> str:
     m += 1
     d += 1
     w = ordinal % 7
-    return weekday_abbr[w] + ' ' + intfix_month_abbr[m-1] + " " + "{:02}".format(d)
+    return f'{weekday_abbr[w]} {intfix_month_abbr[m-1]} {d:02}'
 
 
 def leap_shift(dt: datetime) -> float:
@@ -397,9 +396,13 @@ def leapage(dt: datetime) -> float:
 
 def sunriseset(dt: datetime, offset: int = 0, fixed: bool = False) -> Dict[str, float]:
     # https://en.wikipedia.org/wiki/Sunrise_equation
-    n = julian_date(dt) - 2451545.0 + .0008  # current julian day since 1/1/2000 12:00
-    _n = (dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)).total_seconds()//86400
-    n = n if fixed else _n
+    if fixed:
+        n = julian_date(dt) - 2451545.0 + .0008  # current julian day since 1/1/2000 12:00
+    else:
+        n = (
+            dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)
+        ).total_seconds()//86400
+
     n += offset
     J_star = n + (-lon/360)  # Mean Solar Noon
     M = (357.5291 + 0.98560028 * J_star) % 360  # Solar mean anomaly
@@ -448,7 +451,7 @@ def twc_date(dt: datetime) -> str:
                 month += 1
             else:
                 break
-    return weekday_abbr[weekday] + ' ' + month_abbr[month-1] + " " + "{:02}".format(day)
+    return f'{weekday_abbr[weekday]} {month_abbr[month-1]} {day:02}'
 
 
 def and_date(dt: datetime) -> str:
@@ -470,7 +473,7 @@ def and_date(dt: datetime) -> str:
             else:
                 exit_loop = True
                 break
-    return annus_day_abbr[weekday] + ' ' + annus_month_abbr[month-1] + " " + "{:02}".format(day)
+    return f'{annus_day_abbr[weekday]} {annus_month_abbr[month-1]} {day:02}'
 
 
 def acos(x: float) -> float:
@@ -691,34 +694,46 @@ def main():
                         "%I:%M:%S %p " + current_tz + " - %A %B %d, %Y"
                     )
             ).upper() + Theme.background
-            screen += Symbol.corner_ul + Symbol.h_bar * (columns - 2) + Symbol.corner_ur + "\n"
+            screen += (
+                Symbol.corner_ul +
+                Symbol.h_bar * (columns - 2) +
+                Symbol.corner_ur + "\n"
+            )
 
             for _ in time_table.__dict__['__annotations__']:
                 value = time_table.__dict__[_]
                 percent = value - int(value)
-                screen += Symbol.v_bar + (
-                    " {0:} " + "{2:}" + Theme.text + " {3:011.8f}% " + Symbol.v_bar + "\n").format(
-                        # time_table[i][LABEL],
-                        _[0].upper(),
-                        time_table.__dict__[_],
-                        draw_progress_bar(width=(columns - 19), max=1, value=percent),
-                        100 * (percent)
+                # screen += Symbol.v_bar + (
+                #     " {0:} " + "{2:}" + Theme.text + " {3:011.8f}% " + Symbol.v_bar + "\n").format(
+                #         _[0].upper(),
+                #         time_table.__dict__[_],
+                #         draw_progress_bar(width=(columns - 19), max=1, value=percent),
+                #         100 * (percent)
+                # )
+                screen += (
+                    f'{Symbol.v_bar} '
+                    f'{_[0].upper()} '
+                    f'{draw_progress_bar(width=(columns - 19), max=1, value=percent) }'
+                    f'{Theme.text}'
+                    f' {100 * percent:011.8f}% '
+                    f'{Symbol.v_bar}\n'
+
                 )
 
-            screen += Symbol.center_l + Symbol.h_bar * (columns - 23) + \
-                Symbol.h_bar_down_connect + Symbol.h_bar * 20 + Symbol.center_r + "\n"
+            screen += (
+                Symbol.center_l +
+                Symbol.h_bar * (columns - 23) +
+                Symbol.h_bar_down_connect +
+                Symbol.h_bar * 20 +
+                Symbol.center_r + "\n"
+            )
 
             dst_str = [
-                "INTL " + int_fix_date(_now_loc),
-                "WRLD " + twc_date(_now_loc),
-                "ANNO " + and_date(_now_loc),
-                "JULN " + float_fixed(julian_date(date=utcnow, reduced=False), 10, False)
+                f'INTL {int_fix_date(_now_loc)}',
+                f'WRLD {twc_date(_now_loc)}',
+                f'ANNO {and_date(_now_loc)}',
+                f'JULN {float_fixed(julian_date(date=utcnow), 10, False)}'
             ]
-
-            # dst_str[0] = "INTL " + int_fix_date(_now_loc)
-            # dst_str[1] = "WRLD " + twc_date(_now_loc)
-            # dst_str[2] = "ANNO " + and_date(_now_loc)
-            # dst_str[3] = "JULN " + float_fixed(julian_date(date=utcnow, reduced=False), 10, False)
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
@@ -749,21 +764,12 @@ def main():
                 timedelta(seconds=sol_noon)
             ).strftime('%H:%M:%S')
 
-            lst_str = sidereal_time(_now_loc, lon, offset, "LST {hour:02}:{minute:02}:{second:02}")
-            metric_str = metric_strf(
-                day_percent_complete,
-                "MET {hours:02}:{minutes:02}:{seconds:02}"
-            )
-            hex_str = hex_strf(
-                day_percent_complete,
-                "HEX {hours:1X}_{minutes:02X}_{seconds:1X}.{sub:03X}"
-            )
-            net_str = net_time_strf(
-                day_percent_complete_utc,
-                "NET {degrees:03.0f}°{minutes:02.0f}'{seconds:02.0f}\""
-            )
-            sit_str = "SIT @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
-            utc_str = "UTC " + utcnow.strftime("%H:%M:%S")
+            lst_str = sidereal_time(_now_loc, lon, offset)
+            metric_str = metric_strf(day_percent_complete)
+            hex_str = hex_strf(day_percent_complete)
+            net_str = net_time_strf(day_percent_complete_utc)
+            sit_str = f'SIT @{round(day_percent_complete_cet*1000, 5):}'
+            utc_str = f'UTC {utcnow:%H:%M:%S}'
 
             diff = sunriseset(_now_loc, fixed=True)['daylight']
             nighttime = sunriseset(_now_loc, fixed=True)['nighttime']
@@ -779,15 +785,14 @@ def main():
                 minutes, seconds = divmod(remainder, 60)
                 subs = 1000000 * (seconds - int(seconds))
                 sign = '-' if s < 0 else ' '
-                time_List[_] = '{}{:02}:{:02}:{:02}.{:06}'.format(
-                    sign, int(hours), int(minutes), int(seconds), int(subs))
+                time_List[_] = f'{sign}{hours:02.0f}:{minutes:02.0f}:{seconds:02.0f}.{subs:06.0f}'
 
             leap_stats: List[str] = [
-                "LD" + time_List[0],
-                "SR" + time_List[1],
-                "SS" + time_List[2],
-                "DD" + time_List[3],
-                "ND" + time_List[4]
+                f'LD{time_List[0]}',
+                f'SR{time_List[1]}',
+                f'SS{time_List[2]}',
+                f'DD{time_List[3]}',
+                f'ND{time_List[4]}'
             ]
 
             for _ in range(0, len(time_zone_list), 2):
@@ -828,29 +833,42 @@ def main():
                 else:
                     sign1 = " "
 
-                time_str0 = sign0 + time0.strftime("%H:%M").upper()
-                time_str1 = sign1 + time1.strftime("%H:%M").upper()
+                time_str0 = f'{sign0}{time0:%H:%M}'
+                time_str1 = f'{sign1}{time1:%H:%M}'
 
                 padding = (columns - 60) * ' '
 
-                screen += Symbol.v_bar + ' ' + Symbol.highlight[flash0] + ("{0:<10}{1:6}").format(
-                    time_zone_list[_].name, time_str0) + Symbol.highlight[0] + ' ' + Symbol.b_var_single
-                screen += ' ' + Symbol.highlight[flash1] + ("{0:<10}{1:6}").format(
-                    time_zone_list[_ + 1].name, time_str1) + Symbol.highlight[0] + ' ' + padding + Symbol.v_bar + ' ' + leap_stats[_//2] + ' ' + Symbol.v_bar
+                screen += (
+                    f'{Symbol.v_bar} '
+                    f'{Symbol.highlight[flash0]}'
+                    f'{time_zone_list[_].name:<10}{time_str0:6}'
+                    f'{Symbol.highlight[0]} '
+                    f'{Symbol.b_var_single}'
+                )
+
+                screen += (
+                    f' {Symbol.highlight[flash1]}'
+                    f'{time_zone_list[_ + 1].name:<10}{time_str1:6}'
+                    f'{Symbol.highlight[0]} '
+                    f'{padding}'
+                    f'{Symbol.v_bar} '
+                    f'{leap_stats[_//2]} '
+                    f'{Symbol.v_bar}'
+                )
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
 
                 screen += "\n"
 
             screen += (
-                Symbol.center_l +
-                Symbol.h_bar * (columns - 29) +
-                Symbol.h_bar_down_connect +
-                Symbol.h_bar * 5 +
-                Symbol.h_bar_up_connect +
-                Symbol.h_bar * 2 +
-                Symbol.h_bar_down_connect +
-                Symbol.h_bar * 17 +
-                Symbol.center_r + "\n"
+                f'{Symbol.center_l}'
+                f'{Symbol.h_bar * (columns - 29)}'
+                f'{Symbol.h_bar_down_connect}'
+                f'{Symbol.h_bar * 5}'
+                f'{Symbol.h_bar_up_connect}'
+                f'{Symbol.h_bar * 2}'
+                f'{Symbol.h_bar_down_connect}'
+                f'{Symbol.h_bar * 17}'
+                f'{Symbol.center_r}\n'
             )
 
             for _, clock in enumerate(
@@ -862,25 +880,26 @@ def main():
                 )
             ):
                 screen += (
-                    Symbol.v_bar + " " +
-                    clock[0] + " " +
-                    Symbol.b_var_single + " " +
-                    clock[1] + " " * (columns - len(clock[0] + clock[1] + b_clockdisp[_]) - 27) +
-                    Symbol.v_bar + ' ' +
-                    b_clockdisp[_] + " " +
-                    Symbol.v_bar + " " +
-                    dst_str[_] + " " +
-                    Symbol.v_bar + "\n"
+                    f'{Symbol.v_bar} '
+                    f'{clock[0]} '
+                    f'{Symbol.b_var_single} '
+                    f'{clock[1]}'
+                    f'{" " * (columns - len(clock[0] + clock[1] + b_clockdisp[_]) - 27)}'
+                    f'{Symbol.v_bar} '
+                    f'{b_clockdisp[_]} '
+                    f'{Symbol.v_bar} '
+                    f'{dst_str[_]} '
+                    f'{Symbol.v_bar}\n'
                 )
 
             screen += (
-                Symbol.corner_ll +
-                Symbol.h_bar * (columns - 29) +
-                Symbol.h_bar_up_connect +
-                Symbol.h_bar * 8 +
-                Symbol.h_bar_up_connect +
-                Symbol.h_bar * 17 +
-                Symbol.corner_lr + "\n"
+                f'{Symbol.corner_ll}'
+                f'{Symbol.h_bar * (columns - 29)}'
+                f'{Symbol.h_bar_up_connect}'
+                f'{Symbol.h_bar * 8}'
+                f'{Symbol.h_bar_up_connect}'
+                f'{Symbol.h_bar * 17}'
+                f'{Symbol.corner_lr}\n'
             )
 
             ntpid_max_width = half_cols - 4
@@ -981,4 +1000,4 @@ if __name__ == "__main__":
     main()
     os.system("clear")
     os.system("setterm -cursor on")
-    print(RST_COLORS, end="")
+    print(Color.reset, end="")
