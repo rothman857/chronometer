@@ -230,17 +230,17 @@ class time_table:
 
 
 ntpq_pattern = re.compile(
-    r"([\*\#\+\-\~ ])" +        # 0 - Peer Status
-    r"([\w+\-\.(): ]+)\s+" +    # 1 - Server ID
-    r"([\w\.]+)\s+" +           # 2 - Reference ID
-    r"(\d+)\s+" +               # 3 - Stratum
-    r"(\w+)\s+" +               # 4 - Type
-    r"(\d+)\s+" +               # 5 - When
-    r"(\d+)\s+" +               # 6 - Poll
-    r"(\d+)\s+" +               # 7 - Reach
-    r"([\d\.]+)\s+" +           # 8 - Delay
-    r"([-\d\.]+)\s+" +          # 9 - Offset
-    r"([\d\.]+)"                # 10- Jitter
+    r"([\*\#\+\-\~ ])"      # 0 - Peer Status
+    r"([\w+\-\.(): ]+)\s+"  # 1 - Server ID
+    r"([\w\.]+)\s+"         # 2 - Reference ID
+    r"(\d+)\s+"             # 3 - Stratum
+    r"(\w+)\s+"             # 4 - Type
+    r"(\d+)\s+"             # 5 - When
+    r"(\d+)\s+"             # 6 - Poll
+    r"(\d+)\s+"             # 7 - Reach
+    r"([\d\.]+)\s+"         # 8 - Delay
+    r"([-\d\.]+)\s+"        # 9 - Offset
+    r"([\d\.]+)"            # 10- Jitter
 )
 
 
@@ -304,7 +304,7 @@ def float_fixed(flt: float, wd: int, sign: bool = False) -> str:
     round_amt = wd - int_len - 1
     if sign:
         round_amt -= 1
-    return f'{"+" if sign else ""}{round(flt, round_amt)}'
+    return f'{"+" if sign else ""}{round(flt, round_amt):.02f}'
 
 
 def sidereal_time(dt: datetime, lon: float, off: float) -> str:
