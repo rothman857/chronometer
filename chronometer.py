@@ -761,7 +761,7 @@ def main():
             metric_str = metric_strf(day_percent_complete)
             hex_str = hex_strf(day_percent_complete)
             net_str = net_time_strf(day_percent_complete_utc)
-            sit_str = f'SIT @{round(day_percent_complete_cet*1000, 5):}'
+            sit_str = f'SIT @{round(day_percent_complete_cet*1000, 5):09.5f}'
             utc_str = f'UTC {utcnow:%H:%M:%S}'
 
             diff = sunriseset(_now_loc, fixed=True)['daylight']
