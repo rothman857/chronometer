@@ -110,15 +110,15 @@ try:
         tz.name = tz.name[:10]
 
 except KeyError as e:
-    print("Error reading .config ({}).  Please correct or reset using --reset.".format(e))
+    print(f'Error reading .config ({e}).  Please correct or reset using --reset.')
     exit()
 
 
 ntpoff = 0
 ntpdly = 0
-ntpstr = "-"
-ntpid = "---"
-ntpout = ""
+ntpstr = '-'
+ntpid = '---'
+ntpout = ''
 
 
 class Color:
@@ -304,7 +304,7 @@ def float_fixed(flt: float, wd: int, sign: bool = False) -> str:
     round_amt = wd - int_len - 1
     if sign:
         round_amt -= 1
-    return f'{"+" if sign else ""}{round(flt, round_amt):.02f}'
+    return f'{"+" if sign and flt > 0 else ""}{round(flt, round_amt):.02f}'
 
 
 def sidereal_time(dt: datetime, lon: float, off: float) -> str:
@@ -316,7 +316,6 @@ def sidereal_time(dt: datetime, lon: float, off: float) -> str:
     l3 = -5.302 * (10 ** -22)
     theta = (l0 + (l1 * j) + (l2 * (j ** 2)) + (l3 * (j ** 3)) + lon) % 360
     result = int(timedelta(hours=theta/15).total_seconds())
-    _: Dict[str, int] = dict()
     hour, remainder = divmod(result, 3600)
     minute, second = divmod(remainder, 60)
     return f'LST {hour:02}:{minute:02}:{second:02}'
@@ -536,12 +535,10 @@ internet_connected = False
 
 def main():
     loop_time = timedelta(0)
-
     ntp_thread = threading.Thread(target=ntp_daemon)
     ntp_thread.setDaemon(True)
     ping_thread = threading.Thread(target=ping_daemon)
     ntp_thread.setDaemon(True)
-
     _ = 0
     ntp_thread.start()
     ping_thread.start()
@@ -600,8 +597,9 @@ def main():
                 row_array: List[str] = []
                 for _, item in enumerate(row):
                     row_array.append(
-                        (' {:>' + str(ntpq_table_column_widths[_]) + '} ').format(item[:ntpq_table_column_widths[_]]))
-                print(('{:' + str(columns) + '}').format('|'.join(row_array)))
+                        f'{item[:ntpq_table_column_widths[_]]:>{ntpq_table_column_widths[_]}}'
+                    )
+                print(f'{"|".join(row_array):{columns}}')
 
     while True:
         ntp_id_str = str(ntpid)
@@ -689,15 +687,14 @@ def main():
             ) / 100 + 1
             screen += Theme.highlight
             screen += (
-                "{: ^" + str(columns) + "}\n").format(
-                    _now_loc.strftime(
-                        "%I:%M:%S %p " + current_tz + " - %A %B %d, %Y"
-                    )
+                f'''{
+                        f"""{_now_loc:%I:%M:%S %p {current_tz} - %A %B %d, %Y}"""
+                :^{columns}}'''
             ).upper() + Theme.background
             screen += (
-                Symbol.corner_ul +
-                Symbol.h_bar * (columns - 2) +
-                Symbol.corner_ur + "\n"
+                f'{Symbol.corner_ul}'
+                f'{Symbol.h_bar * (columns - 2)}'
+                f'{Symbol.corner_ur}\n'
             )
 
             for _ in time_table.__dict__['__annotations__']:
@@ -714,11 +711,11 @@ def main():
                 )
 
             screen += (
-                Symbol.center_l +
-                Symbol.h_bar * (columns - 23) +
-                Symbol.h_bar_down_connect +
-                Symbol.h_bar * 20 +
-                Symbol.center_r + "\n"
+                f'{Symbol.center_l}'
+                f'{Symbol.h_bar * (columns - 23)}'
+                f'{Symbol.h_bar_down_connect}'
+                f'{Symbol.h_bar * 20}'
+                f'{Symbol.center_r}\n'
             )
 
             dst_str = [
@@ -730,7 +727,7 @@ def main():
 
             unix_int = int(utcnow.timestamp())
             unix_exact = unix_int + u_second
-            unix_str = ("UNX {0}").format(unix_int)
+            unix_str = f'UNX {unix_int}'
 
             day_percent_complete = time_table.day - int(time_table.day)
             day_percent_complete_utc = (
@@ -751,11 +748,11 @@ def main():
             sunrise = sun_stats['sunrise']
             sunset = sun_stats['sunset']
             sol_noon = sun_stats['noon']
-
-            solar_str = "SOL " + (
-                _now_loc.replace(hour=12, minute=0, second=0, microsecond=0) +
-                timedelta(seconds=sol_noon)
-            ).strftime('%H:%M:%S')
+            solar_str = (
+                f'''SOL {
+                    _now_loc.replace(hour=12, minute=0, second=0, microsecond=0) +
+                     timedelta(seconds=sol_noon):%H:%M:%S}'''
+            )
 
             lst_str = sidereal_time(_now_loc, lon, offset)
             metric_str = metric_strf(day_percent_complete)
@@ -913,19 +910,21 @@ def main():
                 else:
                     ntpid_temp = ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
 
-            ntp_str_left = "NTP:" + ntpid_temp
-            ntp_str_right = ("STR:{str} DLY:{dly} OFF:{off}").format(
-                str=ntpstr,
-                dly=float_fixed(float(ntpdly), 6, False),
-                off=float_fixed(float(ntpoff), 7, True)
+            ntp_str_left = f'NTP: + {ntpid_temp}'
+            ntp_str_right = (
+                f'STR:{ntpstr} '
+                f'DLY:{float_fixed(float(ntpdly), 6, False)} '
+                f'OFF:{float_fixed(float(ntpoff), 7, True)}'
             )
 
-            screen += Theme.highlight + " " + ntp_str_left + \
-                ((columns - len(ntp_str_left + ntp_str_right)-2) * " ") + ntp_str_right + " "
-            screen += Theme.text
-
-            # Switch to the header color theme
-            screen += Theme.background
+            screen += (
+                f'{Theme.highlight} '
+                f'{ntp_str_left}'
+                f'{((columns - len(ntp_str_left + ntp_str_right)-2) * " ")}'
+                f'{ntp_str_right} '
+                f'{Theme.text}'
+                f'{Theme.background}'
+            )
 
             # Append blank lines to fill out the bottom of the screen
             for _ in range(22, rows):
