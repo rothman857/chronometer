@@ -13,7 +13,6 @@ import random
 import argparse
 from typing import Dict, List
 import pytz
-from dataclasses import dataclass
 
 
 ap = argparse.ArgumentParser()
@@ -36,7 +35,11 @@ default_config = {
         'longitude': -74.0060},
     'refresh': 0.001,
     'timezones': {
-        '# Note': 'Format = label: time_zone. (time_zone must be a valid pytz time zone name.  10 times zones are required.)',
+        '# Note': (
+            'Format = label: time_zone. '
+            '(time_zone must be a valid pytz time zone name.  '
+            '10 times zones are required.)'
+        ),
         'Pacific': 'US/Pacific',
         'Eastern': 'US/Eastern',
         'Israel': 'Israel',
@@ -58,7 +61,11 @@ else:
     with open(os.path.join(here, '.config'), 'w+') as f:
         json.dump(default_config, f, indent=2, sort_keys=True)
         running_config = default_config
-        print("Initial .config file generated.  Please update it with coordinates and desired timezones before running chronometer.py again.")
+        print(
+            "Initial .config file generated.  "
+            "Please update it with coordinates and desired timezones "
+            "before running chronometer.py again."
+        )
         exit()
 
 if args.reset:
@@ -75,10 +82,10 @@ is_connected = False
 now = datetime.now()
 
 
-@dataclass
 class timezone_entry:
-    name: str
-    time_zone: tzinfo
+    def __init__(self, name: str, time_zone: tzinfo):
+        self.name = name
+        self.time_zone = time_zone
 
 
 def my_tz_sort(tz_entry: timezone_entry) -> timedelta:
@@ -843,11 +850,9 @@ def main():
                     f'{padding}'
                     f'{Symbol.v_bar} '
                     f'{leap_stats[_//2]} '
-                    f'{Symbol.v_bar}'
+                    f'{Symbol.v_bar}\n'
                 )
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
-
-                screen += "\n"
 
             screen += (
                 f'{Symbol.center_l}'
@@ -908,7 +913,9 @@ def main():
                 elif(current_stage >= (stages - 8)):
                     ntpid_temp = ntp_id_str[(len(ntp_id_str)-ntpid_max_width):]
                 else:
-                    ntpid_temp = ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
+                    ntpid_temp = (
+                        ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
+                    )
 
             ntp_str_left = f'NTP: + {ntpid_temp}'
             ntp_str_right = (
