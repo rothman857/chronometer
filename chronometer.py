@@ -146,21 +146,20 @@ class Theme:
 
 
 class Symbol:
-    v_bar = Theme.table + chr(0x2551) + Theme.text
-    b_var_single = Theme.table + chr(0x2502) + Theme.text
-    h_bar = Theme.table + chr(0x2550) + Theme.text
-    # h_bar_single = Theme.table + chr(0x2500) + Theme.text
-    h_bar_up_connect = Theme.table + chr(0x2569) + Theme.text
-    h_bar_down_connect = Theme.table + chr(0x2566) + Theme.text
-    corner_ll = Theme.table + chr(0x255A) + Theme.text
-    corner_lr = Theme.table + chr(0x255D) + Theme.text
-    corner_ul = Theme.table + chr(0x2554) + Theme.text
-    corner_ur = Theme.table + chr(0x2557) + Theme.text
-    center_l = Theme.table + chr(0x2560) + Theme.text
-    center_r = Theme.table + chr(0x2563) + Theme.text
-    highlight = [Theme.background, Theme.highlight]
-    diamond = chr(0x25fc)
-    binary = ("-", diamond)  # "
+    v_bar = f'{Theme.table}║{Theme.text}'
+    b_var_single = f'{Theme.table}│{Theme.text}'
+    h_bar = f'{Theme.table}─{Theme.text}'
+    h_bar_up_connect = f'{Theme.table}╩{Theme.text}'
+    h_bar_down_connect = f'{Theme.table}╦{Theme.text}'
+    corner_ll = f'{Theme.table}╚{Theme.text}'
+    corner_lr = f'{Theme.table}╝{Theme.text}'
+    corner_ul = f'{Theme.table}╔{Theme.text}'
+    corner_ur = f'{Theme.table}╗{Theme.text}'
+    center_l = f'{Theme.table}╠{Theme.text}'
+    center_r = f'{Theme.table}╣{Theme.text}'
+    highlight = (Theme.background, Theme.highlight)
+    box = '◼'
+    binary = ("-", box)
 
 
 weekday_abbr = (
