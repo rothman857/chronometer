@@ -596,7 +596,6 @@ def main():
         ntpq_table_column_widths = [16, 15, 2, 6, 6]
         ntpq_table = [
             [h.upper() for h in ntpq_table_headers],
-            # [' ' * w for w in ntpq_table_column_widths],
         ]
         ntpq_table += [
             [r[header] for header in ntpq_table_headers] for r in ntpq_table_data
@@ -910,7 +909,8 @@ def main():
                 ntpid_temp = ntp_id_str[(len(ntp_id_str)-ntpid_max_width):]
             else:
                 ntpid_temp = (
-                    ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
+                    ntp_id_str[(current_stage - 8)
+                                :(current_stage - 8 + ntpid_max_width)]
                 )
 
         ntp_str_left = f'NTP:{ntpid_temp}'
@@ -935,10 +935,6 @@ def main():
 
         loop_time = datetime.now(pytz.utc) - start_time
         print(screen, end="")
-
-        # except KeyboardInterrupt:
-        #     os.system("setterm -cursor on")
-        #     return
 
 
 def socket_attempt(address: str, port: int) -> bool:
