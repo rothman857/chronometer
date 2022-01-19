@@ -18,7 +18,8 @@ import pytz
 ap = argparse.ArgumentParser()
 ap.add_argument('-d', action='store_true', help='Debug mode')
 ap.add_argument('--date', action='store', default=None)
-ap.add_argument('-r', '--reset', action='store_true', help='Reset .config file')
+ap.add_argument('-r', '--reset', action='store_true',
+                help='Reset .config file')
 args = ap.parse_args()
 
 utc = pytz.utc
@@ -117,7 +118,8 @@ try:
         tz.name = tz.name[:10]
 
 except KeyError as e:
-    print(f'Error reading .config ({e}).  Please correct or reset using --reset.')
+    print(
+        f'Error reading .config ({e}).  Please correct or reset using --reset.')
     exit()
 
 
@@ -147,8 +149,8 @@ class Theme:
 
 class Symbol:
     v_bar = f'{Theme.table}║{Theme.text}'
-    b_var_single = f'{Theme.table}│{Theme.text}'
-    h_bar = f'{Theme.table}─{Theme.text}'
+    v_bar_single = f'{Theme.table}│{Theme.text}'
+    h_bar = f'{Theme.table}═{Theme.text}'
     h_bar_up_connect = f'{Theme.table}╩{Theme.text}'
     h_bar_down_connect = f'{Theme.table}╦{Theme.text}'
     corner_ll = f'{Theme.table}╚{Theme.text}'
@@ -315,7 +317,8 @@ def float_fixed(flt: float, wd: int, sign: bool = False) -> str:
 
 def sidereal_time(dt: datetime, lon: float, off: float) -> str:
     dt = dt.replace(tzinfo=None)
-    j = ((dt - datetime(year=2000, month=1, day=1)) - timedelta(hours=off)).total_seconds()/86400
+    j = ((dt - datetime(year=2000, month=1, day=1)) -
+         timedelta(hours=off)).total_seconds()/86400
     l0 = 99.967794687
     l1 = 360.98564736628603
     l2 = 2.907879 * (10 ** -13)
@@ -402,18 +405,22 @@ def leapage(dt: datetime) -> float:
 def sunriseset(dt: datetime, offset: int = 0, fixed: bool = False) -> Dict[str, float]:
     # https://en.wikipedia.org/wiki/Sunrise_equation
     if fixed:
-        n = julian_date(dt) - 2451545.0 + .0008  # current julian day since 1/1/2000 12:00
+        # current julian day since 1/1/2000 12:00
+        n = julian_date(dt) - 2451545.0 + .0008
     else:
         n = (
-            dt - datetime(month=1, day=1, year=2000, hour=12).replace(tzinfo=utc)
+            dt - datetime(month=1, day=1, year=2000,
+                          hour=12).replace(tzinfo=utc)
         ).total_seconds()//86400
 
     n += offset
     J_star = n + (-lon/360)  # Mean Solar Noon
     M = (357.5291 + 0.98560028 * J_star) % 360  # Solar mean anomaly
-    C = 1.9148 * sin(M) + 0.0200*sin(2*M) + 0.0003 * sin(3*M)  # Equation of the center
+    C = 1.9148 * sin(M) + 0.0200*sin(2*M) + 0.0003 * \
+        sin(3*M)  # Equation of the center
     _lambda = (M + C + 180 + 102.9372) % 360  # Ecliptic Longitude
-    J_transit = 2451545.0 + J_star + 0.0053 * sin(M) - 0.0069*sin(2*_lambda)  # Solar Transit
+    J_transit = 2451545.0 + J_star + 0.0053 * \
+        sin(M) - 0.0069*sin(2*_lambda)  # Solar Transit
     delta = asin(sin(_lambda) * sin(23.44))  # Declination of Sun
     temp = (cos(90.83333) - sin(lat) * sin(delta))/(cos(lat) * cos(delta))
     w_0 = acos(temp)  # Hour angle
@@ -533,9 +540,6 @@ def jul_to_greg(J: float) -> datetime:
         ).astimezone() + timedelta(seconds=86400 * (J - _J)))
 
 
-os.system("clear")
-os.system("setterm -cursor off")
-
 internet_connected = False
 
 
@@ -564,7 +568,8 @@ def main():
 
         print('Starting time synchronization...')
         if not ntp_started:
-            subprocess.run(['sudo', 'systemctl', 'start', 'ntp'], stdout=subprocess.PIPE)
+            subprocess.run(['sudo', 'systemctl', 'start',
+                           'ntp'], stdout=subprocess.PIPE)
             ntp_started = True
 
         ntpq_info = ntpq_pattern.findall(ntpout)
@@ -586,11 +591,12 @@ def main():
                 ntpq_table_headers[4]: n[9],
             } for n in ntpq_info
         ]
-        ntpq_table_data = sorted(ntpq_table_data, key=lambda i: (i['st'], float(i['delay'])))
+        ntpq_table_data = sorted(
+            ntpq_table_data, key=lambda i: (i['st'], float(i['delay'])))
         ntpq_table_column_widths = [16, 15, 2, 6, 6]
         ntpq_table = [
             [h.upper() for h in ntpq_table_headers],
-            ['-' * w for w in ntpq_table_column_widths],
+            # [' ' * w for w in ntpq_table_column_widths],
         ]
         ntpq_table += [
             [r[header] for header in ntpq_table_headers] for r in ntpq_table_data
@@ -598,350 +604,341 @@ def main():
         if ntpq_table_data:
             print('Polling NTP servers...')
             print('NTP Peers:')
-            print('_' * columns)
-            for row in ntpq_table[:(rows-7)]:
+            print(Symbol.h_bar * columns)
+            for row in ntpq_table[:(rows-6)]:
                 row_array: List[str] = []
                 for _, item in enumerate(row):
                     row_array.append(
                         f'{item[:ntpq_table_column_widths[_]]:>{ntpq_table_column_widths[_]}}'
                     )
-                print(f'{"|".join(row_array):{columns}}')
+                print(f'{Symbol.v_bar_single.join(row_array):{columns}}')
 
     while True:
         ntp_id_str = str(ntpid)
-        try:
-            time.sleep(refresh)
-            start_time = datetime.now(pytz.utc)
-            offset = -(
-                time.timezone if
-                (time.localtime().tm_isdst == 0) else
-                time.altzone
-            )/(3600)
-            now = start_time + loop_time
-            if args.d:
-                now = dbg_override + (start_time - dbg_start)
-            _now = now.replace(tzinfo=utc)
-            _now_loc = _now.astimezone()
-            utcnow = now
-            cetnow = utcnow + timedelta(hours=1)
-            is_daylight_savings = time.localtime().tm_isdst
-            current_tz = time.tzname[is_daylight_savings]
-            rows = os.get_terminal_size().lines
-            columns = os.get_terminal_size().columns
-            half_cols = int(((columns - 1) / 2) // 1)
-            screen = ""
-            reset_cursor()
-            u_second = now.microsecond / 1000000
-            print(Theme.background, end="")
-            hour_binary = divmod(_now.astimezone().hour, 10)
-            minute_binary = divmod(_now.astimezone().minute, 10)
-            second_binary = divmod(_now.astimezone().second, 10)
-            b_clock_mat = [
-                bin(hour_binary[0])[2:].zfill(4),
-                bin(hour_binary[1])[2:].zfill(4),
-                bin(minute_binary[0])[2:].zfill(4),
-                bin(minute_binary[1])[2:].zfill(4),
-                bin(second_binary[0])[2:].zfill(4),
-                bin(second_binary[1])[2:].zfill(4),
-            ]
+        time.sleep(refresh)
+        start_time = datetime.now(pytz.utc)
+        offset = -(
+            time.timezone if
+            (time.localtime().tm_isdst == 0) else
+            time.altzone
+        )/(3600)
+        now = start_time + loop_time
+        if args.d:
+            now = dbg_override + (start_time - dbg_start)
+        _now = now.replace(tzinfo=utc)
+        _now_loc = _now.astimezone()
+        utcnow = now
+        cetnow = utcnow + timedelta(hours=1)
+        is_daylight_savings = time.localtime().tm_isdst
+        current_tz = time.tzname[is_daylight_savings]
+        rows = os.get_terminal_size().lines
+        columns = os.get_terminal_size().columns
+        half_cols = int(((columns - 1) / 2) // 1)
+        screen = ""
+        reset_cursor()
+        u_second = now.microsecond / 1000000
+        print(Theme.background, end="")
+        hour_binary = divmod(_now.astimezone().hour, 10)
+        minute_binary = divmod(_now.astimezone().minute, 10)
+        second_binary = divmod(_now.astimezone().second, 10)
+        b_clock_mat = [
+            bin(hour_binary[0])[2:].zfill(4),
+            bin(hour_binary[1])[2:].zfill(4),
+            bin(minute_binary[0])[2:].zfill(4),
+            bin(minute_binary[1])[2:].zfill(4),
+            bin(second_binary[0])[2:].zfill(4),
+            bin(second_binary[1])[2:].zfill(4),
+        ]
 
-            b_clock_mat_t = [*zip(*b_clock_mat)]
-            b_clockdisp = ['', '', '', '']
-            for _, row in enumerate(b_clock_mat_t):
-                b_clockdisp[_] = (
-                    ''.join(row).replace("0", Symbol.binary[0]).replace("1", Symbol.binary[1])
-                )
-            if (_now_loc.month == 12):
-                days_this_month = 31
-            else:
-                days_this_month = (
-                    datetime(_now_loc.year, _now_loc.month + 1, 1) -
-                    datetime(_now_loc.year, _now_loc.month, 1)
-                ).days
-            days_this_year = 366 if is_leap_year(_now_loc) else 365
-            time_table.second = (
-                _now_loc.second +
-                u_second +
-                random.randint(0, 9999)/10000000000
+        b_clock_mat_t = [*zip(*b_clock_mat)]
+        b_clockdisp = ['', '', '', '']
+        for _, row in enumerate(b_clock_mat_t):
+            b_clockdisp[_] = (
+                ''.join(row).replace("0", Symbol.binary[0]).replace(
+                    "1", Symbol.binary[1])
             )
-            time_table.minute = (
-                _now_loc.minute +
-                time_table.second / 60 +
-                random.randint(0, 99)/10000000000
-            )
-            time_table.hour = (
-                _now_loc.hour +
-                time_table.minute / 60
-            )
-            time_table.day = (
-                _now_loc.day +
-                time_table.hour / 24
-            )
-            time_table.month = (
-                _now_loc.month +
-                (time_table.day - 1)/days_this_month
-            )
-            time_table.year = (
-                _now_loc.year + (
-                    day_of_year(_now_loc) +
-                    time_table.day -
-                    int(time_table.day)
-                ) / days_this_year
-            )
-            time_table.century = (
-                time_table.year - 1
-            ) / 100 + 1
-            screen += Theme.highlight
-            screen += (
-                f'''{
+        if (_now_loc.month == 12):
+            days_this_month = 31
+        else:
+            days_this_month = (
+                datetime(_now_loc.year, _now_loc.month + 1, 1) -
+                datetime(_now_loc.year, _now_loc.month, 1)
+            ).days
+        days_this_year = 366 if is_leap_year(_now_loc) else 365
+        time_table.second = (
+            _now_loc.second +
+            u_second +
+            random.randint(0, 9999)/10000000000
+        )
+        time_table.minute = (
+            _now_loc.minute +
+            time_table.second / 60 +
+            random.randint(0, 99)/10000000000
+        )
+        time_table.hour = (
+            _now_loc.hour +
+            time_table.minute / 60
+        )
+        time_table.day = (
+            _now_loc.day +
+            time_table.hour / 24
+        )
+        time_table.month = (
+            _now_loc.month +
+            (time_table.day - 1)/days_this_month
+        )
+        time_table.year = (
+            _now_loc.year + (
+                day_of_year(_now_loc) +
+                time_table.day -
+                int(time_table.day)
+            ) / days_this_year
+        )
+        time_table.century = (
+            time_table.year - 1
+        ) / 100 + 1
+        screen += Theme.highlight
+        screen += (
+            f'''{
                         f"""{_now_loc:%I:%M:%S %p {current_tz} - %A %B %d, %Y}"""
                 :^{columns}}'''
-            ).upper() + Theme.background
+        ).upper() + Theme.background
+        screen += (
+            f'{Symbol.corner_ul}'
+            f'{Symbol.h_bar * (columns - 2)}'
+            f'{Symbol.corner_ur}\n'
+        )
+
+        for _ in time_table.__dict__['__annotations__']:
+            value = time_table.__dict__[_]
+            percent = value - int(value)
             screen += (
-                f'{Symbol.corner_ul}'
-                f'{Symbol.h_bar * (columns - 2)}'
-                f'{Symbol.corner_ur}\n'
+                f'{Symbol.v_bar} '
+                f'{_[0].upper()} '
+                f'{draw_progress_bar(width=(columns - 19), max=1, value=percent) }'
+                f'{Theme.text}'
+                f' {100 * percent:011.8f}% '
+                f'{Symbol.v_bar}\n'
             )
 
-            for _ in time_table.__dict__['__annotations__']:
-                value = time_table.__dict__[_]
-                percent = value - int(value)
-                screen += (
-                    f'{Symbol.v_bar} '
-                    f'{_[0].upper()} '
-                    f'{draw_progress_bar(width=(columns - 19), max=1, value=percent) }'
-                    f'{Theme.text}'
-                    f' {100 * percent:011.8f}% '
-                    f'{Symbol.v_bar}\n'
+        screen += (
+            f'{Symbol.center_l}'
+            f'{Symbol.h_bar * (columns - 23)}'
+            f'{Symbol.h_bar_down_connect}'
+            f'{Symbol.h_bar * 20}'
+            f'{Symbol.center_r}\n'
+        )
 
-                )
+        dst_str = [
+            f'INTL {int_fix_date(_now_loc)}',
+            f'WRLD {twc_date(_now_loc)}',
+            f'ANNO {and_date(_now_loc)}',
+            f'JULN {float_fixed(julian_date(date=utcnow), 10, False)}'
+        ]
 
-            screen += (
-                f'{Symbol.center_l}'
-                f'{Symbol.h_bar * (columns - 23)}'
-                f'{Symbol.h_bar_down_connect}'
-                f'{Symbol.h_bar * 20}'
-                f'{Symbol.center_r}\n'
-            )
+        unix_int = int(utcnow.timestamp())
+        unix_exact = unix_int + u_second
+        unix_str = f'UNX {unix_int}'
 
-            dst_str = [
-                f'INTL {int_fix_date(_now_loc)}',
-                f'WRLD {twc_date(_now_loc)}',
-                f'ANNO {and_date(_now_loc)}',
-                f'JULN {float_fixed(julian_date(date=utcnow), 10, False)}'
-            ]
+        day_percent_complete = time_table.day - int(time_table.day)
+        day_percent_complete_utc = (
+            utcnow.hour * 3600 +
+            utcnow.minute * 60 +
+            utcnow.second +
+            utcnow.microsecond / 1000000
+        ) / 86400
+        day_percent_complete_cet = (
+            cetnow.hour * 3600 +
+            cetnow.minute * 60 +
+            cetnow.second +
+            cetnow.microsecond / 1000000
+        ) / 86400
 
-            unix_int = int(utcnow.timestamp())
-            unix_exact = unix_int + u_second
-            unix_str = f'UNX {unix_int}'
-
-            day_percent_complete = time_table.day - int(time_table.day)
-            day_percent_complete_utc = (
-                utcnow.hour * 3600 +
-                utcnow.minute * 60 +
-                utcnow.second +
-                utcnow.microsecond / 1000000
-            ) / 86400
-            day_percent_complete_cet = (
-                cetnow.hour * 3600 +
-                cetnow.minute * 60 +
-                cetnow.second +
-                cetnow.microsecond / 1000000
-            ) / 86400
-
-            # sunrise, sunset, sol_noon = *sunriseset(_now_loc)
-            sun_stats = sunriseset(_now_loc)
-            sunrise = sun_stats['sunrise']
-            sunset = sun_stats['sunset']
-            sol_noon = sun_stats['noon']
-            solar_str = (
-                f'''SOL {
+        # sunrise, sunset, sol_noon = *sunriseset(_now_loc)
+        sun_stats = sunriseset(_now_loc)
+        sunrise = sun_stats['sunrise']
+        sunset = sun_stats['sunset']
+        sol_noon = sun_stats['noon']
+        solar_str = (
+            f'''SOL {
                     _now_loc.replace(hour=12, minute=0, second=0, microsecond=0) +
                      timedelta(seconds=sol_noon):%H:%M:%S}'''
-            )
+        )
 
-            lst_str = sidereal_time(_now_loc, lon, offset)
-            metric_str = metric_strf(day_percent_complete)
-            hex_str = hex_strf(day_percent_complete)
-            net_str = net_time_strf(day_percent_complete_utc)
-            sit_str = f'SIT @{round(day_percent_complete_cet*1000, 5):09.5f}'
-            utc_str = f'UTC {utcnow:%H:%M:%S}'
+        lst_str = sidereal_time(_now_loc, lon, offset)
+        metric_str = metric_strf(day_percent_complete)
+        hex_str = hex_strf(day_percent_complete)
+        net_str = net_time_strf(day_percent_complete_utc)
+        sit_str = f'SIT @{round(day_percent_complete_cet*1000, 5):09.5f}'
+        utc_str = f'UTC {utcnow:%H:%M:%S}'
+        diff = sunriseset(_now_loc, fixed=True)['daylight']
+        nighttime = sunriseset(_now_loc, fixed=True)['nighttime']
+        if sunset > 0 and sunrise > 0:
+            sunrise = sunriseset(_now_loc, offset=1)['sunrise']
+        elif sunset < 0 and sunrise < 0:
+            sunset = sunriseset(_now_loc, offset=-1)['sunset']
 
-            diff = sunriseset(_now_loc, fixed=True)['daylight']
-            nighttime = sunriseset(_now_loc, fixed=True)['nighttime']
+        time_List = [str()] * 6
+        for _, s in enumerate([leap_shift(_now_loc), sunrise, sunset, diff, nighttime]):
+            hours, remainder = divmod(abs(s), 3600)
+            minutes, seconds = divmod(remainder, 60)
+            subs = 1000000 * (seconds - int(seconds))
+            sign = '-' if s < 0 else ' '
+            time_List[_] = f'{sign}{hours:02.0f}:{minutes:02.0f}:{seconds:02.0f}.{subs:06.0f}'
 
-            if sunset > 0 and sunrise > 0:
-                sunrise = sunriseset(_now_loc, offset=1)['sunrise']
-            elif sunset < 0 and sunrise < 0:
-                sunset = sunriseset(_now_loc, offset=-1)['sunset']
+        leap_stats: List[str] = [
+            f'LD{time_List[0]}',
+            f'SR{time_List[1]}',
+            f'SS{time_List[2]}',
+            f'DD{time_List[3]}',
+            f'ND{time_List[4]}'
+        ]
 
-            time_List = [str()] * 6
-            for _, s in enumerate([leap_shift(_now_loc), sunrise, sunset, diff, nighttime]):
-                hours, remainder = divmod(abs(s), 3600)
-                minutes, seconds = divmod(remainder, 60)
-                subs = 1000000 * (seconds - int(seconds))
-                sign = '-' if s < 0 else ' '
-                time_List[_] = f'{sign}{hours:02.0f}:{minutes:02.0f}:{seconds:02.0f}.{subs:06.0f}'
+        for _ in range(0, len(time_zone_list), 2):
+            time0 = now.astimezone(time_zone_list[_].time_zone)
+            time1 = now.astimezone(time_zone_list[_+1].time_zone)
+            flash0 = False
+            flash1 = False
+            flash_dur = .1
+            if (time0.weekday() < 5):
+                if (time0.hour > 8 and time0.hour < 17):
+                    flash0 = True
+                elif (time0.hour == 8):
+                    flash0 = (u_second < flash_dur)
+                elif (time0.hour == 17):
+                    flash0 = not (u_second < flash_dur)
 
-            leap_stats: List[str] = [
-                f'LD{time_List[0]}',
-                f'SR{time_List[1]}',
-                f'SS{time_List[2]}',
-                f'DD{time_List[3]}',
-                f'ND{time_List[4]}'
-            ]
+            if (time1.weekday() < 5):
+                if (time1.hour > 8 and time1.hour < 17):
+                    flash1 = True
+                elif (time1.hour == 8):
+                    flash1 = (u_second < flash_dur)
+                elif (time1.hour == 17):
+                    flash1 = not (u_second < flash_dur)
 
-            for _ in range(0, len(time_zone_list), 2):
-                time0 = now.astimezone(time_zone_list[_].time_zone)
-                time1 = now.astimezone(time_zone_list[_+1].time_zone)
+            if time0.date() > _now_loc.date():
+                sign0 = "+"
+            elif time0.date() < _now_loc.date():
+                sign0 = "-"
+            else:
+                sign0 = " "
 
-                flash0 = False
-                flash1 = False
-                flash_dur = .1
+            if time1.date() > _now_loc.date():
+                sign1 = "+"
+            elif time1.date() < _now_loc.date():
+                sign1 = "-"
+            else:
+                sign1 = " "
 
-                if (time0.weekday() < 5):
-                    if (time0.hour > 8 and time0.hour < 17):
-                        flash0 = True
-                    elif (time0.hour == 8):
-                        flash0 = (u_second < flash_dur)
-                    elif (time0.hour == 17):
-                        flash0 = not (u_second < flash_dur)
-
-                if (time1.weekday() < 5):
-                    if (time1.hour > 8 and time1.hour < 17):
-                        flash1 = True
-                    elif (time1.hour == 8):
-                        flash1 = (u_second < flash_dur)
-                    elif (time1.hour == 17):
-                        flash1 = not (u_second < flash_dur)
-
-                if time0.date() > _now_loc.date():
-                    sign0 = "+"
-                elif time0.date() < _now_loc.date():
-                    sign0 = "-"
-                else:
-                    sign0 = " "
-
-                if time1.date() > _now_loc.date():
-                    sign1 = "+"
-                elif time1.date() < _now_loc.date():
-                    sign1 = "-"
-                else:
-                    sign1 = " "
-
-                time_str0 = f'{sign0}{time0:%H:%M}'
-                time_str1 = f'{sign1}{time1:%H:%M}'
-
-                padding = (columns - 60) * ' '
-
-                screen += (
-                    f'{Symbol.v_bar} '
-                    f'{Symbol.highlight[flash0]}'
-                    f'{time_zone_list[_].name:<10}{time_str0:6}'
-                    f'{Symbol.highlight[0]} '
-                    f'{Symbol.b_var_single}'
-                )
-
-                screen += (
-                    f' {Symbol.highlight[flash1]}'
-                    f'{time_zone_list[_ + 1].name:<10}{time_str1:6}'
-                    f'{Symbol.highlight[0]} '
-                    f'{padding}'
-                    f'{Symbol.v_bar} '
-                    f'{leap_stats[_//2]} '
-                    f'{Symbol.v_bar}\n'
-                )
-                # Each Timezone column is 29 chars, and the bar is 1 = 59
-
+            time_str0 = f'{sign0}{time0:%H:%M}'
+            time_str1 = f'{sign1}{time1:%H:%M}'
+            padding = (columns - 60) * ' '
             screen += (
-                f'{Symbol.center_l}'
-                f'{Symbol.h_bar * (columns - 29)}'
-                f'{Symbol.h_bar_down_connect}'
-                f'{Symbol.h_bar * 5}'
-                f'{Symbol.h_bar_up_connect}'
-                f'{Symbol.h_bar * 2}'
-                f'{Symbol.h_bar_down_connect}'
-                f'{Symbol.h_bar * 17}'
-                f'{Symbol.center_r}\n'
+                f'{Symbol.v_bar} '
+                f'{Symbol.highlight[flash0]}'
+                f'{time_zone_list[_].name:<10}{time_str0:6}'
+                f'{Symbol.highlight[0]} '
+                f'{Symbol.v_bar_single}'
             )
-
-            for _, clock in enumerate(
-                (
-                    (utc_str, unix_str),
-                    (metric_str, sit_str),
-                    (solar_str, net_str),
-                    (lst_str, hex_str),
-                )
-            ):
-                screen += (
-                    f'{Symbol.v_bar} '
-                    f'{clock[0]} '
-                    f'{Symbol.b_var_single} '
-                    f'{clock[1]}'
-                    f'{" " * (columns - len(clock[0] + clock[1] + b_clockdisp[_]) - 27)}'
-                    f'{Symbol.v_bar} '
-                    f'{b_clockdisp[_]} '
-                    f'{Symbol.v_bar} '
-                    f'{dst_str[_]} '
-                    f'{Symbol.v_bar}\n'
-                )
-
             screen += (
-                f'{Symbol.corner_ll}'
-                f'{Symbol.h_bar * (columns - 29)}'
-                f'{Symbol.h_bar_up_connect}'
-                f'{Symbol.h_bar * 8}'
-                f'{Symbol.h_bar_up_connect}'
-                f'{Symbol.h_bar * 17}'
-                f'{Symbol.corner_lr}\n'
+                f' {Symbol.highlight[flash1]}'
+                f'{time_zone_list[_ + 1].name:<10}{time_str1:6}'
+                f'{Symbol.highlight[0]} '
+                f'{padding}'
+                f'{Symbol.v_bar} '
+                f'{leap_stats[_//2]} '
+                f'{Symbol.v_bar}\n'
             )
+            # Each Timezone column is 29 chars, and the bar is 1 = 59
 
-            ntpid_max_width = half_cols - 4
-            ntpid_temp = ntp_id_str
-
-            screen += Theme.text if is_connected else Theme.dim_bar
-
-            # Calculate NTP server ID scrolling if string is too large
-            if(len(ntp_id_str) > ntpid_max_width):
-
-                stages = 16 + len(ntp_id_str) - ntpid_max_width
-                current_stage = int(unix_exact/.25) % stages
-
-                if(current_stage < 8):
-                    ntpid_temp = ntp_id_str[0:ntpid_max_width]
-                elif(current_stage >= (stages - 8)):
-                    ntpid_temp = ntp_id_str[(len(ntp_id_str)-ntpid_max_width):]
-                else:
-                    ntpid_temp = (
-                        ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
-                    )
-
-            ntp_str_left = f'NTP: + {ntpid_temp}'
-            ntp_str_right = (
-                f'STR:{ntpstr} '
-                f'DLY:{float_fixed(float(ntpdly), 6, False)} '
-                f'OFF:{float_fixed(float(ntpoff), 7, True)}'
+        screen += (
+            f'{Symbol.center_l}'
+            f'{Symbol.h_bar * (columns - 29)}'
+            f'{Symbol.h_bar_down_connect}'
+            f'{Symbol.h_bar * 5}'
+            f'{Symbol.h_bar_up_connect}'
+            f'{Symbol.h_bar * 2}'
+            f'{Symbol.h_bar_down_connect}'
+            f'{Symbol.h_bar * 17}'
+            f'{Symbol.center_r}\n'
+        )
+        for _, clock in enumerate(
+            (
+                (utc_str, unix_str),
+                (metric_str, sit_str),
+                (solar_str, net_str),
+                (lst_str, hex_str),
             )
-
+        ):
             screen += (
-                f'{Theme.highlight} '
-                f'{ntp_str_left}'
-                f'{((columns - len(ntp_str_left + ntp_str_right)-2) * " ")}'
-                f'{ntp_str_right} '
-                f'{Theme.text}'
-                f'{Theme.background}'
+                f'{Symbol.v_bar} '
+                f'{clock[0]} '
+                f'{Symbol.v_bar_single} '
+                f'{clock[1]}'
+                f'{" " * (columns - len(clock[0] + clock[1] + b_clockdisp[_]) - 27)}'
+                f'{Symbol.v_bar} '
+                f'{b_clockdisp[_]} '
+                f'{Symbol.v_bar} '
+                f'{dst_str[_]} '
+                f'{Symbol.v_bar}\n'
             )
 
-            # Append blank lines to fill out the bottom of the screen
-            for _ in range(22, rows):
-                screen += " " * columns
+        screen += (
+            f'{Symbol.corner_ll}'
+            f'{Symbol.h_bar * (columns - 29)}'
+            f'{Symbol.h_bar_up_connect}'
+            f'{Symbol.h_bar * 8}'
+            f'{Symbol.h_bar_up_connect}'
+            f'{Symbol.h_bar * 17}'
+            f'{Symbol.corner_lr}\n'
+        )
 
-            loop_time = datetime.now(pytz.utc) - start_time
-            print(screen, end="")
+        ntpid_max_width = half_cols - 4
+        ntpid_temp = ntp_id_str
 
-        except KeyboardInterrupt:
-            os.system("setterm -cursor on")
-            return
+        screen += Theme.text if is_connected else Theme.dim_bar
+
+        # Calculate NTP server ID scrolling if string is too large
+        if(len(ntp_id_str) > ntpid_max_width):
+
+            stages = 16 + len(ntp_id_str) - ntpid_max_width
+            current_stage = int(unix_exact/.25) % stages
+
+            if(current_stage < 8):
+                ntpid_temp = ntp_id_str[0:ntpid_max_width]
+            elif(current_stage >= (stages - 8)):
+                ntpid_temp = ntp_id_str[(len(ntp_id_str)-ntpid_max_width):]
+            else:
+                ntpid_temp = (
+                    ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
+                )
+
+        ntp_str_left = f'NTP:{ntpid_temp}'
+        ntp_str_right = (
+            f'STR:{ntpstr} '
+            f'DLY:{float_fixed(float(ntpdly), 6, False)} '
+            f'OFF:{float_fixed(float(ntpoff), 7, True)}'
+        )
+
+        screen += (
+            f'{Theme.highlight} '
+            f'{ntp_str_left}'
+            f'{((columns - len(ntp_str_left + ntp_str_right)-2) * " ")}'
+            f'{ntp_str_right} '
+            f'{Theme.text}'
+            f'{Theme.background}'
+        )
+
+        # Append blank lines to fill out the bottom of the screen
+        for _ in range(22, rows):
+            screen += " " * columns
+
+        loop_time = datetime.now(pytz.utc) - start_time
+        print(screen, end="")
+
+        # except KeyboardInterrupt:
+        #     os.system("setterm -cursor on")
+        #     return
 
 
 def socket_attempt(address: str, port: int) -> bool:
@@ -971,7 +968,8 @@ def ntp_daemon():
             ntpq_sh = subprocess.run(['ntpq', '-p'], stdout=subprocess.PIPE)
             ntpq = ntpq.stdout.decode('utf-8')
             ntpout = ntpq_sh.stdout.decode('utf-8')
-            current_server = [n for n in ntpq_pattern.findall(ntpq) if n[0] == '*']
+            current_server = [
+                n for n in ntpq_pattern.findall(ntpq) if n[0] == '*']
 
             if(current_server):
                 current_server = current_server[0]
@@ -995,7 +993,11 @@ def ping_daemon():
 
 
 if __name__ == "__main__":
-    main()
     os.system("clear")
-    os.system("setterm -cursor on")
-    print(Color.reset, end="")
+    os.system("setterm -cursor off")
+    try:
+        main()
+    except KeyboardInterrupt:
+        os.system("clear")
+        os.system("setterm -cursor on")
+        print(Color.reset, end="")
