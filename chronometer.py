@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta, date, tzinfo
+import daemons
 import time
 import json
 import os
@@ -13,6 +14,46 @@ import random
 import argparse
 from typing import Dict, List
 import pytz
+import platform
+import sys
+import curses
+
+if os.name == 'nt':
+    import ctypes
+
+    class _CursorInfo(ctypes.Structure):
+        _fields_ = [("size", ctypes.c_int),
+                    ("visible", ctypes.c_byte)]
+
+def hide_cursor():
+    if os.name == 'nt':
+        ci = _CursorInfo()
+        handle = ctypes.windll.kernel32.GetStdHandle(-11)
+        ctypes.windll.kernel32.GetConsoleCursorInfo(handle, ctypes.byref(ci))
+        ci.visible = False
+        ctypes.windll.kernel32.SetConsoleCursorInfo(handle, ctypes.byref(ci))
+    elif os.name == 'posix':
+        sys.stdout.write("\033[?25l")
+        sys.stdout.flush()
+
+def show_cursor():
+    if os.name == 'nt':
+        ci = _CursorInfo()
+        handle = ctypes.windll.kernel32.GetStdHandle(-11)
+        ctypes.windll.kernel32.GetConsoleCursorInfo(handle, ctypes.byref(ci))
+        ci.visible = True
+        ctypes.windll.kernel32.SetConsoleCursorInfo(handle, ctypes.byref(ci))
+    elif os.name == 'posix':
+        sys.stdout.write("\033[?25h")
+        sys.stdout.flush()
+
+def clear():
+    # for windows
+    if os.name == 'nt':
+        _ = os.system('cls')
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = os.system('clear')
 
 
 ap = argparse.ArgumentParser()
@@ -235,21 +276,6 @@ class time_table:
     month: float
     year: float
     century: float
-
-
-ntpq_pattern = re.compile(
-    r"([\*\#\+\-\~ ])"      # 0 - Peer Status
-    r"([\w+\-\.(): ]+)\s+"  # 1 - Server ID
-    r"([\w\.]+)\s+"         # 2 - Reference ID
-    r"(\d+)\s+"             # 3 - Stratum
-    r"(\w+)\s+"             # 4 - Type
-    r"(\d+)\s+"             # 5 - When
-    r"(\d+)\s+"             # 6 - Poll
-    r"(\d+)\s+"             # 7 - Reach
-    r"([\d\.]+)\s+"         # 8 - Delay
-    r"([-\d\.]+)\s+"        # 9 - Offset
-    r"([\d\.]+)"            # 10- Jitter
-)
 
 
 def reset_cursor():
@@ -540,77 +566,78 @@ def jul_to_greg(J: float) -> datetime:
         ).astimezone() + timedelta(seconds=86400 * (J - _J)))
 
 
-internet_connected = False
 
+Theme.text = Color.d_gray_fg
+
+ntp_thread = threading.Thread(target=daemons.ntp_daemon)
+ntp_thread.setDaemon(True)
+ping_thread = threading.Thread(target=daemons.ping_daemon)
+ntp_thread.setDaemon(True)
 
 def main():
     loop_time = timedelta(0)
-    ntp_thread = threading.Thread(target=ntp_daemon)
-    ntp_thread.setDaemon(True)
-    ping_thread = threading.Thread(target=ping_daemon)
-    ntp_thread.setDaemon(True)
     _ = 0
     ntp_thread.start()
     ping_thread.start()
-    ntp_started = False
-    counter = 0
-    while ntpid == "---":
-        counter += 1
-        time.sleep(1)
-        reset_cursor()
-        columns = os.get_terminal_size().columns
-        rows = os.get_terminal_size().lines
-        print('Starting Internet Chronometer...')
-        print('Waiting for internet connection...')
+    # ntp_started = False
+    # counter = 0
+    # while ntpid == "---":
+    #     counter += 1
+    #     time.sleep(1)
+    #     reset_cursor()
+    #     columns = os.get_terminal_size().columns
+    #     rows = os.get_terminal_size().lines
+    #     print('Starting Internet Chronometer...')
+    #     print('Waiting for internet connection...')
 
-        if not internet_connected:
-            continue
+    #     if not internet_connected:
+    #         continue
 
-        print('Starting time synchronization...')
-        if not ntp_started:
-            subprocess.run(['sudo', 'systemctl', 'start',
-                           'ntp'], stdout=subprocess.PIPE)
-            ntp_started = True
+    #     print('Starting time synchronization...')
+    #     if not ntp_started:
+    #         subprocess.run(['sudo', 'systemctl', 'start',
+    #                        'ntp'], stdout=subprocess.PIPE)
+    #         ntp_started = True
 
-        ntpq_info = ntpq_pattern.findall(ntpout)
+    #     ntpq_info = ntpq_pattern.findall(ntpout)
 
-        ntpq_table_headers = [
-            'remote',
-            'refid',
-            'st',
-            'delay',
-            'offset'
-        ]
+    #     ntpq_table_headers = [
+    #         'remote',
+    #         'refid',
+    #         'st',
+    #         'delay',
+    #         'offset'
+    #     ]
 
-        ntpq_table_data = [
-            {
-                ntpq_table_headers[0]: n[0] + n[1],
-                ntpq_table_headers[1]: n[2],
-                ntpq_table_headers[2]: n[3],
-                ntpq_table_headers[3]: n[8],
-                ntpq_table_headers[4]: n[9],
-            } for n in ntpq_info
-        ]
-        ntpq_table_data = sorted(
-            ntpq_table_data, key=lambda i: (i['st'], float(i['delay'])))
-        ntpq_table_column_widths = [16, 15, 2, 6, 6]
-        ntpq_table = [
-            [h.upper() for h in ntpq_table_headers],
-        ]
-        ntpq_table += [
-            [r[header] for header in ntpq_table_headers] for r in ntpq_table_data
-        ]
-        if ntpq_table_data:
-            print('Polling NTP servers...')
-            print('NTP Peers:')
-            print(Symbol.h_bar * columns)
-            for row in ntpq_table[:(rows-6)]:
-                row_array: List[str] = []
-                for _, item in enumerate(row):
-                    row_array.append(
-                        f'{item[:ntpq_table_column_widths[_]]:>{ntpq_table_column_widths[_]}}'
-                    )
-                print(f'{Symbol.v_bar_single.join(row_array):{columns}}')
+    #     ntpq_table_data = [
+    #         {
+    #             ntpq_table_headers[0]: n[0] + n[1],
+    #             ntpq_table_headers[1]: n[2],
+    #             ntpq_table_headers[2]: n[3],
+    #             ntpq_table_headers[3]: n[8],
+    #             ntpq_table_headers[4]: n[9],
+    #         } for n in ntpq_info
+    #     ]
+    #     ntpq_table_data = sorted(
+    #         ntpq_table_data, key=lambda i: (i['st'], float(i['delay'])))
+    #     ntpq_table_column_widths = [16, 15, 2, 6, 6]
+    #     ntpq_table = [
+    #         [h.upper() for h in ntpq_table_headers],
+    #     ]
+    #     ntpq_table += [
+    #         [r[header] for header in ntpq_table_headers] for r in ntpq_table_data
+    #     ]
+    #     if ntpq_table_data:
+    #         print('Polling NTP servers...')
+    #         print('NTP Peers:')
+    #         print(Symbol.h_bar * columns)
+    #         for row in ntpq_table[:(rows-6)]:
+    #             row_array: List[str] = []
+    #             for _, item in enumerate(row):
+    #                 row_array.append(
+    #                     f'{item[:ntpq_table_column_widths[_]]:>{ntpq_table_column_widths[_]}}'
+    #                 )
+    #             print(f'{Symbol.v_bar_single.join(row_array):{columns}}')
 
     while True:
         ntp_id_str = str(ntpid)
@@ -937,63 +964,22 @@ def main():
         print(screen, end="")
 
 
-def socket_attempt(address: str, port: int) -> bool:
-    is_successful = False
-    for _ in range(0, 3):
-        try:
-            socket.create_connection((address, port), 2)
-            is_successful = is_successful or True
-        except:
-            pass
-
-    return is_successful
 
 
-def ntp_daemon():
-    global ntpdly
-    global ntpoff
-    global ntpstr
-    global ntpid
-    global ntpout
-    global is_connected
-
-    while(True):
-        try:
-            is_connected = socket_attempt("8.8.8.8", 53)
-            ntpq = subprocess.run(['ntpq', '-pw'], stdout=subprocess.PIPE)
-            ntpq_sh = subprocess.run(['ntpq', '-p'], stdout=subprocess.PIPE)
-            ntpq = ntpq.stdout.decode('utf-8')
-            ntpout = ntpq_sh.stdout.decode('utf-8')
-            current_server = [
-                n for n in ntpq_pattern.findall(ntpq) if n[0] == '*']
-
-            if(current_server):
-                current_server = current_server[0]
-                ntpid = current_server[1]
-                ntpstr = current_server[3]
-                ntpdly = current_server[8]
-                ntpoff = current_server[9]
-
-        except Exception as e:
-            is_connected = False
-            ntpid = e
-
-        time.sleep(3)
 
 
-def ping_daemon():
-    global internet_connected
-    while not internet_connected:
-        internet_connected = socket_attempt("8.8.8.8", 53)
-        time.sleep(3)
 
+def clear():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 if __name__ == "__main__":
-    os.system("clear")
-    os.system("setterm -cursor off")
+    clear()
+    hide_cursor()
+
     try:
         main()
     except KeyboardInterrupt:
-        os.system("clear")
-        os.system("setterm -cursor on")
+        clear()
+        show_cursor()
         print(Color.reset, end="")
+
