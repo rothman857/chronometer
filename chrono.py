@@ -50,7 +50,6 @@ else:
 
 
 random.seed()
-is_connected = False
 
 def my_tz_sort(tz_entry):
     return tz_entry[1].utcoffset(datetime.now())
@@ -634,11 +633,6 @@ def main():
                 h_bar * 8 + h_bar_up_connect + h_bar * 17 + corner_lr + "\n"
             ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
-
-            if(is_connected):
-                screen += themes[1]
-            else:
-                screen += themes[4]
 
             # Calculate NTP server ID scrolling if string is too large
             if(len(ntp_id_str) > ntpid_max_width):
