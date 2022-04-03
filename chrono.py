@@ -542,9 +542,9 @@ def main():
             nighttime = sunriseset(now, event=SunEvent.NIGHTTIME, fixed=True)
 
             if sunset > 0 and sunrise > 0:
-                sunrise = sunriseset(now, event=SunEvent.SUNRISE)
+                sunrise = sunriseset(now, event=SunEvent.SUNRISE, offset=1)
             elif sunset < 0 and sunrise < 0:
-                sunset = sunriseset(now, event=SunEvent.SUNSET)
+                sunset = sunriseset(now, event=SunEvent.SUNSET, offset=-1)
 
             time_List = [None, None, None, None, None]
             for i, s in enumerate([leap_shift(now), sunrise, sunset, diff, nighttime]):
