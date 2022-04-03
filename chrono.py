@@ -91,6 +91,7 @@ class ProgressBar(Enum):
 
 # Terminal coloring
 BLACK_BG = "\x1b[40m"
+RED_BG = "\x1b[41m"
 WHITE_FG = "\x1b[97m"
 L_BLUE_FG = "\x1b[94m"
 L_BLUE_BG = "\x1b[104m"
@@ -405,7 +406,6 @@ def main():
         try:
             time.sleep(refresh)
             start_time = datetime.now().astimezone()
-            timezone_offset = start_time.utcoffset().total_seconds()
             now = start_time + loop_time
             is_daylight_savings = time.localtime().tm_isdst
             current_tz = time.tzname[is_daylight_savings]
@@ -655,7 +655,8 @@ def main():
                 off=float_fixed(float(network.ntpoff), 7, True)
             )
 
-            screen += themes[3] + " " + ntp_str_left + \
+            screen += themes[3] if network.ntpsync else RED_BG
+            screen += " " + ntp_str_left + \
                 ((columns - len(ntp_str_left + ntp_str_right)-2) * " ") + ntp_str_right + " "
             screen += themes[1]
 

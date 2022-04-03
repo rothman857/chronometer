@@ -5,6 +5,7 @@ import socket
 import threading
 
 internet_connected = False
+ntpsync = False
 ntpoff = 0
 ntpdly = 0
 ntpstr = "-"
@@ -43,6 +44,7 @@ def ntp_daemon():
     global ntpstr
     global ntpid
     global ntpout
+    global ntpsync
     global is_connected
 
     while(True):
@@ -53,8 +55,9 @@ def ntp_daemon():
             ntpq = ntpq.stdout.decode('utf-8')
             ntpout = ntpq_sh.stdout.decode('utf-8')
             current_server = [n for n in ntpq_pattern.findall(ntpq) if n[0] == '*']
+            ntpsync = bool(current_server)
 
-            if(current_server):
+            if(ntpsync):
                 current_server = current_server[0]
                 ntpid = current_server[1]
                 ntpstr = current_server[3]
