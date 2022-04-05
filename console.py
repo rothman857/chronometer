@@ -17,4 +17,4 @@ def show_cursor(on: bool = True):
         os.system("setterm -cursor off")
 
 def clear_screen():
-    os.system("clear")
+    os.system('cls' if os.name=='nt' else 'clear')

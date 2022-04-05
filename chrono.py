@@ -8,9 +8,12 @@ import random
 import pytz
 import trig
 import abbr
-import utils
+import console
 import ntp
 from enum import Enum, auto
+import timeutil
+import clock
+import calendar
 
 
 here = os.path.dirname(os.path.realpath(__file__))
@@ -52,7 +55,6 @@ else:
 
 
 random.seed()
-
 
 def my_tz_sort(tz_entry):
     return tz_entry[1].utcoffset(datetime.now())
@@ -96,20 +98,21 @@ class ProgressBar(Enum):
 # Terminal coloring
 BLACK_BG = "\x1b[40m"
 RED_BG = "\x1b[41m"
-YELLOW_BG = "\x1b[43m"
 WHITE_FG = "\x1b[97m"
 L_BLUE_FG = "\x1b[94m"
 L_BLUE_BG = "\x1b[104m"
 D_GRAY_FG = "\x1b[90m"
-RST_COLORS = "\x1b[0m"
 
-themes = [
-    BLACK_BG,  # background
-    WHITE_FG,  # text
-    L_BLUE_FG,  # table borders
-    L_BLUE_BG,  # text highlight
-    D_GRAY_FG  # progress bar dim
-]
+
+class Theme:
+    text = BLACK_BG + WHITE_FG
+    header = L_BLUE_BG + WHITE_FG
+    border = BLACK_BG + L_BLUE_FG
+    bar_empty = BLACK_BG + D_GRAY_FG
+    bar_full = BLACK_BG + WHITE_FG
+    highlight = L_BLUE_BG + WHITE_FG
+    header_alert = RED_BG + WHITE_FG
+    default = text
 
 
 # Label, value, precision
@@ -126,71 +129,7 @@ time_table = [
 
 def draw_progress_bar(*, min=0, width, max, value):
     level = int((width + 1) * (value - min) / (max - min))
-    return (chr(0x2550) * level + D_GRAY_FG + (chr(0x2500) * (width - level)))
-
-
-def get_local_date_format():
-    today = date.today()
-    today_str = today.strftime('%x').split('/')
-    if int(today_str[0]) == today.month and int(today_str[1]) == today.day:
-        return "{month:02}/{day:02}"
-    else:
-        return "{day:02}/{month:02}"
-
-
-def day_of_year(dt):
-    dt = dt.replace(tzinfo=None)
-    return (dt - datetime(dt.year, 1, 1)).days
-
-
-def is_leap_year(dt):
-    year = dt.year
-    if year % 400 == 0:
-        return True
-    if year % 100 == 0:
-        return False
-    if year % 4 == 0:
-        return True
-
-
-def net_time_strf(day_percent, fmt):
-    _ = dict()
-    _["degrees"], remainder = divmod(int(1296000 * day_percent), 3600)
-    _["degrees"], remainder = int(_["degrees"]), int(remainder)
-    _["minutes"], _["seconds"] = divmod(remainder, 60)
-    return fmt.format(**_)
-
-
-def new_earth_time(day_percent: float) -> str:
-    degrees, remainder = divmod(int(1296000 * day_percent), 3600)
-    degrees, remainder = int(degrees), int(remainder)
-    minutes, seconds = divmod(remainder, 60)
-    return f'{degrees:03.0f}°{minutes:02.0f}\'{seconds:02.0f}\"'
-
-
-def sit_time(day_percent: float) -> str:
-    return f"@{round(day_percent*1000, 5):09.5f}"
-
-
-def hex_time(day_percent: float) -> str:
-    hours, remainder = divmod(int(day_percent * 2**28), 2**24)
-    minutes, seconds = divmod(remainder, 2 ** 16)
-    seconds, subseconds = divmod(seconds, 2 ** 12)
-    return f'{hours:1X}_{minutes:02X}_{seconds:1X}.{subseconds:03X}'
-
-
-def metric_strf(day_percent, fmt):
-    _ = dict()
-    _["hours"], remainder = divmod(int(day_percent * 100000), 10000)
-    _["minutes"], _["seconds"] = divmod(remainder, 100)
-    return fmt.format(**_)
-
-
-def metric_time(day_percent: float) -> str:
-    hours, remainder = divmod(int(day_percent * 100_000), 1000)
-    minutes, seconds = divmod(remainder, 100)
-    return f'{hours:02}:{minutes:02}:{seconds:02}'
-
+    return (Theme.bar_full + chr(0x2550) * level + Theme.bar_empty + (chr(0x2500) * (width - level)))
 
 def float_fixed(flt, wd, sign=False):
     wd = str(wd)
@@ -198,225 +137,27 @@ def float_fixed(flt, wd, sign=False):
     return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
 
 
-def sidereal_time(dt: datetime, lon: float) -> str:
-    offset = dt.utcoffset().total_seconds() / 3600
-    j = julian_date(dt) - 2451545.0 + .5 - timedelta(hours=offset).total_seconds() / 86400
-    l0 = 99.967794687
-    l1 = 360.98564736628603
-    l2 = 2.907879 * (10 ** -13)
-    l3 = -5.302 * (10 ** -22)
-    theta = (l0 + (l1 * j) + (l2 * (j ** 2)) + (l3 * (j ** 3)) + lon) % 360
-    result = int(timedelta(hours=theta / 15).total_seconds())
-    _ = dict()
-    hour, remainder = divmod(result, 3600)
-    minute, second = divmod(remainder, 60)
-    return f'{hour:02}:{minute:02}:{second:02}'
-
-
-def julian_date(date, reduced=False):
-    a = (14 - date.month) // 12
-    y = date.year + 4800 - a
-    m = date.month + 12 * a - 3
-    jdn = date.day + (153 * m + 2) // 5 + y * 365 + y // 4 - y // 100 + y // 400 - 32045
-    jd = (
-        jdn +
-        (date.hour - 12) / 24 +
-        date.minute / 1440 +
-        date.second / 86400 +
-        date.microsecond / 86400000000
-    )
-    return jd - 2400000 if reduced else jd
-
-
-def int_fix_date(dt):
-    ordinal = day_of_year(dt) + 1
-    if is_leap_year(dt):
-        if ordinal > 169:
-            ordinal -= 1
-        elif ordinal == 169:
-            return "*LEAP DAY*"
-    if ordinal == 365:
-        return "*YEAR DAY*"
-    m, d = divmod(ordinal - 1, 28)
-    m += 1
-    d += 1
-    w = ordinal % 7
-    return abbr.weekday[w] + ' ' + abbr.intfix_month[m - 1] + " " + "{:02}".format(d)
-
-
-def leap_shift(dt):
-    dt = dt.replace(tzinfo=None)
-    ratio = 365 / 365.2425
-    start_year = dt.year - (dt.year % 400)
-    if dt.year == start_year:
-        if dt < datetime(month=3, day=1, year=dt.year):
-            start_date = datetime(month=3, day=1, year=dt.year - 400)
-        else:
-            start_date = datetime(month=3, day=1, year=dt.year)
-    else:
-        start_date = datetime(month=3, day=1, year=start_year)
-
-    seconds = (dt - start_date).total_seconds()
-    actual_seconds = seconds * ratio
-    diff = seconds - actual_seconds
-    shift = leapage(dt) * 86400 - diff
-
-    return shift
-
-
-def leapage(dt):
-    years = (dt.year - 1) % 400
-    count = years // 4
-    count -= years // 100
-    count += years // 400
-
-    if is_leap_year(dt):
-        if dt.month == 2 and dt.day == 29:
-            percent_complete = (
-                dt - datetime(month=2, day=29, year=dt.year)
-            ).total_seconds() / 86400
-            count += percent_complete
-        elif dt >= datetime(month=3, day=1, year=dt.year):
-            count += 1
-            pass
-
-    if count == 97:
-        count = 0
-    return count
-
-
-class SunEvent(Enum):
-    SUNRISE = auto()
-    SUNSET = auto()
-    NOON = auto()
-    DAYLIGHT = auto()
-    NIGHTTIME = auto()
-
-
-def sunriseset(dt, offset=0, fixed=False, event=None):
-    # https://en.wikipedia.org/wiki/Sunrise_equation
-    dt = dt.astimezone(pytz.utc).replace(tzinfo=None)
-    n = julian_date(dt) - 2451545.0 + .5 + .0008  # current julian day trig.since 1/1/2000 12:00
-    n = n if fixed else int(n)
-    n += offset
-    J_star = n + (-lon / 360)  # Mean Solar Noon
-    M = (357.5291 + 0.98560028 * J_star) % 360  # Solar mean anomaly
-    C = 1.9148 * trig.sin(M) + 0.0200 * trig.sin(2 * M) + 0.0003 * \
-        trig.sin(3 * M)  # Equation of the center
-    λ = (M + C + 180 + 102.9372) % 360  # Ecliptic Longitude
-    J_transit = 2451545.0 + J_star + 0.0053 * \
-        trig.sin(M) - 0.0069 * trig.sin(2 * λ)  # Solar Transit
-    δ = trig.asin(trig.sin(λ) * trig.sin(23.44))  # Declination of Sun
-    temp = (trig.cos(90.83333) - trig.sin(lat) * trig.sin(δ)) / (trig.cos(lat) * trig.cos(δ))
-    ω0 = trig.acos(temp)  # Hour angle
-    J_rise = J_transit - (ω0 / 360)
-    J_set = J_transit + (ω0 / 360)
-    daylight = 2 * ω0 / 15 * 3600
-    nighttime = 2 * (180 - ω0) / 15 * 3600
-    t_rise = (dt - jul_to_greg(J_rise)).total_seconds()
-    t_set = (dt - jul_to_greg(J_set)).total_seconds()
-    t_noon = (dt - jul_to_greg(J_transit)).total_seconds()
-    if event == SunEvent.SUNRISE:
-        return t_rise
-    elif event == SunEvent.SUNSET:
-        return t_set
-    elif event == SunEvent.NOON:
-        return t_noon
-    elif event == SunEvent.DAYLIGHT:
-        return daylight
-    elif event == SunEvent.NIGHTTIME:
-        return nighttime
-    else:
-        return t_rise, t_set, t_noon
-
-
-def twc_date(dt):
-    _day = day_of_year(dt) + 1
-    day = _day
-
-    if is_leap_year(dt):
-        if day == 366:
-            return "*YEAR DAY*"
-        elif day == 183:
-            return "*LEAP DAY*"
-        elif day > 183:
-            day -= 1
-
-    if day == 365:
-        return "*YEAR DAY*"
-    weekday = day % 7
-    month = 1
-    for _ in range(0, 4):
-        for j in [31, 30, 30]:
-            if day - j > 0:
-                day -= j
-                month += 1
-            else:
-                break
-    return abbr.weekday[weekday] + ' ' + abbr.month[month - 1] + " " + "{:02}".format(day)
-
-
-def and_date(dt):
-    day = day_of_year(dt) + 1
-    month = 1
-    weekday = (day - 1) % 5
-
-    if day == 366:
-        return "*LEAP DAY*"
-
-    exit_loop = False
-    for i in range(0, 5):
-        if exit_loop:
-            break
-        for j in [36, 37]:
-            if day - j > 0:
-                day -= j
-                month += 1
-            else:
-                exit_loop = True
-                break
-    return abbr.annus_day[weekday] + ' ' + abbr.annus_month[month - 1] + " " + "{:02}".format(day)
-
-
-def jul_to_greg(J):
-    J += .5
-    _J = int(J)
-    f = _J + 1401 + (((4 * _J + 274277) // 146097) * 3) // 4 - 38
-    e = 4 * f + 3
-    g = (e % 1461) // 4
-    h = 5 * g + 2
-    D = (h % 153) // 5 + 1
-    M = ((h // 153 + 2) % 12) + 1
-    Y = (e // 1461) - 4716 + (12 + 2 - M) // 12
-    return (
-        datetime(
-            year=Y,
-            day=D,
-            month=M
-        ) + timedelta(seconds=86400 * (J - _J))
-    )
-
-
 def main():
     loop_time = timedelta(0)
     dst_str = ["", "", "", ""]
-    v_bar = themes[2] + chr(0x2551) + themes[1]
-    b_var_single = themes[2] + chr(0x2502) + themes[1]
-    h_bar = themes[2] + chr(0x2550) + themes[1]
-    h_bar_single = themes[2] + chr(0x2500) + themes[1]
-    h_bar_up_connect = themes[2] + chr(0x2569) + themes[1]
-    h_bar_down_connect = themes[2] + chr(0x2566) + themes[1]
-    corner_ll = themes[2] + chr(0x255A) + themes[1]
-    corner_lr = themes[2] + chr(0x255D) + themes[1]
-    corner_ul = themes[2] + chr(0x2554) + themes[1]
-    corner_ur = themes[2] + chr(0x2557) + themes[1]
-    center_l = themes[2] + chr(0x2560) + themes[1]
-    center_r = themes[2] + chr(0x2563) + themes[1]
-    highlight = [themes[0], themes[3]]
+    v_bar = Theme.border + chr(0x2551)
+    b_var_single = Theme.border + chr(0x2502)
+    h_bar = Theme.border + chr(0x2550)
+    h_bar_single = Theme.border + chr(0x2500)
+    h_bar_up_connect = Theme.border+ chr(0x2569)
+    h_bar_down_connect = Theme.border + chr(0x2566)
+    corner_ll = Theme.border + chr(0x255A)
+    corner_lr = Theme.border + chr(0x255D)
+    corner_ul = Theme.border + chr(0x2554)
+    corner_ur = Theme.border + chr(0x2557)
+    center_l = Theme.border + chr(0x2560)
+    center_r = Theme.border + chr(0x2563)
+    highlight = [Theme.text, Theme.highlight]
     diamond = chr(0x25fc)
     binary = ("-", diamond)
     rows = os.get_terminal_size().lines
     columns = os.get_terminal_size().columns
+    half_cols = int(((columns - 1) / 2) // 1)
 
     while True:
         ntp_id_str = ntp.ntp_peer.server_id
@@ -424,13 +165,11 @@ def main():
             time.sleep(refresh)
             start_time = datetime.now().astimezone()
             now = start_time + loop_time
+            u_second = now.microsecond / 1000000
             is_daylight_savings = time.localtime().tm_isdst
             current_tz = time.tzname[is_daylight_savings]
-            half_cols = int(((columns - 1) / 2) // 1)
             screen = ""
-            utils.reset_cursor()
-            u_second = now.microsecond / 1000000
-            print(themes[0], end="")
+            console.reset_cursor()
             hour_binary = divmod(now.astimezone().hour, 10)
             minute_binary = divmod(now.astimezone().minute, 10)
             second_binary = divmod(now.astimezone().second, 10)
@@ -446,7 +185,7 @@ def main():
             b_clock_mat_t = [*zip(*b_clock_mat)]
             b_clockdisp = ['', '', '', '']
             for i, row in enumerate(b_clock_mat_t):
-                b_clockdisp[i] = (
+                b_clockdisp[i] = Theme.text + (
                     ''.join(row).replace("0", binary[0]).replace("1", binary[1])
                 )
             if (now.month == 12):
@@ -456,7 +195,7 @@ def main():
                     datetime(now.year, now.month + 1, 1) -
                     datetime(now.year, now.month, 1)
                 ).days
-            days_this_year = 366 if is_leap_year(now) else 365
+            days_this_year = 366 if timeutil.is_leap_year(now) else 365
             time_table[ProgressBar.SECOND.value][1] = (
                 now.second +
                 u_second +
@@ -481,7 +220,7 @@ def main():
             )
             time_table[ProgressBar.YEAR.value][1] = (
                 now.year + (
-                    day_of_year(now) +
+                    timeutil.day_of_year(now) +
                     time_table[ProgressBar.DAY.value][1] -
                     int(time_table[ProgressBar.DAY.value][1])
                 ) / days_this_year
@@ -489,17 +228,16 @@ def main():
             time_table[ProgressBar.CENTURY.value][1] = (
                 time_table[ProgressBar.YEAR.value][1] - 1
             ) / 100 + 1
-            screen += themes[3]
+            screen += Theme.header
             screen += f"{f'{now: %I:%M:%S %p {current_tz} - %A %B %d, %Y}': ^{columns}}".upper()
-            screen += themes[0]
             screen += f'{corner_ul}{h_bar * (columns - 2)}{corner_ur}\n'
 
             for i in range(7):
                 percent = time_table[i][1] - int(time_table[i][1])
                 screen += (
-                    f'{v_bar} {time_table[i][0]} '
+                    f'{v_bar} {Theme.text}{time_table[i][0]} '
                     f'{draw_progress_bar(width=(columns - 19), max=1, value=percent)}'
-                    f'{themes[1]} {100 * (percent):011.8f}% {v_bar}\n'
+                    f'{Theme.text} {100 * (percent):011.8f}% {v_bar}\n'
                 )
             screen += (
                 f'{center_l}'
@@ -509,14 +247,14 @@ def main():
                 f'{center_r}\n'
             )
 
-            dst_str[0] = f'INTL {int_fix_date(now)}'
-            dst_str[1] = f'WRLD {twc_date(now)}'
-            dst_str[2] = f'ANNO {and_date(now)}'
-            dst_str[3] = f'JULN {float_fixed(julian_date(date=now, reduced=False), 10, False)}'
+            dst_str[0] = f'{Theme.text}INTL {calendar.int_fix_date(now)}'
+            dst_str[1] = f'{Theme.text}WRLD {calendar.twc_date(now)}'
+            dst_str[2] = f'{Theme.text}ANNO {calendar.and_date(now)}'
+            dst_str[3] = f'{Theme.text}JULN {float_fixed(calendar.julian_date(date=now, reduced=False), 10, False)}'
 
             unix_int = int(now.timestamp())
             unix_exact = unix_int + u_second
-            unix_str = (f"UNX {unix_int}")
+            unix_str = (f"{Theme.text}UNX {unix_int}")
 
             day_percent_complete = (
                 time_table[ProgressBar.DAY.value][1] - int(time_table[ProgressBar.DAY.value][1])
@@ -536,31 +274,31 @@ def main():
                 sit_now.microsecond / 1000000
             ) / 86400
 
-            sunrise, sunset, sol_noon = sunriseset(now)
+            sunrise, sunset, sol_noon = timeutil.sunriseset(now, lon, lat)
             solar_time = (
                 now.replace(hour=12, minute=0, second=0, microsecond=0) +
                 timedelta(seconds=sol_noon)
             )
             sol_str = (
-                f'SOL {solar_time:%H:%M:%S}'
+                f'{Theme.text}SOL {solar_time:%H:%M:%S}'
             )
-            lst_str = f'LST {sidereal_time(now, lon)}'
-            met_str = f'MET {metric_time(day_percent_complete)}'
-            hex_str = f'HEX {hex_time(day_percent_complete)}'
-            net_str = f'NET {new_earth_time(day_percent_complete_utc)}'
-            sit_str = f'SIT {sit_time(day_percent_complete_cet)}'
-            utc_str = f'UTC {now.astimezone(pytz.utc):%H:%M:%S}'
+            lst_str = f'{Theme.text}LST {clock.sidereal_time(now, lon)}'
+            met_str = f'{Theme.text}MET {clock.metric_time(day_percent_complete)}'
+            hex_str = f'{Theme.text}HEX {clock.hex_time(day_percent_complete)}'
+            net_str = f'{Theme.text}NET {clock.new_earth_time(day_percent_complete_utc)}'
+            sit_str = f'{Theme.text}SIT {clock.sit_time(day_percent_complete_cet)}'
+            utc_str = f'{Theme.text}UTC {now.astimezone(pytz.utc):%H:%M:%S}'
 
-            diff = sunriseset(now, event=SunEvent.DAYLIGHT, fixed=True)
-            nighttime = sunriseset(now, event=SunEvent.NIGHTTIME, fixed=True)
+            diff = timeutil.sunriseset(now, lon, lat, event=timeutil.SunEvent.DAYLIGHT, fixed=True)
+            nighttime = timeutil.sunriseset(now, lon, lat, event=timeutil.SunEvent.NIGHTTIME, fixed=True)
 
             if sunset > 0 and sunrise > 0:
-                sunrise = sunriseset(now, event=SunEvent.SUNRISE, offset=1)
+                sunrise = timeutil.sunriseset(now, lon, lat, event=timeutil.SunEvent.SUNRISE, offset=1)
             elif sunset < 0 and sunrise < 0:
-                sunset = sunriseset(now, event=SunEvent.SUNSET, offset=-1)
+                sunset = timeutil.sunriseset(now, lon, lat, event=timeutil.SunEvent.SUNSET, offset=-1)
 
             time_List = [None, None, None, None, None]
-            for i, s in enumerate([leap_shift(now), sunrise, sunset, diff, nighttime]):
+            for i, s in enumerate([timeutil.leap_shift(now), sunrise, sunset, diff, nighttime]):
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
                 subs = 1000000 * (seconds - int(seconds))
@@ -636,11 +374,9 @@ def main():
                     f'{highlight[0]} '
                     f'{padding}'
                     f'{v_bar} '
-                    f'{leap_stats[i//2]} '
+                    f'{Theme.text}{leap_stats[i//2]} '
                     f'{v_bar}'
                 )
-                # Each Timezone column is 29 chars, and the bar is 1 = 59
-
                 screen += "\n"
 
             screen += (
@@ -660,7 +396,7 @@ def main():
                 f'{utc_str} '
                 f'{b_var_single} '
                 f'{unix_str}'
-                f'{" " * (columns - len(met_str + unix_str + b_clockdisp[0]) - 27)}'
+                f'{" " * (columns - len(met_str + unix_str + b_clockdisp[0]) + 3)}'
                 f'{v_bar} '
                 f'{b_clockdisp[0]} '
                 f'{v_bar} '
@@ -673,7 +409,7 @@ def main():
                 f'{met_str} '
                 f'{b_var_single} '
                 f'{sit_str}'
-                f'{" " * (columns - len(met_str + sit_str + b_clockdisp[1]) - 27)}'
+                f'{" " * (columns - len(met_str + sit_str + b_clockdisp[1]) + 3)}'
                 f'{v_bar} '
                 f'{b_clockdisp[1]} '
                 f'{v_bar} '
@@ -686,7 +422,7 @@ def main():
                 f'{sol_str} '
                 f'{b_var_single} '
                 f'{hex_str}'
-                f'{" " * (columns - len(sol_str + net_str + b_clockdisp[2]) - 27)}'
+                f'{" " * (columns - len(sol_str + net_str + b_clockdisp[2]) + 3)}'
                 f'{v_bar} '
                 f'{b_clockdisp[2]} '
                 f'{v_bar} '
@@ -699,8 +435,9 @@ def main():
                 f'{lst_str} '
                 f'{b_var_single} '
                 f'{net_str}'
-                f'{" " * (columns - len(lst_str + hex_str + b_clockdisp[3]) - 27)}'
+                f'{" " * (columns - len(lst_str + hex_str + b_clockdisp[3]) + 3)}'
                 f'{v_bar} '
+                
                 f'{b_clockdisp[3]} '
                 f'{v_bar} '
                 f'{dst_str[3]} '
@@ -742,20 +479,13 @@ def main():
                 f'OFF {float_fixed(float(ntp.ntp_peer.offset), 7, True)}'
             )
 
-            if ntp.ntp_peer.server_id:
-                ntp_color = themes[3]
-            else:
-                ntp_color = RED_BG
-            screen += themes[3] if ntp.ntp_peer.server_id else ntp_color
+            screen += Theme.header if ntp.ntp_peer.server_id else Theme.header_alert
             screen += (
                 f' {ntp_str_left}'
                 f'{" " * (columns - len(ntp_str_left + ntp_str_right)-2)}'
                 f'{ntp_str_right} '
             )
-            screen += themes[1]
-
-            # Switch to the header color theme
-            screen += themes[0]
+            screen += Theme.text
 
             # Append blank lines to fill out the bottom of the screen
             for i in range(22, rows):
@@ -765,14 +495,13 @@ def main():
             print(screen, end="")
 
         except KeyboardInterrupt:
-            utils.show_cursor()
             return
 
 
 if __name__ == "__main__":
-    utils.clear_screen()
-    utils.show_cursor(False)
+    console.clear_screen()
+    console.show_cursor(False)
     main()
-    utils.clear_screen()
-    utils.show_cursor()
-    print(RST_COLORS, end="")
+    console.clear_screen()
+    console.show_cursor()
+    print(Theme.default, end="")
