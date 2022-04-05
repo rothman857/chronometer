@@ -5,17 +5,6 @@ import socket
 import threading
 from enum import Enum
 from dataclasses import dataclass
-import q
-
-
-class NtpType(Enum):
-    UCAST = 'u'
-    BCAST = 'B'
-    MCAST = 'M'
-    LOCAL = 'l'
-    POOL = 'p'
-    SYMPEER = 's'
-    MANY = 'A'
 
 
 class NtpTally(Enum):
@@ -34,14 +23,13 @@ class NtpPeer:
     server_id: str = ''
     ref_id: str = ''
     stratum: int = 16
-    type: NtpType = NtpType.LOCAL
+    type: str = ''
     when: int = 0
     poll: int = 0
     reach: int = 0
     delay: float = 0
     offset: float = 0
     jitter: float = 0
-
 
 
 ntpq_pattern = re.compile(
@@ -68,17 +56,15 @@ def ntp_daemon():
     while(True):
         try:
             ntpq_full = subprocess.run(['ntpq', '-pw'], stdout=subprocess.PIPE)
-            ntpq_sh = subprocess.run(['ntpq', '-p'], stdout=subprocess.PIPE)
             ntpq_full = ntpq_full.stdout.decode('utf-8')
-            ntpout = ntpq_sh.stdout.decode('utf-8')
-            ntp_peer_data = q / ntpq_pattern.findall(ntpq_full)
+            ntp_peer_data = ntpq_pattern.findall(ntpq_full)
             ntp_servers = [
                 NtpPeer(
                     tally=NtpTally(p[0]),
                     server_id=p[1],
                     ref_id=p[2],
                     stratum=p[3],
-                    type=NtpType(p[4]),
+                    type=p[4],
                     when=p[5],
                     poll=p[6],
                     reach=p[7],
@@ -89,7 +75,6 @@ def ntp_daemon():
             ]
 
             current_peers = [s for s in ntp_servers if s.tally == NtpTally.PEER]
-
             if(current_peers):
                 ntp_peer = current_peers[0]
             else:
@@ -101,9 +86,6 @@ def ntp_daemon():
         time.sleep(3)
 
 
-
-
 ntp_thread = threading.Thread(target=ntp_daemon)
 ntp_thread.setDaemon(True)
 ntp_thread.start()
-

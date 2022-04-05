@@ -6,11 +6,10 @@ import json
 import os
 import random
 import pytz
-# import q
 import trig
 import abbr
 import utils
-import ntp as network
+import ntp
 from enum import Enum, auto
 
 
@@ -45,7 +44,10 @@ else:
     with open(os.path.join(here, '.config'), 'w+') as f:
         json.dump(default_config, f, indent=2, sort_keys=True)
         running_config = default_config
-        print("Initial .config file generated.  Please update it with coordinates and desired timezones before running chronometer.py again.")
+        print(
+            """Initial .config file generated.  
+            Please update it with coordinates and desired timezones 
+            before running chronometer.py again.""")
         exit()
 
 
@@ -417,7 +419,7 @@ def main():
     columns = os.get_terminal_size().columns
 
     while True:
-        ntp_id_str = network.ntp_peer.server_id
+        ntp_id_str = ntp.ntp_peer.server_id
         try:
             time.sleep(refresh)
             start_time = datetime.now().astimezone()
@@ -488,8 +490,8 @@ def main():
                 time_table[ProgressBar.YEAR.value][1] - 1
             ) / 100 + 1
             screen += themes[3]
-            screen += f"{f'{now: %I:%M:%S %p {current_tz} - %A %B %d, %Y}': ^{columns}}".upper() + \
-                themes[0]
+            screen += f"{f'{now: %I:%M:%S %p {current_tz} - %A %B %d, %Y}': ^{columns}}".upper()
+            screen += themes[0]
             screen += f'{corner_ul}{h_bar * (columns - 2)}{corner_ur}\n'
 
             for i in range(7):
@@ -729,20 +731,22 @@ def main():
                 elif(current_stage >= (stages - 8)):
                     ntpid_temp = ntp_id_str[(len(ntp_id_str) - ntpid_max_width):]
                 else:
-                    ntpid_temp = ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
+                    ntpid_temp = (
+                        ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
+                    )
 
             ntp_str_left = f'NTP: {ntpid_temp}'
             ntp_str_right = (
-                f'STR {network.ntp_peer.stratum} '
-                f'DLY {float_fixed(float(network.ntp_peer.delay), 6, False)} '
-                f'OFF {float_fixed(float(network.ntp_peer.offset), 7, True)}'
+                f'STR {ntp.ntp_peer.stratum} '
+                f'DLY {float_fixed(float(ntp.ntp_peer.delay), 6, False)} '
+                f'OFF {float_fixed(float(ntp.ntp_peer.offset), 7, True)}'
             )
 
-            if network.ntp_peer.server_id:
+            if ntp.ntp_peer.server_id:
                 ntp_color = themes[3]
             else:
                 ntp_color = RED_BG
-            screen += themes[3] if network.ntp_peer.server_id else ntp_color
+            screen += themes[3] if ntp.ntp_peer.server_id else ntp_color
             screen += (
                 f' {ntp_str_left}'
                 f'{" " * (columns - len(ntp_str_left + ntp_str_right)-2)}'
