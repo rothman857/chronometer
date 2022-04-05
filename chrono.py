@@ -735,7 +735,7 @@ def main():
                         ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
                     )
 
-            ntp_str_left = f'NTP: {ntpid_temp}'
+            ntp_str_left = f'NTP {ntpid_temp}'
             ntp_str_right = (
                 f'STR {ntp.ntp_peer.stratum} '
                 f'DLY {float_fixed(float(ntp.ntp_peer.delay), 6, False)} '
