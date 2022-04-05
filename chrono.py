@@ -13,6 +13,7 @@ from enum import Enum, auto
 import timeutil
 import clock
 import cal
+import math
 
 random.seed()
 
@@ -80,7 +81,7 @@ except KeyError as e:
     exit()
 
 
-class ProgressBar(Enum):
+class Bar(Enum):
     SECOND = 0
     MINUTE = auto()
     HOUR = auto()
@@ -111,21 +112,20 @@ class Theme:
     default = text
 
 
-# Label, value, precision
-time_table = [
-    ["S", 0],
-    ["M", 0],
-    ["H", 0],
-    ["D", 0],
-    ["M", 0],
-    ["Y", 0],
-    ["C", 0]
-]
+time_table = {
+    Bar.SECOND: 0.0,
+    Bar.MINUTE: 0.0,
+    Bar.HOUR: 0.0,
+    Bar.DAY: 0.0,
+    Bar.MONTH: 0.0,
+    Bar.YEAR: 0.0,
+    Bar.CENTURY: 0.0
+}
 
 
 def draw_progress_bar(*, min: int = 0, width: int, max: int, value: float) -> str:
     level = int((width + 1) * (value - min) / (max - min))
-    return (Theme.bar_full + chr(0x2550) * level + Theme.bar_empty + (chr(0x2500) * (width - level)))
+    return f'{Theme.bar_full}{"═" * level}{Theme.bar_empty}{"─"* (width - level)}'
 
 
 def float_fixed(flt, wd, sign=False):
@@ -137,25 +137,24 @@ def float_fixed(flt, wd, sign=False):
 def main() -> NoReturn:
     ntp.thread.start()
     loop_time = timedelta(0)
-    dst_str = ["", "", "", ""]
-    v_bar = Theme.border + chr(0x2551)
-    b_var_single = Theme.border + chr(0x2502)
-    h_bar = Theme.border + chr(0x2550)
-    h_bar_single = Theme.border + chr(0x2500)
-    h_bar_up_connect = Theme.border + chr(0x2569)
-    h_bar_down_connect = Theme.border + chr(0x2566)
-    corner_ll = Theme.border + chr(0x255A)
-    corner_lr = Theme.border + chr(0x255D)
-    corner_ul = Theme.border + chr(0x2554)
-    corner_ur = Theme.border + chr(0x2557)
-    center_l = Theme.border + chr(0x2560)
-    center_r = Theme.border + chr(0x2563)
-    highlight = [Theme.text, Theme.highlight]
-    diamond = chr(0x25fc)
-    binary = ("-", diamond)
+    cal_str = ["", "", "", ""]
+    v_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL}'
+    b_var_single = Theme.border + '\N{BOX DRAWINGS LIGHT VERTICAL}'
+    h_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE HORIZONTAL}'
+    h_bar_single = Theme.border + '\N{BOX DRAWINGS DOUBLE HORIZONTAL}'
+    h_bar_up_connect = Theme.border + '\N{BOX DRAWINGS DOUBLE UP AND HORIZONTAL}'
+    h_bar_down_connect = Theme.border + '\N{BOX DRAWINGS DOUBLE DOWN AND HORIZONTAL}'
+    corner_ll = Theme.border + '\N{BOX DRAWINGS DOUBLE UP AND RIGHT}'
+    corner_lr = Theme.border + '\N{BOX DRAWINGS DOUBLE UP AND LEFT}'
+    corner_ul = Theme.border + '\N{BOX DRAWINGS DOUBLE DOWN AND RIGHT}'
+    corner_ur = Theme.border + '\N{BOX DRAWINGS DOUBLE DOWN AND LEFT}'
+    center_l = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL AND RIGHT}'
+    center_r = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL AND LEFT}'
+    binary = ("-", '\N{BLACK MEDIUM SQUARE}')
+    highlight = (Theme.text, Theme.highlight)
     rows = os.get_terminal_size().lines
     columns = os.get_terminal_size().columns
-    half_cols = int(((columns - 1) / 2) // 1)
+    half_cols = math.floor((columns - 1) / 2)
 
     while True:
         ntp_id_str = ntp.ntp_peer.server_id
@@ -194,46 +193,29 @@ def main() -> NoReturn:
                     datetime(now.year, now.month, 1)
                 ).days
             days_this_year = 366 if timeutil.is_leap_year(now) else 365
-            time_table[ProgressBar.SECOND.value][1] = (
-                now.second +
-                u_second +
-                random.randint(0, 9999) / 10000000000
+            time_table[Bar.SECOND] = now.second + u_second + random.randint(0, 9999) / 10**9
+            time_table[Bar.MINUTE] = (
+                now.minute + time_table[Bar.SECOND] / 60 + random.randint(0, 99) / 10**9
             )
-            time_table[ProgressBar.MINUTE.value][1] = (
-                now.minute +
-                time_table[ProgressBar.SECOND.value][1] / 60 +
-                random.randint(0, 99) / 10000000000
-            )
-            time_table[ProgressBar.HOUR.value][1] = (
-                now.hour +
-                time_table[ProgressBar.MINUTE.value][1] / 60
-            )
-            time_table[ProgressBar.DAY.value][1] = (
-                now.day +
-                time_table[ProgressBar.HOUR.value][1] / 24
-            )
-            time_table[ProgressBar.MONTH.value][1] = (
-                now.month +
-                (time_table[ProgressBar.DAY.value][1] - 1) / days_this_month
-            )
-            time_table[ProgressBar.YEAR.value][1] = (
+            time_table[Bar.HOUR] = now.hour + time_table[Bar.MINUTE] / 60
+            time_table[Bar.DAY] = now.day + time_table[Bar.HOUR] / 24
+            time_table[Bar.MONTH] = now.month + (time_table[Bar.DAY] - 1) / days_this_month
+            time_table[Bar.YEAR] = (
                 now.year + (
                     timeutil.day_of_year(now) +
-                    time_table[ProgressBar.DAY.value][1] -
-                    int(time_table[ProgressBar.DAY.value][1])
+                    time_table[Bar.DAY] -
+                    int(time_table[Bar.DAY])
                 ) / days_this_year
             )
-            time_table[ProgressBar.CENTURY.value][1] = (
-                time_table[ProgressBar.YEAR.value][1] - 1
-            ) / 100 + 1
+            time_table[Bar.CENTURY] = (time_table[Bar.YEAR] - 1) / 100 + 1
             screen += Theme.header
             screen += f"{f'{now: %I:%M:%S %p {current_tz} - %A %B %d, %Y}': ^{columns}}".upper()
             screen += f'{corner_ul}{h_bar * (columns - 2)}{corner_ur}\n'
 
-            for i in range(7):
-                percent = time_table[i][1] - int(time_table[i][1])
+            for symbol, value in time_table.items():
+                percent = value - int(value)
                 screen += (
-                    f'{v_bar} {Theme.text}{time_table[i][0]} '
+                    f'{v_bar} {Theme.text}{symbol.name[0].upper()} '
                     f'{draw_progress_bar(width=(columns - 19), max=1, value=percent)}'
                     f'{Theme.text} {100 * (percent):011.8f}% {v_bar}\n'
                 )
@@ -245,18 +227,16 @@ def main() -> NoReturn:
                 f'{center_r}\n'
             )
 
-            dst_str[0] = f'{Theme.text}INTL {cal.int_fix_date(now)}'
-            dst_str[1] = f'{Theme.text}WRLD {cal.twc_date(now)}'
-            dst_str[2] = f'{Theme.text}ANNO {cal.and_date(now)}'
-            dst_str[3] = f'{Theme.text}JULN {float_fixed(cal.julian_date(date=now, reduced=False), 10, False)}'
+            cal_str[0] = f'{Theme.text}INTL {cal.int_fix_date(now)}'
+            cal_str[1] = f'{Theme.text}WRLD {cal.twc_date(now)}'
+            cal_str[2] = f'{Theme.text}ANNO {cal.and_date(now)}'
+            cal_str[3] = f'{Theme.text}JULN {float_fixed(cal.julian_date(date=now, reduced=False), 10, False)}'
 
             unix_int = int(now.timestamp())
             unix_exact = unix_int + u_second
-            unix_str = (f"{Theme.text}UNX {unix_int}")
+            unix_str = f"{Theme.text}UNX {unix_int}"
 
-            day_percent_complete = (
-                time_table[ProgressBar.DAY.value][1] - int(time_table[ProgressBar.DAY.value][1])
-            )
+            day_percent_complete = time_table[Bar.DAY] - int(time_table[Bar.DAY])
             utc_now = now.astimezone(pytz.utc)
             day_percent_complete_utc = (
                 utc_now.hour * 3600 +
@@ -277,9 +257,7 @@ def main() -> NoReturn:
                 now.replace(hour=12, minute=0, second=0, microsecond=0) +
                 timedelta(seconds=sol_noon)
             )
-            sol_str = (
-                f'{Theme.text}SOL {solar_time:%H:%M:%S}'
-            )
+            sol_str = f'{Theme.text}SOL {solar_time:%H:%M:%S}'
             lst_str = f'{Theme.text}LST {clock.sidereal_time(now, lon)}'
             met_str = f'{Theme.text}MET {clock.metric_time(day_percent_complete)}'
             hex_str = f'{Theme.text}HEX {clock.hex_time(day_percent_complete)}'
@@ -298,7 +276,7 @@ def main() -> NoReturn:
                 sunset = timeutil.sunriseset(
                     now, lon, lat, event=timeutil.SunEvent.SUNSET, offset=-1)
 
-            time_List = [None, None, None, None, None]
+            time_List = [''] * 5
             for i, s in enumerate([timeutil.leap_shift(now), sunrise, sunset, diff, nighttime]):
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
@@ -401,7 +379,7 @@ def main() -> NoReturn:
                 f'{v_bar} '
                 f'{b_clockdisp[0]} '
                 f'{v_bar} '
-                f'{dst_str[0]} '
+                f'{cal_str[0]} '
                 f'{v_bar}\n'
             )
 
@@ -414,7 +392,7 @@ def main() -> NoReturn:
                 f'{v_bar} '
                 f'{b_clockdisp[1]} '
                 f'{v_bar} '
-                f'{dst_str[1]} '
+                f'{cal_str[1]} '
                 f'{v_bar}\n'
             )
 
@@ -427,7 +405,7 @@ def main() -> NoReturn:
                 f'{v_bar} '
                 f'{b_clockdisp[2]} '
                 f'{v_bar} '
-                f'{dst_str[2]} '
+                f'{cal_str[2]} '
                 f'{v_bar}\n'
             )
 
@@ -441,7 +419,7 @@ def main() -> NoReturn:
 
                 f'{b_clockdisp[3]} '
                 f'{v_bar} '
-                f'{dst_str[3]} '
+                f'{cal_str[3]} '
                 f'{v_bar}\n'
             )
 
@@ -494,7 +472,6 @@ def main() -> NoReturn:
 
             loop_time = datetime.now(pytz.utc) - start_time
             print(screen, end="")
-            time.sleep(1)
 
         except KeyboardInterrupt:
             return
