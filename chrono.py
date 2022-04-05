@@ -6,11 +6,11 @@ import json
 import os
 import random
 import pytz
-import q
+# import q
 import trig
 import abbr
 import utils
-import network_threads as network
+import ntp as network
 from enum import Enum, auto
 
 
@@ -51,6 +51,7 @@ else:
 
 random.seed()
 
+
 def my_tz_sort(tz_entry):
     return tz_entry[1].utcoffset(datetime.now())
 
@@ -69,8 +70,8 @@ try:
     _time_zone_list = [None] * len(time_zone_list)
 
     for i in range(0, len(time_zone_list), 2):
-        _time_zone_list[i] = time_zone_list[i//2][:10]
-        _time_zone_list[i+1] = time_zone_list[i//2+5][:10]
+        _time_zone_list[i] = time_zone_list[i // 2][:10]
+        _time_zone_list[i + 1] = time_zone_list[i // 2 + 5][:10]
 
     time_zone_list = _time_zone_list
 
@@ -78,6 +79,7 @@ try:
 except KeyError as e:
     print(f"Error reading .config ({e}).  Please correct or reset utrig.sing --reset.")
     exit()
+
 
 class ProgressBar(Enum):
     SECOND = 0
@@ -92,6 +94,7 @@ class ProgressBar(Enum):
 # Terminal coloring
 BLACK_BG = "\x1b[40m"
 RED_BG = "\x1b[41m"
+YELLOW_BG = "\x1b[43m"
 WHITE_FG = "\x1b[97m"
 L_BLUE_FG = "\x1b[94m"
 L_BLUE_BG = "\x1b[104m"
@@ -107,7 +110,6 @@ themes = [
 ]
 
 
-
 # Label, value, precision
 time_table = [
     ["S", 0],
@@ -120,9 +122,8 @@ time_table = [
 ]
 
 
-
 def draw_progress_bar(*, min=0, width, max, value):
-    level = int((width + 1) * (value - min)/(max - min))
+    level = int((width + 1) * (value - min) / (max - min))
     return (chr(0x2550) * level + D_GRAY_FG + (chr(0x2500) * (width - level)))
 
 
@@ -152,18 +153,28 @@ def is_leap_year(dt):
 
 def net_time_strf(day_percent, fmt):
     _ = dict()
-    _["degrees"], remainder = divmod(int(1296000*day_percent), 3600)
+    _["degrees"], remainder = divmod(int(1296000 * day_percent), 3600)
     _["degrees"], remainder = int(_["degrees"]), int(remainder)
     _["minutes"], _["seconds"] = divmod(remainder, 60)
     return fmt.format(**_)
 
 
-def hex_strf(day_percent, fmt):
-    _ = dict()
-    _["hours"], remainder = divmod(int(day_percent * 268435456), 16777216)
-    _["minutes"], _["seconds"] = divmod(remainder, 65536)
-    _["seconds"], _["sub"] = divmod(_["seconds"], 4096)
-    return fmt.format(**_)
+def new_earth_time(day_percent: float) -> str:
+    degrees, remainder = divmod(int(1296000 * day_percent), 3600)
+    degrees, remainder = int(degrees), int(remainder)
+    minutes, seconds = divmod(remainder, 60)
+    return f'{degrees:03.0f}°{minutes:02.0f}\'{seconds:02.0f}\"'
+
+
+def sit_time(day_percent: float) -> str:
+    return f"@{round(day_percent*1000, 5):09.5f}"
+
+
+def hex_time(day_percent: float) -> str:
+    hours, remainder = divmod(int(day_percent * 2**28), 2**24)
+    minutes, seconds = divmod(remainder, 2 ** 16)
+    seconds, subseconds = divmod(seconds, 2 ** 12)
+    return f'{hours:1X}_{minutes:02X}_{seconds:1X}.{subseconds:03X}'
 
 
 def metric_strf(day_percent, fmt):
@@ -173,32 +184,38 @@ def metric_strf(day_percent, fmt):
     return fmt.format(**_)
 
 
+def metric_time(day_percent: float) -> str:
+    hours, remainder = divmod(int(day_percent * 100_000), 1000)
+    minutes, seconds = divmod(remainder, 100)
+    return f'{hours:02}:{minutes:02}:{seconds:02}'
+
+
 def float_fixed(flt, wd, sign=False):
     wd = str(wd)
     sign = "+" if sign else ""
     return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
 
 
-def sidereal_time(dt, lon, fmt):
-    offset = dt.utcoffset().total_seconds()/3600
-    j = julian_date(dt) - 2451545.0 + .5  - timedelta(hours=offset).total_seconds()/86400
+def sidereal_time(dt: datetime, lon: float) -> str:
+    offset = dt.utcoffset().total_seconds() / 3600
+    j = julian_date(dt) - 2451545.0 + .5 - timedelta(hours=offset).total_seconds() / 86400
     l0 = 99.967794687
     l1 = 360.98564736628603
     l2 = 2.907879 * (10 ** -13)
     l3 = -5.302 * (10 ** -22)
     theta = (l0 + (l1 * j) + (l2 * (j ** 2)) + (l3 * (j ** 3)) + lon) % 360
-    result = int(timedelta(hours=theta/15).total_seconds())
+    result = int(timedelta(hours=theta / 15).total_seconds())
     _ = dict()
-    _["hour"], remainder = divmod(result, 3600)
-    _["minute"], _["second"] = divmod(remainder, 60)
-    return fmt.format(**_)
+    hour, remainder = divmod(result, 3600)
+    minute, second = divmod(remainder, 60)
+    return f'{hour:02}:{minute:02}:{second:02}'
 
 
 def julian_date(date, reduced=False):
     a = (14 - date.month) // 12
     y = date.year + 4800 - a
     m = date.month + 12 * a - 3
-    jdn = date.day + (153*m+2)//5 + y*365 + y//4 - y//100 + y//400 - 32045
+    jdn = date.day + (153 * m + 2) // 5 + y * 365 + y // 4 - y // 100 + y // 400 - 32045
     jd = (
         jdn +
         (date.hour - 12) / 24 +
@@ -222,16 +239,16 @@ def int_fix_date(dt):
     m += 1
     d += 1
     w = ordinal % 7
-    return abbr.weekday[w] + ' ' + abbr.intfix_month[m-1] + " " + "{:02}".format(d)
+    return abbr.weekday[w] + ' ' + abbr.intfix_month[m - 1] + " " + "{:02}".format(d)
 
 
 def leap_shift(dt):
     dt = dt.replace(tzinfo=None)
-    ratio = 365/365.2425
+    ratio = 365 / 365.2425
     start_year = dt.year - (dt.year % 400)
     if dt.year == start_year:
         if dt < datetime(month=3, day=1, year=dt.year):
-            start_date = datetime(month=3, day=1, year=dt.year-400)
+            start_date = datetime(month=3, day=1, year=dt.year - 400)
         else:
             start_date = datetime(month=3, day=1, year=dt.year)
     else:
@@ -246,7 +263,7 @@ def leap_shift(dt):
 
 
 def leapage(dt):
-    years = (dt.year-1) % 400
+    years = (dt.year - 1) % 400
     count = years // 4
     count -= years // 100
     count += years // 400
@@ -255,7 +272,7 @@ def leapage(dt):
         if dt.month == 2 and dt.day == 29:
             percent_complete = (
                 dt - datetime(month=2, day=29, year=dt.year)
-            ).total_seconds()/86400
+            ).total_seconds() / 86400
             count += percent_complete
         elif dt >= datetime(month=3, day=1, year=dt.year):
             count += 1
@@ -265,6 +282,7 @@ def leapage(dt):
         count = 0
     return count
 
+
 class SunEvent(Enum):
     SUNRISE = auto()
     SUNSET = auto()
@@ -273,24 +291,26 @@ class SunEvent(Enum):
     NIGHTTIME = auto()
 
 
-def sunriseset(dt, offset=0, fixed=False, event=None):  
+def sunriseset(dt, offset=0, fixed=False, event=None):
     # https://en.wikipedia.org/wiki/Sunrise_equation
     dt = dt.astimezone(pytz.utc).replace(tzinfo=None)
     n = julian_date(dt) - 2451545.0 + .5 + .0008  # current julian day trig.since 1/1/2000 12:00
     n = n if fixed else int(n)
     n += offset
-    J_star = n + (-lon/360)  # Mean Solar Noon
+    J_star = n + (-lon / 360)  # Mean Solar Noon
     M = (357.5291 + 0.98560028 * J_star) % 360  # Solar mean anomaly
-    C = 1.9148 * trig.sin(M) + 0.0200*trig.sin(2*M) + 0.0003 * trig.sin(3*M)  # Equation of the center
+    C = 1.9148 * trig.sin(M) + 0.0200 * trig.sin(2 * M) + 0.0003 * \
+        trig.sin(3 * M)  # Equation of the center
     λ = (M + C + 180 + 102.9372) % 360  # Ecliptic Longitude
-    J_transit = 2451545.0 + J_star + 0.0053 * trig.sin(M) - 0.0069*trig.sin(2*λ)  # Solar Transit
+    J_transit = 2451545.0 + J_star + 0.0053 * \
+        trig.sin(M) - 0.0069 * trig.sin(2 * λ)  # Solar Transit
     δ = trig.asin(trig.sin(λ) * trig.sin(23.44))  # Declination of Sun
-    temp = (trig.cos(90.83333) - trig.sin(lat) * trig.sin(δ))/(trig.cos(lat) * trig.cos(δ))
+    temp = (trig.cos(90.83333) - trig.sin(lat) * trig.sin(δ)) / (trig.cos(lat) * trig.cos(δ))
     ω0 = trig.acos(temp)  # Hour angle
-    J_rise = J_transit - (ω0/360)
-    J_set = J_transit + (ω0/360)
+    J_rise = J_transit - (ω0 / 360)
+    J_set = J_transit + (ω0 / 360)
     daylight = 2 * ω0 / 15 * 3600
-    nighttime = 2 * (180-ω0) / 15 * 3600
+    nighttime = 2 * (180 - ω0) / 15 * 3600
     t_rise = (dt - jul_to_greg(J_rise)).total_seconds()
     t_set = (dt - jul_to_greg(J_set)).total_seconds()
     t_noon = (dt - jul_to_greg(J_transit)).total_seconds()
@@ -324,14 +344,14 @@ def twc_date(dt):
         return "*YEAR DAY*"
     weekday = day % 7
     month = 1
-    for i in range(0, 4):
+    for _ in range(0, 4):
         for j in [31, 30, 30]:
             if day - j > 0:
                 day -= j
                 month += 1
             else:
                 break
-    return abbr.weekday[weekday] + ' ' + abbr.month[month-1] + " " + "{:02}".format(day)
+    return abbr.weekday[weekday] + ' ' + abbr.month[month - 1] + " " + "{:02}".format(day)
 
 
 def and_date(dt):
@@ -353,10 +373,7 @@ def and_date(dt):
             else:
                 exit_loop = True
                 break
-    return abbr.annus_day[weekday] + ' ' + abbr.annus_month[month-1] + " " + "{:02}".format(day)
-
-
-
+    return abbr.annus_day[weekday] + ' ' + abbr.annus_month[month - 1] + " " + "{:02}".format(day)
 
 
 def jul_to_greg(J):
@@ -395,22 +412,18 @@ def main():
     center_r = themes[2] + chr(0x2563) + themes[1]
     highlight = [themes[0], themes[3]]
     diamond = chr(0x25fc)
-    binary = ("-", diamond)  # "
+    binary = ("-", diamond)
+    rows = os.get_terminal_size().lines
+    columns = os.get_terminal_size().columns
 
-    
-
-    i = 0
-    
     while True:
-        ntp_id_str = str(network.ntpid)
+        ntp_id_str = network.ntp_peer.server_id
         try:
             time.sleep(refresh)
             start_time = datetime.now().astimezone()
             now = start_time + loop_time
             is_daylight_savings = time.localtime().tm_isdst
             current_tz = time.tzname[is_daylight_savings]
-            rows = os.get_terminal_size().lines
-            columns = os.get_terminal_size().columns
             half_cols = int(((columns - 1) / 2) // 1)
             screen = ""
             utils.reset_cursor()
@@ -445,12 +458,12 @@ def main():
             time_table[ProgressBar.SECOND.value][1] = (
                 now.second +
                 u_second +
-                random.randint(0, 9999)/10000000000
+                random.randint(0, 9999) / 10000000000
             )
             time_table[ProgressBar.MINUTE.value][1] = (
                 now.minute +
                 time_table[ProgressBar.SECOND.value][1] / 60 +
-                random.randint(0, 99)/10000000000
+                random.randint(0, 99) / 10000000000
             )
             time_table[ProgressBar.HOUR.value][1] = (
                 now.hour +
@@ -462,7 +475,7 @@ def main():
             )
             time_table[ProgressBar.MONTH.value][1] = (
                 now.month +
-                (time_table[ProgressBar.DAY.value][1] - 1)/days_this_month
+                (time_table[ProgressBar.DAY.value][1] - 1) / days_this_month
             )
             time_table[ProgressBar.YEAR.value][1] = (
                 now.year + (
@@ -475,68 +488,66 @@ def main():
                 time_table[ProgressBar.YEAR.value][1] - 1
             ) / 100 + 1
             screen += themes[3]
-            # screen += (
-            #     "{: ^" + str(columns) + "}\n").format(
-            #         now.strftime(
-            #             "%I:%M:%S %p " + current_tz + " - %A %B %d, %Y"
-            #         )
-            # ).upper() + themes[0]
-            screen += f"{f'{now: %I:%M:%S %p {current_tz} - %A %B %d, %Y}': ^{columns}}".upper() + themes[0]
+            screen += f"{f'{now: %I:%M:%S %p {current_tz} - %A %B %d, %Y}': ^{columns}}".upper() + \
+                themes[0]
             screen += f'{corner_ul}{h_bar * (columns - 2)}{corner_ur}\n'
 
             for i in range(7):
                 percent = time_table[i][1] - int(time_table[i][1])
-                # screen += v_bar + (
-                #     " {0:} " + "{2:}" + themes[1] + " {3:011.8f}% " + v_bar + "\n").format(
-                #         time_table[i][0],
-                #         0,
-                #         draw_progress_bar(width=(columns - 19), max=1, value=percent),
-                #         100 * (percent)
-                # )
                 screen += (
-                    f'''{v_bar} {time_table[i][0]} {draw_progress_bar(width=(columns - 19), max=1, value=percent)}{themes[1]} {100 * (percent):011.8f}% {v_bar}\n'''
+                    f'{v_bar} {time_table[i][0]} '
+                    f'{draw_progress_bar(width=(columns - 19), max=1, value=percent)}'
+                    f'{themes[1]} {100 * (percent):011.8f}% {v_bar}\n'
                 )
-            screen += center_l + h_bar * (columns - 23) + \
-                h_bar_down_connect + h_bar * 20 + center_r + "\n"
+            screen += (
+                f'{center_l}'
+                f'{h_bar * (columns - 23)}'
+                f'{h_bar_down_connect}'
+                f'{h_bar * 20}'
+                f'{center_r}\n'
+            )
 
-            dst_str[0] = "INTL " + int_fix_date(now)
-            dst_str[1] = "WRLD " + twc_date(now)
-            dst_str[2] = "ANNO " + and_date(now)
-            dst_str[3] = "JULN " + float_fixed(julian_date(date=now, reduced=False), 10, False)
+            dst_str[0] = f'INTL {int_fix_date(now)}'
+            dst_str[1] = f'WRLD {twc_date(now)}'
+            dst_str[2] = f'ANNO {and_date(now)}'
+            dst_str[3] = f'JULN {float_fixed(julian_date(date=now, reduced=False), 10, False)}'
 
             unix_int = int(now.timestamp())
             unix_exact = unix_int + u_second
             unix_str = (f"UNX {unix_int}")
 
-            day_percent_complete = time_table[ProgressBar.DAY.value][1] - int(time_table[ProgressBar.DAY.value][1])
+            day_percent_complete = (
+                time_table[ProgressBar.DAY.value][1] - int(time_table[ProgressBar.DAY.value][1])
+            )
             utc_now = now.astimezone(pytz.utc)
             day_percent_complete_utc = (
-                utc_now.hour * 3600 + utc_now.minute * 60 + utc_now.second + utc_now.microsecond / 1000000
+                utc_now.hour * 3600 +
+                utc_now.minute * 60 +
+                utc_now.second +
+                utc_now.microsecond / 1000000
             ) / 86400
             sit_now = now.astimezone(pytz.utc) + timedelta(hours=1)
-            day_percent_complete_cet = q|(
-                sit_now.hour * 3600 + sit_now.minute * 60 + sit_now.second + sit_now.microsecond / 1000000
+            day_percent_complete_cet = (
+                sit_now.hour * 3600 +
+                sit_now.minute * 60 +
+                sit_now.second +
+                sit_now.microsecond / 1000000
             ) / 86400
 
             sunrise, sunset, sol_noon = sunriseset(now)
-            solar_str = "SOL " + (now.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(seconds=sol_noon)).strftime(
-                '%H:%M:%S'
+            solar_time = (
+                now.replace(hour=12, minute=0, second=0, microsecond=0) +
+                timedelta(seconds=sol_noon)
             )
-            lst_str = sidereal_time(now, lon, "LST {hour:02}:{minute:02}:{second:02}")
-            metric_str = metric_strf(
-                day_percent_complete,
-                "MET {hours:02}:{minutes:02}:{seconds:02}"
+            sol_str = (
+                f'SOL {solar_time:%H:%M:%S}'
             )
-            hex_str = hex_strf(
-                day_percent_complete,
-                "HEX {hours:1X}_{minutes:02X}_{seconds:1X}.{sub:03X}"
-            )
-            net_str = net_time_strf(
-                day_percent_complete_utc,
-                "NET {degrees:03.0f}°{minutes:02.0f}'{seconds:02.0f}\""
-            )
-            sit_str = "SIT @{:09.5f}".format(round(day_percent_complete_cet*1000, 5))
-            utc_str = "UTC " + now.astimezone(pytz.utc).strftime("%H:%M:%S")
+            lst_str = f'LST {sidereal_time(now, lon)}'
+            met_str = f'MET {metric_time(day_percent_complete)}'
+            hex_str = f'HEX {hex_time(day_percent_complete)}'
+            net_str = f'NET {new_earth_time(day_percent_complete_utc)}'
+            sit_str = f'SIT {sit_time(day_percent_complete_cet)}'
+            utc_str = f'UTC {now.astimezone(pytz.utc):%H:%M:%S}'
 
             diff = sunriseset(now, event=SunEvent.DAYLIGHT, fixed=True)
             nighttime = sunriseset(now, event=SunEvent.NIGHTTIME, fixed=True)
@@ -551,21 +562,25 @@ def main():
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
                 subs = 1000000 * (seconds - int(seconds))
-                sign = '-' if s < 0 else ' '
-                time_List[i] = '{}{:02}:{:02}:{:02}.{:06}'.format(
-                    sign, int(hours), int(minutes), int(seconds), int(subs))
+                time_List[i] = (
+                    f'{"-" if s < 0 else " "}'
+                    f'{int(hours):02}:'
+                    f'{int(minutes):02}:'
+                    f'{int(seconds):02}.'
+                    f'{int(subs):06}'
+                )
 
             leap_stats = [
-                "LD" + time_List[0],
-                "SR" + time_List[1],
-                "SS" + time_List[2],
-                "DD" + time_List[3],
-                "ND" + time_List[4]
+                f'LD{time_List[0]}',
+                f'SR{time_List[1]}',
+                f'SS{time_List[2]}',
+                f'DD{time_List[3]}',
+                f'ND{time_List[4]}'
             ]
 
             for i in range(0, len(time_zone_list), 2):
                 time0 = now.astimezone(time_zone_list[i][1])
-                time1 = now.astimezone(time_zone_list[i+1][1])
+                time1 = now.astimezone(time_zone_list[i + 1][1])
 
                 flash0 = False
                 flash1 = False
@@ -601,36 +616,105 @@ def main():
                 else:
                     sign1 = " "
 
-                time_str0 = sign0 + time0.strftime("%H:%M").upper()
-                time_str1 = sign1 + time1.strftime("%H:%M").upper()
-
+                time_str0 = f'{sign0}{time0:%H:%M}'
+                time_str1 = f'{sign1}{time1:%H:%M}'
                 padding = (columns - 60) * ' '
-
-                screen += v_bar + ' ' + highlight[flash0] + ("{0:<10}{1:6}").format(
-                    time_zone_list[i][0], time_str0) + highlight[0] + ' ' + b_var_single
-                screen += ' ' + highlight[flash1] + ("{0:<10}{1:6}").format(
-                    time_zone_list[i + 1][0], time_str1) + highlight[0] + ' ' + padding + v_bar + ' ' + leap_stats[i//2] + ' ' + v_bar
+                screen += (
+                    f'{v_bar} '
+                    f'{highlight[flash0]}'
+                    f'{time_zone_list[i][0]:<10}'
+                    f'{time_str0:6}'
+                    f'{highlight[0]} '
+                    f'{b_var_single}'
+                )
+                screen += (
+                    f' {highlight[flash1]}'
+                    f'{time_zone_list[i + 1][0]:<10}'
+                    f'{time_str1:6}'
+                    f'{highlight[0]} '
+                    f'{padding}'
+                    f'{v_bar} '
+                    f'{leap_stats[i//2]} '
+                    f'{v_bar}'
+                )
                 # Each Timezone column is 29 chars, and the bar is 1 = 59
 
                 screen += "\n"
 
-            screen += center_l + h_bar * (columns - 29) + h_bar_down_connect + h_bar * 5 + \
-                h_bar_up_connect + h_bar * 2 + h_bar_down_connect + 17 * h_bar + center_r + "\n"
+            screen += (
+                f'{center_l}'
+                f'{h_bar * (columns - 29)}'
+                f'{h_bar_down_connect}'
+                f'{h_bar * 5}'
+                f'{h_bar_up_connect}'
+                f'{h_bar * 2}'
+                f'{h_bar_down_connect}'
+                f'{h_bar * 17}'
+                f'{center_r}\n'
+            )
 
-            screen += v_bar + " " + utc_str + " " + b_var_single + " " + unix_str + " " * \
-                (columns - len(metric_str + unix_str + b_clockdisp[0]) - 27) + v_bar + \
-                ' ' + b_clockdisp[0] + " " + v_bar + " " + dst_str[0] + " " + v_bar + "\n"
-            screen += v_bar + " " + metric_str + " " + b_var_single + " " + sit_str + " " * \
-                (columns - len(metric_str + sit_str + b_clockdisp[1]) - 27) + v_bar + \
-                ' ' + b_clockdisp[1] + " " + v_bar + " " + dst_str[1] + " " + v_bar + "\n"
-            screen += v_bar + " " + solar_str + " " + b_var_single + " " + hex_str + " " * \
-                (columns - len(solar_str + net_str + b_clockdisp[2]) - 27) + v_bar + \
-                ' ' + b_clockdisp[2] + " " + v_bar + " " + dst_str[2] + " " + v_bar + "\n"
-            screen += v_bar + " " + lst_str + " " + b_var_single + " " + net_str + " " * \
-                (columns - len(lst_str + hex_str + b_clockdisp[3]) - 27) + v_bar + ' ' + \
-                b_clockdisp[3] + " " + v_bar + " " + dst_str[3] + " " + v_bar + "\n"
-            screen += corner_ll + h_bar * (columns - 29) + h_bar_up_connect + \
-                h_bar * 8 + h_bar_up_connect + h_bar * 17 + corner_lr + "\n"
+            screen += (
+                f'{v_bar} '
+                f'{utc_str} '
+                f'{b_var_single} '
+                f'{unix_str}'
+                f'{" " * (columns - len(met_str + unix_str + b_clockdisp[0]) - 27)}'
+                f'{v_bar} '
+                f'{b_clockdisp[0]} '
+                f'{v_bar} '
+                f'{dst_str[0]} '
+                f'{v_bar}\n'
+            )
+
+            screen += (
+                f'{v_bar} '
+                f'{met_str} '
+                f'{b_var_single} '
+                f'{sit_str}'
+                f'{" " * (columns - len(met_str + sit_str + b_clockdisp[1]) - 27)}'
+                f'{v_bar} '
+                f'{b_clockdisp[1]} '
+                f'{v_bar} '
+                f'{dst_str[1]} '
+                f'{v_bar}\n'
+            )
+
+            screen += (
+                f'{v_bar} '
+                f'{sol_str} '
+                f'{b_var_single} '
+                f'{hex_str}'
+                f'{" " * (columns - len(sol_str + net_str + b_clockdisp[2]) - 27)}'
+                f'{v_bar} '
+                f'{b_clockdisp[2]} '
+                f'{v_bar} '
+                f'{dst_str[2]} '
+                f'{v_bar}\n'
+            )
+
+            screen += (
+                f'{v_bar} '
+                f'{lst_str} '
+                f'{b_var_single} '
+                f'{net_str}'
+                f'{" " * (columns - len(lst_str + hex_str + b_clockdisp[3]) - 27)}'
+                f'{v_bar} '
+                f'{b_clockdisp[3]} '
+                f'{v_bar} '
+                f'{dst_str[3]} '
+                f'{v_bar}\n'
+            )
+
+            screen += (
+                f'{corner_ll}'
+                f'{h_bar * (columns - 29)}'
+                f'{h_bar_up_connect}'
+                f'{h_bar * 8}'
+                f'{h_bar_up_connect}'
+                f'{h_bar * 17}'
+                f'{corner_lr}\n'
+            )
+
             ntpid_max_width = half_cols - 4
             ntpid_temp = ntp_id_str
 
@@ -638,26 +722,32 @@ def main():
             if(len(ntp_id_str) > ntpid_max_width):
 
                 stages = 16 + len(ntp_id_str) - ntpid_max_width
-                current_stage = int(unix_exact/.25) % stages
+                current_stage = int(unix_exact / .25) % stages
 
                 if(current_stage < 8):
                     ntpid_temp = ntp_id_str[0:ntpid_max_width]
                 elif(current_stage >= (stages - 8)):
-                    ntpid_temp = ntp_id_str[(len(ntp_id_str)-ntpid_max_width):]
+                    ntpid_temp = ntp_id_str[(len(ntp_id_str) - ntpid_max_width):]
                 else:
-                    ntpid_temp = ntp_id_str[(current_stage - 8)
-                                             :(current_stage - 8 + ntpid_max_width)]
+                    ntpid_temp = ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
 
-            ntp_str_left = "NTP:" + ntpid_temp
-            ntp_str_right = ("STR:{str} DLY:{dly} OFF:{off}").format(
-                str=network.ntpstr,
-                dly=float_fixed(float(network.ntpdly), 6, False),
-                off=float_fixed(float(network.ntpoff), 7, True)
+            ntp_str_left = f'NTP: {ntpid_temp}'
+            ntp_str_right = (
+                f'STR {network.ntp_peer.stratum} '
+                f'DLY {float_fixed(float(network.ntp_peer.delay), 6, False)} '
+                f'OFF {float_fixed(float(network.ntp_peer.offset), 7, True)}'
             )
 
-            screen += themes[3] if network.ntpsync else RED_BG
-            screen += " " + ntp_str_left + \
-                ((columns - len(ntp_str_left + ntp_str_right)-2) * " ") + ntp_str_right + " "
+            if network.ntp_peer.server_id:
+                ntp_color = themes[3]
+            else:
+                ntp_color = RED_BG
+            screen += themes[3] if network.ntp_peer.server_id else ntp_color
+            screen += (
+                f' {ntp_str_left}'
+                f'{" " * (columns - len(ntp_str_left + ntp_str_right)-2)}'
+                f'{ntp_str_right} '
+            )
             screen += themes[1]
 
             # Switch to the header color theme
@@ -673,6 +763,7 @@ def main():
         except KeyboardInterrupt:
             utils.show_cursor()
             return
+
 
 if __name__ == "__main__":
     utils.clear_screen()
