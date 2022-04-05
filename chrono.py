@@ -5,14 +5,14 @@ import time
 import json
 import os
 import random
-from typing import List, Any, Tuple
+from typing import List, Tuple, NoReturn
 import pytz
 import console
 import ntp
 from enum import Enum, auto
 import timeutil
 import clock
-import calendar
+import cal
 
 random.seed()
 
@@ -123,7 +123,7 @@ time_table = [
 ]
 
 
-def draw_progress_bar(*, min=0, width, max, value):
+def draw_progress_bar(*, min: int = 0, width: int, max: int, value: float) -> str:
     level = int((width + 1) * (value - min) / (max - min))
     return (Theme.bar_full + chr(0x2550) * level + Theme.bar_empty + (chr(0x2500) * (width - level)))
 
@@ -134,7 +134,8 @@ def float_fixed(flt, wd, sign=False):
     return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
 
 
-def main():
+def main() -> NoReturn:
+    ntp.thread.start()
     loop_time = timedelta(0)
     dst_str = ["", "", "", ""]
     v_bar = Theme.border + chr(0x2551)
@@ -244,10 +245,10 @@ def main():
                 f'{center_r}\n'
             )
 
-            dst_str[0] = f'{Theme.text}INTL {calendar.int_fix_date(now)}'
-            dst_str[1] = f'{Theme.text}WRLD {calendar.twc_date(now)}'
-            dst_str[2] = f'{Theme.text}ANNO {calendar.and_date(now)}'
-            dst_str[3] = f'{Theme.text}JULN {float_fixed(calendar.julian_date(date=now, reduced=False), 10, False)}'
+            dst_str[0] = f'{Theme.text}INTL {cal.int_fix_date(now)}'
+            dst_str[1] = f'{Theme.text}WRLD {cal.twc_date(now)}'
+            dst_str[2] = f'{Theme.text}ANNO {cal.and_date(now)}'
+            dst_str[3] = f'{Theme.text}JULN {float_fixed(cal.julian_date(date=now, reduced=False), 10, False)}'
 
             unix_int = int(now.timestamp())
             unix_exact = unix_int + u_second
@@ -493,6 +494,7 @@ def main():
 
             loop_time = datetime.now(pytz.utc) - start_time
             print(screen, end="")
+            time.sleep(1)
 
         except KeyboardInterrupt:
             return

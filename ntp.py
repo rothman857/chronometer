@@ -50,7 +50,7 @@ ntpq_pattern = re.compile(
 ntp_peer = NtpPeer()
 
 
-def ntp_daemon():
+def ntp_daemon() -> None:
     global ntp_peer
 
     while(True):
@@ -86,6 +86,5 @@ def ntp_daemon():
         time.sleep(3)
 
 
-ntp_thread = threading.Thread(target=ntp_daemon)
-ntp_thread.setDaemon(True)
-ntp_thread.start()
+thread = threading.Thread(target=ntp_daemon)
+thread.setDaemon(True)

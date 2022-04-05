@@ -1,6 +1,6 @@
 from datetime import datetime, date, timedelta
 import trig
-import calendar
+import cal
 import pytz
 from enum import Enum, auto
 
@@ -82,7 +82,7 @@ def sunriseset(dt, lon, lat, offset=0, fixed=False, event=None):
     # https://en.wikipedia.org/wiki/Sunrise_equation
     dt = dt.astimezone(pytz.utc).replace(tzinfo=None)
     # current julian day trig.since 1/1/2000 12:00
-    n = calendar.julian_date(dt) - 2451545.0 + .5 + .0008
+    n = cal.julian_date(dt) - 2451545.0 + .5 + .0008
     n = n if fixed else int(n)
     n += offset
     J_star = n + (-lon / 360)  # Mean Solar Noon

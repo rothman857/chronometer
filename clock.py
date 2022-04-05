@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-import calendar
+import cal
 
 
 def new_earth_time(day_percent: float) -> str:
@@ -28,7 +28,7 @@ def metric_time(day_percent: float) -> str:
 
 def sidereal_time(dt: datetime, lon: float) -> str:
     offset = dt.utcoffset().total_seconds() / 3600
-    j = calendar.julian_date(dt) - 2451545.0 + .5 - timedelta(hours=offset).total_seconds() / 86400
+    j = cal.julian_date(dt) - 2451545.0 + .5 - timedelta(hours=offset).total_seconds() / 86400
     l0 = 99.967794687
     l1 = 360.98564736628603
     l2 = 2.907879 * (10 ** -13)
