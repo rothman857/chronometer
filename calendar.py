@@ -3,7 +3,6 @@ import timeutil
 import abbr
 
 
-
 def julian_date(date, reduced=False):
     a = (14 - date.month) // 12
     y = date.year + 4800 - a
@@ -17,6 +16,7 @@ def julian_date(date, reduced=False):
         date.microsecond / 86400000000
     )
     return jd - 2400000 if reduced else jd
+
 
 def int_fix_date(dt):
     ordinal = timeutil.day_of_year(dt) + 1
@@ -59,6 +59,7 @@ def twc_date(dt):
                 break
     return abbr.weekday[weekday] + ' ' + abbr.month[month - 1] + " " + "{:02}".format(day)
 
+
 def and_date(dt):
     day = timeutil.day_of_year(dt) + 1
     month = 1
@@ -79,6 +80,7 @@ def and_date(dt):
                 exit_loop = True
                 break
     return abbr.annus_day[weekday] + ' ' + abbr.annus_month[month - 1] + " " + "{:02}".format(day)
+
 
 def jul_to_greg(J):
     J += .5

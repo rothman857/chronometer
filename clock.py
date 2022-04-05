@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import calendar
 
+
 def new_earth_time(day_percent: float) -> str:
     degrees, remainder = divmod(int(1296000 * day_percent), 3600)
     degrees, remainder = int(degrees), int(remainder)
@@ -23,6 +24,7 @@ def metric_time(day_percent: float) -> str:
     hours, remainder = divmod(int(day_percent * 100_000), 10_000)
     minutes, seconds = divmod(remainder, 100)
     return f'{hours:02}:{minutes:02}:{seconds:02}'
+
 
 def sidereal_time(dt: datetime, lon: float) -> str:
     offset = dt.utcoffset().total_seconds() / 3600

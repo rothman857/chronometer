@@ -1,14 +1,12 @@
 #!/usr/bin/python3
 
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 import time
 import json
 import os
 import random
 from typing import List, Any, Tuple
 import pytz
-import trig
-import abbr
 import console
 import ntp
 from enum import Enum, auto
@@ -16,8 +14,8 @@ import timeutil
 import clock
 import calendar
 
+random.seed()
 
-here = os.path.dirname(os.path.realpath(__file__))
 
 default_config = {
     'coordinates': {
@@ -40,6 +38,8 @@ default_config = {
     }
 }
 
+
+here = os.path.dirname(os.path.realpath(__file__))
 if os.path.isfile(os.path.join(here, '.config')):
     with open(os.path.join(here, '.config')) as f:
         running_config = json.load(f)
@@ -55,12 +55,6 @@ else:
         exit()
 
 
-random.seed()
-
-def my_tz_sort(tz_entry):
-    return tz_entry[1].utcoffset(datetime.now())
-
-
 try:
     lat = float(running_config['coordinates']['latitude'])
     lon = float(running_config['coordinates']['longitude'])
@@ -71,7 +65,7 @@ try:
             continue
         time_zone_list.append((tz.upper(), pytz.timezone(running_config['timezones'][tz])))
 
-    time_zone_list.sort(key=my_tz_sort)
+    time_zone_list.sort(key=lambda tz: tz[1].utcoffset(datetime.now()))
     _time_zone_list = [None] * len(time_zone_list)
 
     for i in range(0, len(time_zone_list), 2):
@@ -133,6 +127,7 @@ def draw_progress_bar(*, min=0, width, max, value):
     level = int((width + 1) * (value - min) / (max - min))
     return (Theme.bar_full + chr(0x2550) * level + Theme.bar_empty + (chr(0x2500) * (width - level)))
 
+
 def float_fixed(flt, wd, sign=False):
     wd = str(wd)
     sign = "+" if sign else ""
@@ -146,7 +141,7 @@ def main():
     b_var_single = Theme.border + chr(0x2502)
     h_bar = Theme.border + chr(0x2550)
     h_bar_single = Theme.border + chr(0x2500)
-    h_bar_up_connect = Theme.border+ chr(0x2569)
+    h_bar_up_connect = Theme.border + chr(0x2569)
     h_bar_down_connect = Theme.border + chr(0x2566)
     corner_ll = Theme.border + chr(0x255A)
     corner_lr = Theme.border + chr(0x255D)
@@ -292,12 +287,15 @@ def main():
             utc_str = f'{Theme.text}UTC {now.astimezone(pytz.utc):%H:%M:%S}'
 
             diff = timeutil.sunriseset(now, lon, lat, event=timeutil.SunEvent.DAYLIGHT, fixed=True)
-            nighttime = timeutil.sunriseset(now, lon, lat, event=timeutil.SunEvent.NIGHTTIME, fixed=True)
+            nighttime = timeutil.sunriseset(
+                now, lon, lat, event=timeutil.SunEvent.NIGHTTIME, fixed=True)
 
             if sunset > 0 and sunrise > 0:
-                sunrise = timeutil.sunriseset(now, lon, lat, event=timeutil.SunEvent.SUNRISE, offset=1)
+                sunrise = timeutil.sunriseset(
+                    now, lon, lat, event=timeutil.SunEvent.SUNRISE, offset=1)
             elif sunset < 0 and sunrise < 0:
-                sunset = timeutil.sunriseset(now, lon, lat, event=timeutil.SunEvent.SUNSET, offset=-1)
+                sunset = timeutil.sunriseset(
+                    now, lon, lat, event=timeutil.SunEvent.SUNSET, offset=-1)
 
             time_List = [None, None, None, None, None]
             for i, s in enumerate([timeutil.leap_shift(now), sunrise, sunset, diff, nighttime]):
@@ -439,7 +437,7 @@ def main():
                 f'{net_str}'
                 f'{" " * (columns - len(lst_str + hex_str + b_clockdisp[3]) + 3)}'
                 f'{v_bar} '
-                
+
                 f'{b_clockdisp[3]} '
                 f'{v_bar} '
                 f'{dst_str[3]} '

@@ -4,12 +4,14 @@ import calendar
 import pytz
 from enum import Enum, auto
 
+
 class SunEvent(Enum):
     SUNRISE = auto()
     SUNSET = auto()
     NOON = auto()
     DAYLIGHT = auto()
     NIGHTTIME = auto()
+
 
 def is_leap_year(dt):
     year = dt.year
@@ -20,9 +22,11 @@ def is_leap_year(dt):
     if year % 4 == 0:
         return True
 
+
 def day_of_year(dt):
     dt = dt.replace(tzinfo=None)
     return (dt - datetime(dt.year, 1, 1)).days
+
 
 def get_local_date_format():
     today = date.today()
@@ -31,6 +35,7 @@ def get_local_date_format():
         return "{month:02}/{day:02}"
     else:
         return "{day:02}/{month:02}"
+
 
 def leap_shift(dt):
     dt = dt.replace(tzinfo=None)
@@ -50,6 +55,7 @@ def leap_shift(dt):
     shift = leapage(dt) * 86400 - diff
 
     return shift
+
 
 def leapage(dt):
     years = (dt.year - 1) % 400
@@ -71,10 +77,12 @@ def leapage(dt):
         count = 0
     return count
 
+
 def sunriseset(dt, lon, lat, offset=0, fixed=False, event=None):
     # https://en.wikipedia.org/wiki/Sunrise_equation
     dt = dt.astimezone(pytz.utc).replace(tzinfo=None)
-    n = calendar.julian_date(dt) - 2451545.0 + .5 + .0008  # current julian day trig.since 1/1/2000 12:00
+    # current julian day trig.since 1/1/2000 12:00
+    n = calendar.julian_date(dt) - 2451545.0 + .5 + .0008
     n = n if fixed else int(n)
     n += offset
     J_star = n + (-lon / 360)  # Mean Solar Noon
@@ -106,6 +114,7 @@ def sunriseset(dt, lon, lat, offset=0, fixed=False, event=None):
         return nighttime
     else:
         return t_rise, t_set, t_noon
+
 
 def jul_to_greg(J):
     J += .5
