@@ -5,6 +5,7 @@ import time
 import json
 import os
 import random
+from typing import List, Any, Tuple
 import pytz
 import trig
 import abbr
@@ -64,11 +65,11 @@ try:
     lat = float(running_config['coordinates']['latitude'])
     lon = float(running_config['coordinates']['longitude'])
     refresh = float(running_config['refresh'])
-    time_zone_list = []
+    time_zone_list: List[Tuple[str, pytz.tzinfo.DstTzInfo]] = []
     for tz in running_config['timezones']:
         if tz[0] == '#':
             continue
-        time_zone_list.append([tz.upper(), pytz.timezone(running_config['timezones'][tz])])
+        time_zone_list.append((tz.upper(), pytz.timezone(running_config['timezones'][tz])))
 
     time_zone_list.sort(key=my_tz_sort)
     _time_zone_list = [None] * len(time_zone_list)
@@ -96,22 +97,23 @@ class ProgressBar(Enum):
 
 
 # Terminal coloring
-BLACK_BG = "\x1b[40m"
-RED_BG = "\x1b[41m"
-WHITE_FG = "\x1b[97m"
-L_BLUE_FG = "\x1b[94m"
-L_BLUE_BG = "\x1b[104m"
-D_GRAY_FG = "\x1b[90m"
+class Color:
+    BLACK_BG = "\x1b[40m"
+    RED_BG = "\x1b[41m"
+    WHITE_FG = "\x1b[97m"
+    L_BLUE_FG = "\x1b[94m"
+    L_BLUE_BG = "\x1b[104m"
+    D_GRAY_FG = "\x1b[90m"
 
 
 class Theme:
-    text = BLACK_BG + WHITE_FG
-    header = L_BLUE_BG + WHITE_FG
-    border = BLACK_BG + L_BLUE_FG
-    bar_empty = BLACK_BG + D_GRAY_FG
-    bar_full = BLACK_BG + WHITE_FG
-    highlight = L_BLUE_BG + WHITE_FG
-    header_alert = RED_BG + WHITE_FG
+    text = Color.BLACK_BG + Color.WHITE_FG
+    header = Color.L_BLUE_BG + Color.WHITE_FG
+    border = Color.BLACK_BG + Color.L_BLUE_FG
+    bar_empty = Color.BLACK_BG + Color.D_GRAY_FG
+    bar_full = Color.BLACK_BG + Color.WHITE_FG
+    highlight = Color.L_BLUE_BG + Color.WHITE_FG
+    header_alert = Color.RED_BG + Color.WHITE_FG
     default = text
 
 
@@ -474,9 +476,9 @@ def main():
 
             ntp_str_left = f'NTP {ntpid_temp}'
             ntp_str_right = (
-                f'STR {ntp.ntp_peer.stratum} '
+                f'ST {ntp.ntp_peer.stratum} '
                 f'DLY {float_fixed(float(ntp.ntp_peer.delay), 6, False)} '
-                f'OFF {float_fixed(float(ntp.ntp_peer.offset), 7, True)}'
+                f'OFF{float_fixed(float(ntp.ntp_peer.offset), 7, True)}'
             )
 
             screen += Theme.header if ntp.ntp_peer.server_id else Theme.header_alert
