@@ -92,22 +92,22 @@ class Bar(Enum):
 class Color:
     class BG:
         BLACK = "\x1b[40m"
-        L_BLUE = "\x1b[104m"
+        BRIGHT_BLUE = "\x1b[104m"
         RED = "\x1b[41m"
 
     class FG:
         WHITE = "\x1b[97m"
-        L_BLUE = "\x1b[94m"
-        D_GRAY = "\x1b[90m"
+        BRIGHT_BLUE = "\x1b[94m"
+        DARK_GRAY = "\x1b[90m"
 
 
 class Theme:
     text = Color.BG.BLACK + Color.FG.WHITE
-    header = Color.BG.L_BLUE + Color.FG.WHITE
-    border = Color.BG.BLACK + Color.FG.L_BLUE
-    bar_empty = Color.BG.BLACK + Color.FG.D_GRAY
+    header = Color.BG.BRIGHT_BLUE + Color.FG.WHITE
+    border = Color.BG.BLACK + Color.FG.BRIGHT_BLUE
+    bar_empty = Color.BG.BLACK + Color.FG.DARK_GRAY
     bar_full = Color.BG.BLACK + Color.FG.WHITE
-    highlight = Color.BG.L_BLUE + Color.FG.WHITE
+    highlight = Color.BG.BRIGHT_BLUE + Color.FG.WHITE
     header_alert = Color.BG.RED + Color.FG.WHITE
     default = text
 
@@ -140,7 +140,6 @@ def main() -> NoReturn:
     v_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL}'
     b_var_single = Theme.border + '\N{BOX DRAWINGS LIGHT VERTICAL}'
     h_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE HORIZONTAL}'
-    h_bar_single = Theme.border + '\N{BOX DRAWINGS DOUBLE HORIZONTAL}'
     h_bar_up_connect = Theme.border + '\N{BOX DRAWINGS DOUBLE UP AND HORIZONTAL}'
     h_bar_down_connect = Theme.border + '\N{BOX DRAWINGS DOUBLE DOWN AND HORIZONTAL}'
     corner_ll = Theme.border + '\N{BOX DRAWINGS DOUBLE UP AND RIGHT}'
@@ -434,7 +433,7 @@ def main() -> NoReturn:
                 f'{corner_lr}\n'
             )
 
-            ntpid_max_width = half_cols - 4
+            ntpid_max_width = half_cols - 3
             ntpid_temp = ntp_id_str
 
             # Calculate NTP server ID scrolling if string is too large
@@ -451,7 +450,6 @@ def main() -> NoReturn:
                     ntpid_temp = (
                         ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
                     )
-
             ntp_str_left = f'NTP {ntpid_temp}'
             ntp_str_right = (
                 f'ST {ntp.ntp_peer.stratum} '
