@@ -11,8 +11,6 @@ import pytz
 from enum import Enum, auto
 import math
 
-
-
 random.seed()
 
 
@@ -92,22 +90,25 @@ class Bar(Enum):
 
 # Terminal coloring
 class Color:
-    BLACK_BG = "\x1b[40m"
-    RED_BG = "\x1b[41m"
-    WHITE_FG = "\x1b[97m"
-    L_BLUE_FG = "\x1b[94m"
-    L_BLUE_BG = "\x1b[104m"
-    D_GRAY_FG = "\x1b[90m"
+    class BG:
+        BLACK = "\x1b[40m"
+        L_BLUE = "\x1b[104m"
+        RED = "\x1b[41m"
+
+    class FG:
+        WHITE = "\x1b[97m"
+        L_BLUE = "\x1b[94m"
+        D_GRAY = "\x1b[90m"
 
 
 class Theme:
-    text = Color.BLACK_BG + Color.WHITE_FG
-    header = Color.L_BLUE_BG + Color.WHITE_FG
-    border = Color.BLACK_BG + Color.L_BLUE_FG
-    bar_empty = Color.BLACK_BG + Color.D_GRAY_FG
-    bar_full = Color.BLACK_BG + Color.WHITE_FG
-    highlight = Color.L_BLUE_BG + Color.WHITE_FG
-    header_alert = Color.RED_BG + Color.WHITE_FG
+    text = Color.BG.BLACK + Color.FG.WHITE
+    header = Color.BG.L_BLUE + Color.FG.WHITE
+    border = Color.BG.BLACK + Color.FG.L_BLUE
+    bar_empty = Color.BG.BLACK + Color.FG.D_GRAY
+    bar_full = Color.BG.BLACK + Color.FG.WHITE
+    highlight = Color.BG.L_BLUE + Color.FG.WHITE
+    header_alert = Color.BG.RED + Color.FG.WHITE
     default = text
 
 
@@ -134,7 +135,7 @@ def float_fixed(flt, wd, sign=False):
 
 
 def main() -> NoReturn:
-    loop_time = timedelta(0)
+    loop_time = timedelta()
     cal_str = ["", "", "", ""]
     v_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL}'
     b_var_single = Theme.border + '\N{BOX DRAWINGS LIGHT VERTICAL}'
@@ -484,4 +485,3 @@ def main() -> NoReturn:
 
 if __name__ == "__main__":
     main()
-    
