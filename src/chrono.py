@@ -1,19 +1,17 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta
+from lib import console, ntp, timeutil, clock, cal
 import time
 import json
 import os
 import random
 from typing import List, Tuple, NoReturn
 import pytz
-import console
-import ntp
 from enum import Enum, auto
-import timeutil
-import clock
-import cal
 import math
+
+
 
 random.seed()
 
@@ -35,14 +33,15 @@ default_config = {
         'Hong Kong': 'Asia/Hong_Kong',
         'India': 'Asia/Kolkata',
         'Japan': 'Asia/Tokyo',
-        'trig.Singapore': 'trig.Singapore',
+        'Singapore': 'Singapore',
     }
 }
 
 
 here = os.path.dirname(os.path.realpath(__file__))
-if os.path.isfile(os.path.join(here, '.config')):
-    with open(os.path.join(here, '.config')) as f:
+config_file_path = os.path.join(here, '..', '.config')
+if os.path.isfile(config_file_path):
+    with open(config_file_path) as f:
         running_config = json.load(f)
 
 else:
@@ -135,7 +134,6 @@ def float_fixed(flt, wd, sign=False):
 
 
 def main() -> NoReturn:
-    ntp.thread.start()
     loop_time = timedelta(0)
     cal_str = ["", "", "", ""]
     v_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL}'
@@ -155,6 +153,8 @@ def main() -> NoReturn:
     rows = os.get_terminal_size().lines
     columns = os.get_terminal_size().columns
     half_cols = math.floor((columns - 1) / 2)
+    console.clear_screen()
+    console.show_cursor(False)
 
     while True:
         ntp_id_str = ntp.ntp_peer.server_id
@@ -458,7 +458,9 @@ def main() -> NoReturn:
                 f'OFF{float_fixed(float(ntp.ntp_peer.offset), 7, True)}'
             )
 
-            screen += Theme.header if ntp.ntp_peer.server_id else Theme.header_alert
+            screen += (
+                Theme.header if ntp.ntp_peer.state == ntp.State.PEER else Theme.header_alert
+            )
             screen += (
                 f' {ntp_str_left}'
                 f'{" " * (columns - len(ntp_str_left + ntp_str_right)-2)}'
@@ -474,13 +476,12 @@ def main() -> NoReturn:
             print(screen, end="")
 
         except KeyboardInterrupt:
+            print(Theme.default, end="")
+            console.clear_screen()
+            console.show_cursor()
             return
 
 
 if __name__ == "__main__":
-    console.clear_screen()
-    console.show_cursor(False)
     main()
-    console.clear_screen()
-    console.show_cursor()
-    print(Theme.default, end="")
+    

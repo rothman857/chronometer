@@ -1,9 +1,8 @@
 from datetime import datetime, timedelta
-import timeutil
-import abbr
+from . import timeutil, abbr
 
 
-def julian_date(date: datetime, reduced: bool=False) -> float:
+def julian_date(date: datetime, reduced: bool = False) -> float:
     a = (14 - date.month) // 12
     y = date.year + 4800 - a
     m = date.month + 12 * a - 3
@@ -97,3 +96,7 @@ def jul_to_greg(J: float) -> datetime:
             month=month
         ) + timedelta(seconds=86400 * (J - _J))
     )
+
+
+if __name__ == '__main__':
+    pass

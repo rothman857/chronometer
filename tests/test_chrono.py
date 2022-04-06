@@ -1,7 +1,7 @@
-from cal import *
-from timeutil import *
+from src.lib.cal import *
+from src.lib.timeutil import *
 from datetime import datetime
-from chrono import *
+from src.chrono import *
 
 test_date = datetime(day=1, month=4, year=2022)
 longitude = 84.36611111

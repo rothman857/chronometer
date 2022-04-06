@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-import cal
+from . import cal
 
 
 def new_earth_time(day_percent: float) -> str:
@@ -39,3 +39,7 @@ def sidereal_time(dt: datetime, lon: float) -> str:
     hour, remainder = divmod(result, 3600)
     minute, second = divmod(remainder, 60)
     return f'{hour:02}:{minute:02}:{second:02}'
+
+
+if __name__ == '__main__':
+    pass

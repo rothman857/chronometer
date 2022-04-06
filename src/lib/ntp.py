@@ -1,13 +1,12 @@
 import re
 import subprocess
 import time
-import socket
 import threading
 from enum import Enum
 from dataclasses import dataclass
 
 
-class NtpTally(Enum):
+class State(Enum):
     NO_STATE = ' '
     DISCARD1 = 'x'
     DISCARD2 = '-'
@@ -19,8 +18,8 @@ class NtpTally(Enum):
 
 @dataclass
 class NtpPeer:
-    tally: NtpTally = NtpTally.NO_STATE
-    server_id: str = ''
+    state: State = State.NO_STATE
+    server_id: str = 'NO SYNC'
     ref_id: str = ''
     stratum: int = 16
     type: str = ''
@@ -47,9 +46,6 @@ ntpq_pattern = re.compile(
 )
 
 
-ntp_peer = NtpPeer()
-
-
 def ntp_daemon() -> None:
     global ntp_peer
 
@@ -60,7 +56,7 @@ def ntp_daemon() -> None:
             ntp_peer_data = ntpq_pattern.findall(ntpq_full)
             ntp_servers = [
                 NtpPeer(
-                    tally=NtpTally(p[0]),
+                    state=State(p[0]),
                     server_id=p[1],
                     ref_id=p[2],
                     stratum=p[3],
@@ -74,17 +70,27 @@ def ntp_daemon() -> None:
                 ) for p in ntp_peer_data
             ]
 
-            current_peers = [s for s in ntp_servers if s.tally == NtpTally.PEER]
+            current_peers = [s for s in ntp_servers if s.state == State.PEER]
             if(current_peers):
                 ntp_peer = current_peers[0]
             else:
                 npt_peer = NtpPeer()
 
         except Exception as e:
-            ntp_peer.ref_id = e
-
+            ntp_peer.server_id = str(e)
         time.sleep(3)
 
 
-thread = threading.Thread(target=ntp_daemon)
-thread.setDaemon(True)
+ntp_peer = NtpPeer()
+
+
+def main() -> None:
+    thread = threading.Thread(target=ntp_daemon)
+    thread.setDaemon(True)
+    thread.start()
+
+
+if __name__ == '__main__':
+    pass
+else:
+    main()

@@ -1,6 +1,6 @@
 from datetime import datetime, date, timedelta
-import trig
-import cal
+from typing import Optional, Tuple, Union
+from . import trig, cal
 import pytz
 from enum import Enum, auto
 
@@ -13,7 +13,7 @@ class SunEvent(Enum):
     NIGHTTIME = auto()
 
 
-def is_leap_year(dt):
+def is_leap_year(dt: datetime) -> bool:
     year = dt.year
     if year % 400 == 0:
         return True
@@ -23,12 +23,12 @@ def is_leap_year(dt):
         return True
 
 
-def day_of_year(dt):
+def day_of_year(dt: datetime) -> int:
     dt = dt.replace(tzinfo=None)
     return (dt - datetime(dt.year, 1, 1)).days
 
 
-def get_local_date_format():
+def get_local_date_format() -> str:
     today = date.today()
     today_str = today.strftime('%x').split('/')
     if int(today_str[0]) == today.month and int(today_str[1]) == today.day:
@@ -37,7 +37,7 @@ def get_local_date_format():
         return "{day:02}/{month:02}"
 
 
-def leap_shift(dt):
+def leap_shift(dt: datetime) -> float:
     dt = dt.replace(tzinfo=None)
     ratio = 365 / 365.2425
     start_year = dt.year - (dt.year % 400)
@@ -53,11 +53,10 @@ def leap_shift(dt):
     actual_seconds = seconds * ratio
     diff = seconds - actual_seconds
     shift = leapage(dt) * 86400 - diff
-
     return shift
 
 
-def leapage(dt):
+def leapage(dt: datetime) -> float:
     years = (dt.year - 1) % 400
     count = years // 4
     count -= years // 100
@@ -78,7 +77,13 @@ def leapage(dt):
     return count
 
 
-def sunriseset(dt, lon, lat, offset=0, fixed=False, event=None):
+def sunriseset(
+        dt: datetime, 
+        lon: float, 
+        lat: float, 
+        offset: int=0, 
+        fixed: bool=False, 
+        event: Optional[SunEvent]=None) -> Union[float, Tuple[float, float, float]]:
     # https://en.wikipedia.org/wiki/Sunrise_equation
     dt = dt.astimezone(pytz.utc).replace(tzinfo=None)
     # current julian day trig.since 1/1/2000 12:00
@@ -116,20 +121,24 @@ def sunriseset(dt, lon, lat, offset=0, fixed=False, event=None):
         return t_rise, t_set, t_noon
 
 
-def jul_to_greg(J):
+def jul_to_greg(J: float) -> datetime:
     J += .5
     _J = int(J)
     f = _J + 1401 + (((4 * _J + 274277) // 146097) * 3) // 4 - 38
     e = 4 * f + 3
     g = (e % 1461) // 4
     h = 5 * g + 2
-    D = (h % 153) // 5 + 1
-    M = ((h // 153 + 2) % 12) + 1
-    Y = (e // 1461) - 4716 + (12 + 2 - M) // 12
+    day = (h % 153) // 5 + 1
+    month = ((h // 153 + 2) % 12) + 1
+    year = (e // 1461) - 4716 + (12 + 2 - month) // 12
     return (
         datetime(
-            year=Y,
-            day=D,
-            month=M
+            day=day,
+            month=month,
+            year=year,
         ) + timedelta(seconds=86400 * (J - _J))
     )
+
+
+if __name__ == '__main__':
+    pass
