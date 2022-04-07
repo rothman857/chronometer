@@ -135,11 +135,10 @@ def draw_progress_bar(*, min: int = 0, width: int, max: int, value: float) -> st
     )
 
 
-def float_width(value: float, width: int, sign: bool = False):
-    value_str = str(float(value))
-    decimal = value_str.split('.')[1]
-    r = len(decimal) - (len(value_str) - width) - (1 if sign else 0)
-    return f'{"+" if sign else ""}{round(value, r):.0{r}f}'
+def float_width(value: float, width: int, signed: bool=False) -> str:
+    width = str(width)
+    sign = "+" if signed else ""
+    return f'{f"{value:{sign}.{width}}":.{width}s}'
 
 
 def main() -> NoReturn:
