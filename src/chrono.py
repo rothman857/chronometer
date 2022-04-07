@@ -124,14 +124,22 @@ time_table = {
 
 
 def draw_progress_bar(*, min: int = 0, width: int, max: int, value: float) -> str:
+    bar_full_char = "\N{BOX DRAWINGS DOUBLE HORIZONTAL}"
+    box_empty_char = "\N{BOX DRAWINGS LIGHT HORIZONTAL}"
     level = int((width + 1) * (value - min) / (max - min))
-    return f'{Theme.bar_full}{"═" * level}{Theme.bar_empty}{"─"* (width - level)}'
+    return (
+        f'{Theme.bar_full}'
+        f'{bar_full_char * level}'
+        f'{Theme.bar_empty}'
+        f'{box_empty_char * (width - level)}'
+    )
 
 
-def float_fixed(flt, wd, sign=False):
-    wd = str(wd)
-    sign = "+" if sign else ""
-    return ('{:.' + wd + 's}').format(('{:' + sign + '.' + wd + 'f}').format(flt))
+def float_width(value: float, width: int, sign: bool = False):
+    value_str = str(float(value))
+    decimal = value_str.split('.')[1]
+    r = len(decimal) - (len(value_str) - width) - (1 if sign else 0)
+    return f'{"+" if sign else ""}{round(value, r):.0{r}f}'
 
 
 def main() -> NoReturn:
@@ -193,7 +201,7 @@ def main() -> NoReturn:
                     datetime(now.year, now.month, 1)
                 ).days
             days_this_year = 366 if timeutil.is_leap_year(now) else 365
-            time_table[Bar.SECOND] = now.second + u_second + random.randint(0, 9999) / 10**9
+            time_table[Bar.SECOND] = now.second + u_second + random.randint(0, 9999) / 10**10
             time_table[Bar.MINUTE] = (
                 now.minute + time_table[Bar.SECOND] / 60 + random.randint(0, 99) / 10**9
             )
@@ -230,7 +238,7 @@ def main() -> NoReturn:
             cal_str[0] = f'{Theme.text}INTL {cal.int_fix_date(now)}'
             cal_str[1] = f'{Theme.text}WRLD {cal.twc_date(now)}'
             cal_str[2] = f'{Theme.text}ANNO {cal.and_date(now)}'
-            cal_str[3] = f'{Theme.text}JULN {float_fixed(cal.julian_date(date=now, reduced=False), 10, False)}'
+            cal_str[3] = f'{Theme.text}JULN {float_width(cal.julian_date(date=now, reduced=False), 10, False)}'
 
             unix_int = int(now.timestamp())
             unix_exact = unix_int + u_second
@@ -433,17 +441,16 @@ def main() -> NoReturn:
                 f'{corner_lr}\n'
             )
 
-            
             ntpid_temp = ntp_id_str
 
             ntp_str_right = (
                 f'ST {ntp.peer.stratum} '
-                f'DLY {float_fixed(float(ntp.peer.delay), 6, False)} '
-                f'OFF{float_fixed(float(ntp.peer.offset), 7, True)}'
+                f'DLY {float_width(float(ntp.peer.delay), 6, False)} '
+                f'OFF{float_width(float(ntp.peer.offset), 7, True)}'
             )
 
             if ntp.peer.source:
-                ntp_str_right = f'SRC {ntp.peer.source} {ntp_str_right}'
+                ntp_str_right = f'REF {ntp.peer.source} {ntp_str_right}'
 
             ntpid_max_width = columns - len(ntp_str_right) - 3
 
@@ -463,13 +470,9 @@ def main() -> NoReturn:
                     )
             ntp_str_left = f'{ntpid_temp}'
 
-
-            
-
             screen += (
                 Theme.header if ntp.peer.state == ntp.State.PEER else Theme.header_alert
             )
-
 
             screen += (
                 f' {ntp_str_left}'
