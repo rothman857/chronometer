@@ -136,7 +136,6 @@ def draw_progress_bar(*, min: int = 0, width: int, max: int, value: float) -> st
 
 
 def float_width(value: float, width: int, signed: bool=False) -> str:
-    width = str(width)
     sign = "+" if signed else ""
     return f'{f"{value:{sign}.{width}}":.{width}s}'
 
