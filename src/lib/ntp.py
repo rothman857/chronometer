@@ -16,6 +16,24 @@ class State(Enum):
     PPSPEER = 'o'
 
 
+class RegexPattern:
+    pattern = re.compile(
+        r"([\*\#\+\-\~ ])" +        # 0 - Peer Status
+        r"([\w+\-\.(): ]+)\s+" +    # 1 - Server ID
+        r"([\w\.]+)\s+" +           # 2 - Reference ID
+        r"(\d+)\s+" +               # 3 - Stratum
+        r"(\w+)\s+" +               # 4 - Type
+        r"(\d+)\s+" +               # 5 - When
+        r"(\d+)\s+" +               # 6 - Poll
+        r"(\d+)\s+" +               # 7 - Reach
+        r"([\d\.]+)\s+" +           # 8 - Delay
+        r"([-\d\.]+)\s+" +          # 9 - Offset
+        r"([\d\.]+)"                # 10- Jitter
+    )
+
+    refid = re.compile(r"^\.(\S+)\.$")
+
+
 @dataclass
 class NtpPeer:
     state: State = State.NO_STATE
@@ -29,31 +47,25 @@ class NtpPeer:
     delay: float = 0
     offset: float = 0
     jitter: float = 0
+    source: str = ''
+
+    def __post_init__(self):
+        source = RegexPattern.refid.findall(self.ref_id)
+        self.source = source[0] if source else ''
 
 
-ntpq_pattern = re.compile(
-    r"([\*\#\+\-\~ ])" +        # 0 - Peer Status
-    r"([\w+\-\.(): ]+)\s+" +    # 1 - Server ID
-    r"([\w\.]+)\s+" +           # 2 - Reference ID
-    r"(\d+)\s+" +               # 3 - Stratum
-    r"(\w+)\s+" +               # 4 - Type
-    r"(\d+)\s+" +               # 5 - When
-    r"(\d+)\s+" +               # 6 - Poll
-    r"(\d+)\s+" +               # 7 - Reach
-    r"([\d\.]+)\s+" +           # 8 - Delay
-    r"([-\d\.]+)\s+" +          # 9 - Offset
-    r"([\d\.]+)"                # 10- Jitter
-)
+peer = NtpPeer()
 
 
 def ntp_daemon() -> None:
-    global ntp_peer
+    global peer
 
     while(True):
         try:
-            ntpq_full = subprocess.run(['ntpq', '-pw'], stdout=subprocess.PIPE)
-            ntpq_full = ntpq_full.stdout.decode('utf-8')
-            ntp_peer_data = ntpq_pattern.findall(ntpq_full)
+            ntpq_full = subprocess.run(
+                ['ntpq', '-pw'], stdout=subprocess.PIPE
+            ).stdout.decode('utf-8')
+            ntp_peer_data = RegexPattern.pattern.findall(ntpq_full)
             ntp_servers = [
                 NtpPeer(
                     state=State(p[0]),
@@ -72,16 +84,12 @@ def ntp_daemon() -> None:
 
             current_peers = [s for s in ntp_servers if s.state == State.PEER]
             if(current_peers):
-                ntp_peer = current_peers[0]
+                peer = current_peers[0]
             else:
-                npt_peer = NtpPeer()
-
+                peer = NtpPeer()
         except Exception as e:
-            ntp_peer.server_id = str(e)
+            peer.server_id = str(e)
         time.sleep(3)
-
-
-ntp_peer = NtpPeer()
 
 
 def main() -> None:

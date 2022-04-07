@@ -157,7 +157,7 @@ def main() -> NoReturn:
     console.show_cursor(False)
 
     while True:
-        ntp_id_str = ntp.ntp_peer.server_id
+        ntp_id_str = ntp.peer.server_id
         try:
             time.sleep(refresh)
             start_time = datetime.now().astimezone()
@@ -433,8 +433,19 @@ def main() -> NoReturn:
                 f'{corner_lr}\n'
             )
 
-            ntpid_max_width = half_cols - 3
+            
             ntpid_temp = ntp_id_str
+
+            ntp_str_right = (
+                f'ST {ntp.peer.stratum} '
+                f'DLY {float_fixed(float(ntp.peer.delay), 6, False)} '
+                f'OFF{float_fixed(float(ntp.peer.offset), 7, True)}'
+            )
+
+            if ntp.peer.source:
+                ntp_str_right = f'SRC {ntp.peer.source} {ntp_str_right}'
+
+            ntpid_max_width = columns - len(ntp_str_right) - 3
 
             # Calculate NTP server ID scrolling if string is too large
             if(len(ntp_id_str) > ntpid_max_width):
@@ -450,16 +461,16 @@ def main() -> NoReturn:
                     ntpid_temp = (
                         ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
                     )
-            ntp_str_left = f'NTP {ntpid_temp}'
-            ntp_str_right = (
-                f'ST {ntp.ntp_peer.stratum} '
-                f'DLY {float_fixed(float(ntp.ntp_peer.delay), 6, False)} '
-                f'OFF{float_fixed(float(ntp.ntp_peer.offset), 7, True)}'
-            )
+            ntp_str_left = f'{ntpid_temp}'
+
+
+            
 
             screen += (
-                Theme.header if ntp.ntp_peer.state == ntp.State.PEER else Theme.header_alert
+                Theme.header if ntp.peer.state == ntp.State.PEER else Theme.header_alert
             )
+
+
             screen += (
                 f' {ntp_str_left}'
                 f'{" " * (columns - len(ntp_str_left + ntp_str_right)-2)}'
