@@ -30,7 +30,7 @@ def int_fix_date(date: datetime) -> str:
     month += 1
     day += 1
     week = ordinal % 7
-    return f'{abbr.weekday[week]} {abbr.intfix_month[month - 1]} {day:02}'
+    return f'{month:02}/{day:02} ({abbr.weekday[week]})'
 
 
 def twc_date(date: datetime) -> str:
@@ -55,7 +55,7 @@ def twc_date(date: datetime) -> str:
                 month += 1
             else:
                 break
-    return f'{abbr.weekday[weekday]} {abbr.month[month - 1]} {day:02}'
+    return f'{month:02}/{day:02} ({abbr.weekday[weekday]})'
 
 
 def and_date(date: datetime) -> str:
@@ -76,7 +76,7 @@ def and_date(date: datetime) -> str:
             else:
                 exit_loop = True
                 break
-    return f'{abbr.annus_day[weekday]} {abbr.annus_month[month - 1]} {day:02}'
+    return f'{month:02}/{day:02} ({abbr.annus_day[weekday]})'
 
 
 def jul_to_greg(J: float) -> datetime:

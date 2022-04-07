@@ -135,7 +135,7 @@ def draw_progress_bar(*, min: int = 0, width: int, max: int, value: float) -> st
     )
 
 
-def float_width(value: float, width: int, signed: bool=False) -> str:
+def float_width(value: float, width: int, signed: bool = False) -> str:
     sign = "+" if signed else ""
     return f'{f"{value:{sign}.{width}}":.{width}s}'
 
@@ -233,10 +233,10 @@ def main() -> NoReturn:
                 f'{center_r}\n'
             )
 
-            cal_str[0] = f'{Theme.text}INTL {cal.int_fix_date(now)}'
-            cal_str[1] = f'{Theme.text}WRLD {cal.twc_date(now)}'
-            cal_str[2] = f'{Theme.text}ANNO {cal.and_date(now)}'
-            cal_str[3] = f'{Theme.text}JULN {float_width(cal.julian_date(date=now, reduced=False), 10, False)}'
+            cal_str[0] = f'{Theme.text}IFC {cal.int_fix_date(now)}'
+            cal_str[1] = f'{Theme.text}TWC {cal.twc_date(now)}'
+            cal_str[2] = f'{Theme.text}AND {cal.and_date(now)}'
+            cal_str[3] = f'{Theme.text}JUL {float_width(cal.julian_date(date=now, reduced=False), 11, False)}'
 
             unix_int = int(now.timestamp())
             unix_exact = unix_int + u_second
