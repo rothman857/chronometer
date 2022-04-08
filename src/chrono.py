@@ -197,7 +197,7 @@ def main() -> None:
                     datetime(now.year, now.month + 1, 1) -
                     datetime(now.year, now.month, 1)
                 ).days
-            days_this_year = 366 if timeutil.is_leap_year(now) else 365
+            days_this_year = 365 + timeutil.is_leap_year(now)
             time_table[Bar.SECOND].value = now.second + u_second + random.randint(0, 9999) / 10**10
             time_table[Bar.MINUTE].value = (
                 now.minute + time_table[Bar.SECOND].value / 60 + random.randint(0, 99) / 10**9
