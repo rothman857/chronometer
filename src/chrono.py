@@ -124,7 +124,7 @@ time_table = {
 
 
 def draw_progress_bar(*, min: int = 0, width: int, max: int, value: float) -> str:
-    bar_full_char = "\N{BOX DRAWINGS DOUBLE HORIZONTAL}"
+    bar_full_char = "\N{BOX DRAWINGS HEAVY HORIZONTAL}"
     box_empty_char = "\N{BOX DRAWINGS LIGHT HORIZONTAL}"
     level = int((width + 1) * (value - min) / (max - min))
     return (
@@ -238,26 +238,6 @@ def main() -> NoReturn:
             cal_str[2] = f'{Theme.text}AND {cal.and_date(now)}'
             cal_str[3] = f'{Theme.text}JUL {float_width(cal.julian_date(date=now, reduced=False), 11, False)}'
 
-            unix_int = int(now.timestamp())
-            unix_exact = unix_int + u_second
-            unix_str = f"{Theme.text}UNX {unix_int}"
-
-            day_percent_complete = time_table[Bar.DAY] - int(time_table[Bar.DAY])
-            utc_now = now.astimezone(pytz.utc)
-            day_percent_complete_utc = (
-                utc_now.hour * 3600 +
-                utc_now.minute * 60 +
-                utc_now.second +
-                utc_now.microsecond / 1000000
-            ) / 86400
-            sit_now = now.astimezone(pytz.utc) + timedelta(hours=1)
-            day_percent_complete_cet = (
-                sit_now.hour * 3600 +
-                sit_now.minute * 60 +
-                sit_now.second +
-                sit_now.microsecond / 1000000
-            ) / 86400
-
             sunrise, sunset, sol_noon = timeutil.sunriseset(now, lon, lat)
             solar_time = (
                 now.replace(hour=12, minute=0, second=0, microsecond=0) +
@@ -265,11 +245,12 @@ def main() -> NoReturn:
             )
             sol_str = f'{Theme.text}SOL {solar_time:%H:%M:%S}'
             lst_str = f'{Theme.text}LST {clock.sidereal_time(now, lon)}'
-            met_str = f'{Theme.text}MET {clock.metric_time(day_percent_complete)}'
-            hex_str = f'{Theme.text}HEX {clock.hex_time(day_percent_complete)}'
-            net_str = f'{Theme.text}NET {clock.new_earth_time(day_percent_complete_utc)}'
-            sit_str = f'{Theme.text}SIT {clock.sit_time(day_percent_complete_cet)}'
-            utc_str = f'{Theme.text}UTC {now.astimezone(pytz.utc):%H:%M:%S}'
+            met_str = f'{Theme.text}MET {clock.metric_time(now)}'
+            hex_str = f'{Theme.text}HEX {clock.hex_time(now)}'
+            net_str = f'{Theme.text}NET {clock.new_earth_time(now)}'
+            sit_str = f'{Theme.text}SIT {clock.sit_time(now)}'
+            utc_str = f'{Theme.text}UTC {clock.utc_time(now)}'
+            unx_str = f'{Theme.text}UNX {clock.unix_time(now)}'
 
             diff = timeutil.sunriseset(now, lon, lat, event=timeutil.SunEvent.DAYLIGHT, fixed=True)
             nighttime = timeutil.sunriseset(
@@ -380,8 +361,8 @@ def main() -> NoReturn:
                 f'{v_bar} '
                 f'{utc_str} '
                 f'{b_var_single} '
-                f'{unix_str}'
-                f'{" " * (columns - len(met_str + unix_str + b_clockdisp[0]) + 3)}'
+                f'{unx_str}'
+                f'{" " * (columns - len(met_str + unx_str + b_clockdisp[0]) + 3)}'
                 f'{v_bar} '
                 f'{b_clockdisp[0]} '
                 f'{v_bar} '
@@ -456,7 +437,7 @@ def main() -> NoReturn:
             if(len(ntp_id_str) > ntpid_max_width):
 
                 stages = 16 + len(ntp_id_str) - ntpid_max_width
-                current_stage = int(unix_exact / .25) % stages
+                current_stage = int(now.timestamp() / .25) % stages
 
                 if(current_stage < 8):
                     ntpid_temp = ntp_id_str[0:ntpid_max_width]
