@@ -21,6 +21,7 @@ def is_leap_year(dt: datetime) -> bool:
         return False
     if year % 4 == 0:
         return True
+    return False
 
 
 def day_of_year(dt: datetime) -> int:
