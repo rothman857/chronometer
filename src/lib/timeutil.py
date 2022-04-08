@@ -37,7 +37,7 @@ def get_local_date_format() -> str:
         return "{day:02}/{month:02}"
 
 
-def leap_shift(dt: datetime) -> float:
+def leap_drift(dt: datetime) -> float:
     dt = dt.replace(tzinfo=None)
     ratio = 365 / 365.2425
     start_year = dt.year - (dt.year % 400)
@@ -77,48 +77,58 @@ def leapage(dt: datetime) -> float:
     return count
 
 
-def sunriseset(
-        dt: datetime, 
-        lon: float, 
-        lat: float, 
-        offset: int=0, 
-        fixed: bool=False, 
-        event: Optional[SunEvent]=None) -> Union[float, Tuple[float, float, float]]:
-    # https://en.wikipedia.org/wiki/Sunrise_equation
-    dt = dt.astimezone(pytz.utc).replace(tzinfo=None)
-    # current julian day trig.since 1/1/2000 12:00
-    n = cal.julian_date(dt) - 2451545.0 + .5 + .0008
-    n = n if fixed else int(n)
-    n += offset
-    J_star = n + (-lon / 360)  # Mean Solar Noon
-    M = (357.5291 + 0.98560028 * J_star) % 360  # Solar mean anomaly
-    C = 1.9148 * trig.sin(M) + 0.0200 * trig.sin(2 * M) + 0.0003 * \
-        trig.sin(3 * M)  # Equation of the center
-    λ = (M + C + 180 + 102.9372) % 360  # Ecliptic Longitude
-    J_transit = 2451545.0 + J_star + 0.0053 * \
-        trig.sin(M) - 0.0069 * trig.sin(2 * λ)  # Solar Transit
-    δ = trig.asin(trig.sin(λ) * trig.sin(23.44))  # Declination of Sun
-    temp = (trig.cos(90.83333) - trig.sin(lat) * trig.sin(δ)) / (trig.cos(lat) * trig.cos(δ))
-    ω0 = trig.acos(temp)  # Hour angle
-    J_rise = J_transit - (ω0 / 360)
-    J_set = J_transit + (ω0 / 360)
-    daylight = 2 * ω0 / 15 * 3600
-    nighttime = 2 * (180 - ω0) / 15 * 3600
-    t_rise = (dt - jul_to_greg(J_rise)).total_seconds()
-    t_set = (dt - jul_to_greg(J_set)).total_seconds()
-    t_noon = (dt - jul_to_greg(J_transit)).total_seconds()
-    if event == SunEvent.SUNRISE:
-        return t_rise
-    elif event == SunEvent.SUNSET:
-        return t_set
-    elif event == SunEvent.NOON:
-        return t_noon
-    elif event == SunEvent.DAYLIGHT:
-        return daylight
-    elif event == SunEvent.NIGHTTIME:
-        return nighttime
-    else:
-        return t_rise, t_set, t_noon
+class Sun:
+    def __init__(self, date: datetime, lon: float, lat: float) -> None:
+        self.lon = lon
+        self.lat = lat
+        self._date = date
+
+    def refresh(self, offset: int = 0, fixed: bool = False) -> None:
+        n = cal.julian_date(self.date) - 2451545.0 + .5 + .0008
+        n = n if fixed else int(n)
+        n += offset
+        J_star = n + (-self.lon / 360)
+        M = (357.5291 + 0.98560028 * J_star) % 360
+        C = 1.9148 * trig.sin(M) + 0.0200 * trig.sin(2 * M) + 0.0003 * trig.sin(3 * M)
+        λ = (M + C + 180 + 102.9372) % 360
+        self.J_transit = 2451545.0 + J_star + 0.0053 * trig.sin(M) - 0.0069 * trig.sin(2 * λ)
+        δ = trig.asin(trig.sin(λ) * trig.sin(23.44))
+        temp = (
+            (trig.cos(90.83333) - trig.sin(self.lat) * trig.sin(δ)) /
+            (trig.cos(self.lat) * trig.cos(δ))
+        )
+        self.ω0 = trig.acos(temp)
+
+    @property
+    def date(self):
+        return self._date
+
+    @date.setter
+    def date(self, dt: datetime):
+        self._date = dt.astimezone(pytz.utc).replace(tzinfo=None)
+
+    @property
+    def daylight(self):
+        return 2 * self.ω0 / 15 * 3600
+
+    @property
+    def nighttime(self):
+        return 2 * (180 - self.ω0) / 15 * 3600
+
+    @property
+    def sunrise_timer(self):
+        return (self.date - jul_to_greg(self.J_transit - (self.ω0 / 360))).total_seconds()
+
+    @property
+    def sunset_timer(self):
+        return (self.date - jul_to_greg(self.J_transit + (self.ω0 / 360))).total_seconds()
+
+    @property
+    def solar_noon(self):
+        offset = (self.date - jul_to_greg(self.J_transit)).total_seconds()
+        return self.date.replace(
+            hour=12, minute=0, second=0, microsecond=0
+        ) + timedelta(seconds=offset)
 
 
 def jul_to_greg(J: float) -> datetime:

@@ -14,9 +14,8 @@ def sidereal_time(dt: datetime, lon: float) -> str:
     l1 = 360.98564736628603
     l2 = 2.907879 * (10 ** -13)
     l3 = -5.302 * (10 ** -22)
-    theta = (l0 + (l1 * j) + (l2 * (j ** 2)) + (l3 * (j ** 3)) + lon) % 360
-    result = int(timedelta(hours=theta / 15).total_seconds())
-    _ = dict()
+    θ = (l0 + (l1 * j) + (l2 * (j ** 2)) + (l3 * (j ** 3)) + lon) % 360
+    result = int(timedelta(hours=θ / 15).total_seconds())
     hour, remainder = divmod(result, 3600)
     minute, second = divmod(remainder, 60)
     return f'{hour:02}:{minute:02}:{second:02}'

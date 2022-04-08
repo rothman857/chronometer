@@ -6,10 +6,9 @@ import time
 import json
 import os
 import random
-from typing import List, Tuple, NoReturn
+from typing import List, Tuple
 import pytz
 from enum import Enum, auto
-import math
 
 random.seed()
 
@@ -112,27 +111,25 @@ class Theme:
     default = text
 
 
-time_table = {
-    Bar.SECOND: 0.0,
-    Bar.MINUTE: 0.0,
-    Bar.HOUR: 0.0,
-    Bar.DAY: 0.0,
-    Bar.MONTH: 0.0,
-    Bar.YEAR: 0.0,
-    Bar.CENTURY: 0.0
-}
+class ProgressBar:
 
-
-def draw_progress_bar(*, min: int = 0, width: int, max: int, value: float) -> str:
     bar_full_char = "\N{BOX DRAWINGS HEAVY HORIZONTAL}"
-    box_empty_char = "\N{BOX DRAWINGS LIGHT HORIZONTAL}"
-    level = int((width + 1) * (value - min) / (max - min))
-    return (
-        f'{Theme.bar_full}'
-        f'{bar_full_char * level}'
-        f'{Theme.bar_empty}'
-        f'{box_empty_char * (width - level)}'
-    )
+    bar_empty_char = "\N{BOX DRAWINGS LIGHT HORIZONTAL}"
+
+    def __init__(self, min: int, max: int, width: int, value: float) -> None:
+        self.min = min
+        self.max = max
+        self.width = width
+        self.value = value
+
+    def __str__(self) -> str:
+        level = int((self.width + 1) * (self.value - self.min) / (self.max - self.min))
+        return (
+            f'{Theme.bar_full}'
+            f'{self.bar_full_char * level}'
+            f'{Theme.bar_empty}'
+            f'{self.bar_empty_char * (self.width - level)}'
+        )
 
 
 def float_width(value: float, width: int, signed: bool = False) -> str:
@@ -140,7 +137,7 @@ def float_width(value: float, width: int, signed: bool = False) -> str:
     return f'{f"{value:{sign}.{width}}":.{width}s}'
 
 
-def main() -> NoReturn:
+def main() -> None:
     loop_time = timedelta()
     cal_str = ["", "", "", ""]
     v_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL}'
@@ -158,7 +155,9 @@ def main() -> NoReturn:
     highlight = (Theme.text, Theme.highlight)
     rows = os.get_terminal_size().lines
     columns = os.get_terminal_size().columns
-    half_cols = math.floor((columns - 1) / 2)
+    time_table = {b: ProgressBar(min=0, max=1, width=columns - 19, value=0) for b in Bar}
+    sun = timeutil.Sun(date=None, lon=lon, lat=lat)
+
     console.clear_screen()
     console.show_cursor(False)
 
@@ -184,13 +183,13 @@ def main() -> NoReturn:
                 bin(second_binary[0])[2:].zfill(4),
                 bin(second_binary[1])[2:].zfill(4),
             ]
-
             b_clock_mat_t = [*zip(*b_clock_mat)]
             b_clockdisp = ['', '', '', '']
             for i, row in enumerate(b_clock_mat_t):
                 b_clockdisp[i] = Theme.text + (
                     ''.join(row).replace("0", binary[0]).replace("1", binary[1])
                 )
+
             if (now.month == 12):
                 days_this_month = 31
             else:
@@ -199,38 +198,36 @@ def main() -> NoReturn:
                     datetime(now.year, now.month, 1)
                 ).days
             days_this_year = 366 if timeutil.is_leap_year(now) else 365
-            time_table[Bar.SECOND] = now.second + u_second + random.randint(0, 9999) / 10**10
-            time_table[Bar.MINUTE] = (
-                now.minute + time_table[Bar.SECOND] / 60 + random.randint(0, 99) / 10**9
+            time_table[Bar.SECOND].value = now.second + u_second + random.randint(0, 9999) / 10**10
+            time_table[Bar.MINUTE].value = (
+                now.minute + time_table[Bar.SECOND].value / 60 + random.randint(0, 99) / 10**9
             )
-            time_table[Bar.HOUR] = now.hour + time_table[Bar.MINUTE] / 60
-            time_table[Bar.DAY] = now.day + time_table[Bar.HOUR] / 24
-            time_table[Bar.MONTH] = now.month + (time_table[Bar.DAY] - 1) / days_this_month
-            time_table[Bar.YEAR] = (
+            time_table[Bar.HOUR].value = now.hour + time_table[Bar.MINUTE].value / 60
+            time_table[Bar.DAY].value = now.day + time_table[Bar.HOUR].value / 24
+            time_table[Bar.MONTH].value = now.month + \
+                (time_table[Bar.DAY].value - 1) / days_this_month
+            time_table[Bar.YEAR].value = (
                 now.year + (
                     timeutil.day_of_year(now) +
-                    time_table[Bar.DAY] -
-                    int(time_table[Bar.DAY])
+                    time_table[Bar.DAY].value -
+                    int(time_table[Bar.DAY].value)
                 ) / days_this_year
             )
-            time_table[Bar.CENTURY] = (time_table[Bar.YEAR] - 1) / 100 + 1
+            time_table[Bar.CENTURY].value = (time_table[Bar.YEAR].value - 1) / 100 + 1
             screen += Theme.header
             screen += f"{f'{now: %I:%M:%S %p {current_tz} - %A %B %d, %Y}': ^{columns}}".upper()
             screen += f'{corner_ul}{h_bar * (columns - 2)}{corner_ur}\n'
-
-            for symbol, value in time_table.items():
-                percent = value - int(value)
+            for i, bar in enumerate(Bar):
+                percent = time_table[bar].value - int(time_table[bar].value)
+                time_table[bar].value = percent
                 screen += (
-                    f'{v_bar} {Theme.text}{symbol.name[0].upper()} '
-                    f'{draw_progress_bar(width=(columns - 19), max=1, value=percent)}'
+                    f'{v_bar} {Theme.text}{bar.name[0].upper()} '
+                    f'{time_table[bar]}'
                     f'{Theme.text} {100 * (percent):011.8f}% {v_bar}\n'
                 )
+
             screen += (
-                f'{center_l}'
-                f'{h_bar * (columns - 23)}'
-                f'{h_bar_down_connect}'
-                f'{h_bar * 20}'
-                f'{center_r}\n'
+                f'{center_l}{h_bar * (columns - 23)}{h_bar_down_connect}{h_bar * 20}{center_r}\n'
             )
 
             cal_str[0] = f'{Theme.text}IFC {cal.int_fix_date(now)}'
@@ -238,12 +235,9 @@ def main() -> NoReturn:
             cal_str[2] = f'{Theme.text}AND {cal.and_date(now)}'
             cal_str[3] = f'{Theme.text}JUL {float_width(cal.julian_date(date=now, reduced=False), 11, False)}'
 
-            sunrise, sunset, sol_noon = timeutil.sunriseset(now, lon, lat)
-            solar_time = (
-                now.replace(hour=12, minute=0, second=0, microsecond=0) +
-                timedelta(seconds=sol_noon)
-            )
-            sol_str = f'{Theme.text}SOL {solar_time:%H:%M:%S}'
+            sun.date = now
+            sun.refresh()
+            sol_str = f'{Theme.text}SOL {sun.solar_noon:%H:%M:%S}'
             lst_str = f'{Theme.text}LST {clock.sidereal_time(now, lon)}'
             met_str = f'{Theme.text}MET {clock.metric_time(now)}'
             hex_str = f'{Theme.text}HEX {clock.hex_time(now)}'
@@ -252,23 +246,27 @@ def main() -> NoReturn:
             utc_str = f'{Theme.text}UTC {clock.utc_time(now)}'
             unx_str = f'{Theme.text}UNX {clock.unix_time(now)}'
 
-            diff = timeutil.sunriseset(now, lon, lat, event=timeutil.SunEvent.DAYLIGHT, fixed=True)
-            nighttime = timeutil.sunriseset(
-                now, lon, lat, event=timeutil.SunEvent.NIGHTTIME, fixed=True)
+            sunrise = sun.sunrise_timer
+            sunset = sun.sunset_timer
+            sun.refresh(fixed=True)
+            daytime = sun.daylight
+            nighttime = sun.nighttime
 
             if sunset > 0 and sunrise > 0:
-                sunrise = timeutil.sunriseset(
-                    now, lon, lat, event=timeutil.SunEvent.SUNRISE, offset=1)
+                sun.refresh(offset=1)
+                sunrise = sun.sunrise_timer
             elif sunset < 0 and sunrise < 0:
-                sunset = timeutil.sunriseset(
-                    now, lon, lat, event=timeutil.SunEvent.SUNSET, offset=-1)
+                sun.refresh(offset=-1)
+                sunset = sun.sunset_timer
 
-            time_List = [''] * 5
-            for i, s in enumerate([timeutil.leap_shift(now), sunrise, sunset, diff, nighttime]):
+            leap_drift = timeutil.leap_drift(now)
+
+            time_list = [''] * 5
+            for i, s in enumerate([leap_drift, sunrise, sunset, daytime, nighttime]):
                 hours, remainder = divmod(abs(s), 3600)
                 minutes, seconds = divmod(remainder, 60)
                 subs = 1000000 * (seconds - int(seconds))
-                time_List[i] = (
+                time_list[i] = (
                     f'{"-" if s < 0 else " "}'
                     f'{int(hours):02}:'
                     f'{int(minutes):02}:'
@@ -277,11 +275,11 @@ def main() -> NoReturn:
                 )
 
             leap_stats = [
-                f'LD{time_List[0]}',
-                f'SR{time_List[1]}',
-                f'SS{time_List[2]}',
-                f'DD{time_List[3]}',
-                f'ND{time_List[4]}'
+                f'LD{time_list[0]}',
+                f'SR{time_list[1]}',
+                f'SS{time_list[2]}',
+                f'DD{time_list[3]}',
+                f'ND{time_list[4]}'
             ]
 
             for i in range(0, len(time_zone_list), 2):
@@ -449,9 +447,7 @@ def main() -> NoReturn:
                     )
             ntp_str_left = f'{ntpid_temp}'
 
-            screen += (
-                Theme.header if ntp.peer.state == ntp.State.PEER else Theme.header_alert
-            )
+            screen += (Theme.header if ntp.peer.state == ntp.State.PEER else Theme.header_alert)
 
             screen += (
                 f' {ntp_str_left}'
