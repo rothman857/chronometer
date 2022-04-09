@@ -78,7 +78,7 @@ except KeyError as e:
 
 
 class Bar(Enum):
-    SECOND = 0
+    SECOND = auto()
     MINUTE = auto()
     HOUR = auto()
     DAY = auto()
@@ -172,9 +172,9 @@ def main() -> None:
             current_tz = time.tzname[is_daylight_savings]
             screen = ""
             console.reset_cursor()
-            hour_binary = divmod(now.astimezone().hour, 10)
-            minute_binary = divmod(now.astimezone().minute, 10)
-            second_binary = divmod(now.astimezone().second, 10)
+            hour_binary = divmod(now.hour, 10)
+            minute_binary = divmod(now.minute, 10)
+            second_binary = divmod(now.second, 10)
             b_clock_mat = [
                 bin(hour_binary[0])[2:].zfill(4),
                 bin(hour_binary[1])[2:].zfill(4),
@@ -190,13 +190,9 @@ def main() -> None:
                     ''.join(row).replace("0", binary[0]).replace("1", binary[1])
                 )
 
-            if (now.month == 12):
-                days_this_month = 31
-            else:
-                days_this_month = (
-                    datetime(now.year, now.month + 1, 1) -
-                    datetime(now.year, now.month, 1)
-                ).days
+            days_this_month = (
+                now.replace(month = now.month % 12 +1, day = 1)-timedelta(days=1)
+            ).day
             days_this_year = 365 + timeutil.is_leap_year(now)
             time_table[Bar.SECOND].value = now.second + u_second + random.randint(0, 9999) / 10**10
             time_table[Bar.MINUTE].value = (
