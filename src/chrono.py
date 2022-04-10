@@ -42,7 +42,7 @@ if os.path.isfile(config_file_path):
         running_config = json.load(f)
 
 else:
-    with open(os.path.join(here, '.config'), 'w+') as f:
+    with open(config_file_path, 'w+') as f:
         json.dump(default_config, f, indent=2, sort_keys=True)
         running_config = default_config
         print(
@@ -134,7 +134,7 @@ class ProgressBar:
 
 def float_width(value: float, width: int, signed: bool = False) -> str:
     sign = "+" if signed else ""
-    return f'{f"{value:{sign}.{width}}":.{width}s}'
+    return f'{f"{value:{sign}.{width}f}":.{width}s}'
 
 
 def main() -> None:
