@@ -27,7 +27,7 @@ class RegexPattern:
         r"(\d+)\s+"              # 6 - Poll
         r"(\d+)\s+"              # 7 - Reach
         r"([\d\.]+)\s+"          # 8 - Delay
-        r"([+-\d\.]+)\s+"         # 9 - Offset
+        r"([\+\-\d\.]+)\s+"         # 9 - Offset
         r"([\d\.]+)"             # 10- Jitter
     )
 
