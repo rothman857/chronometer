@@ -3,16 +3,16 @@
 from datetime import datetime, timedelta
 from lib import console, ntp, timeutil, clock, cal
 import time
-import json
 import os
 import random
-from typing import Any, Dict, List, Tuple
+from typing import Any, Iterable, List, Tuple, Type
 import pytz
 from enum import Enum, auto
 import shutil
 import configparser
 
 random.seed()
+tz_obj_type = (pytz._UTCclass | pytz.tzinfo.StaticTzInfo | pytz.tzinfo.DstTzInfo)
 
 
 class Bar(Enum):
@@ -68,16 +68,25 @@ class ProgressBar:
             f'{self.bar_empty_char * (self.width - level)}'
         )
 
-def load_config() -> Dict[str, Any]:
+
+class ChronoConfig:
+    latitude: float = 0
+    longitude: float = 0
+    refresh: float = 0
+    time_zones: List[Tuple[str, tz_obj_type]] = []
+
+
+def load_config(filename: str = 'chrono_config.ini') -> ChronoConfig:
+    config = ChronoConfig()
     here = os.path.dirname(os.path.realpath(__file__))
-    config_file_path = os.path.join(here, '..', 'chrono_config.ini')
+    config_file_path = os.path.join(here, '..', filename)
 
     if not os.path.isfile(config_file_path):
-        shutil.copyfile(os.path.join(here, 'default_config.ini'), config_file_path)
+        shutil.copyfile(os.path.join(here, 'files', 'default_config.ini'), config_file_path)
         print(
-            """Initial .config file generated.  
-            Please update it with coordinates and desired timezones 
-            before running chrono.py again."""
+            "Initial config file generated.  "
+            "Please update \'chrono_config.ini\' with coordinates and desired timezones.  "
+            "before running chrono.py again."
         )
         exit()
 
@@ -94,12 +103,11 @@ def load_config() -> Dict[str, Any]:
         print(f"Error reading chrono_config ({e}).")
         exit()
 
-    return {
-        'tz_data': time_zone_data,
-        'lon': float(parser.get('settings', 'longitude')),
-        'lat': float(parser.get('settings', 'latitude')),
-        'refresh': float(parser.get('settings', 'refresh')),
-    }
+    config.latitude = float(parser['settings']['latitude'])
+    config.longitude = float(parser['settings']['longitude'])
+    config.refresh = float(parser['settings']['refresh'])
+    config.time_zones = time_zone_data
+    return config
 
 
 def float_width(value: float, width: int, signed: bool = False) -> str:
@@ -107,14 +115,18 @@ def float_width(value: float, width: int, signed: bool = False) -> str:
     return f'{f"{value:{sign}.{width}f}":.{width}s}'
 
 
+def flatten(l: Iterable):
+    return (item for sublist in l for item in sublist)
+
+
 def main() -> None:
-    data = load_config()
-    time_zone_data_temp = data['tz_data']
+    config = load_config()
+    time_zone_data_temp = config.time_zones
     time_zone_data_temp.sort(key=lambda tz: tz[1].utcoffset(datetime.now()))
-    
-    lat = data['lat']
-    lon = data['lon']
-    refresh = data['refresh']
+    time_zone_data = [time_zone_data_temp[i] for i in flatten((_, _+5) for _ in range(5))]
+    lat = config.latitude
+    lon = config.longitude
+    refresh = config.refresh
     loop_time = timedelta()
     cal_str = ["", "", "", ""]
     v_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL}'
@@ -168,7 +180,7 @@ def main() -> None:
                 )
 
             days_this_month = (
-                now.replace(month=now.month % 12 + 1, day=1)-timedelta(days=1)
+                now.replace(month=now.month % 12 + 1, day=1) - timedelta(days=1)
             ).day
             days_this_year = 365 + timeutil.is_leap_year(now)
             time_table[Bar.SECOND].value = now.second + u_second + random.randint(0, 9999) / 10**10
@@ -255,9 +267,9 @@ def main() -> None:
                 f'ND{time_list[4]}'
             ]
 
-            for i, j in [(_, _ + 5) for _ in range(5)]:
+            for i in range(0, len(time_zone_data), 2):
                 time0 = now.astimezone(time_zone_data[i][1])
-                time1 = now.astimezone(time_zone_data[j][1])
+                time1 = now.astimezone(time_zone_data[i + 1][1])
 
                 flash0 = False
                 flash1 = False
