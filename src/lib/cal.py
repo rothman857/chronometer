@@ -30,7 +30,7 @@ def int_fix_date(date: datetime) -> str:
     month += 1
     day += 1
     week = ordinal % 7
-    return f'{month:02}/{day:02} ({abbr.weekday[week]})'
+    return f'{month:02}/{day:02} {abbr.weekday[week]}#{day//7+1}'
 
 
 def twc_date(date: datetime) -> str:
@@ -55,7 +55,7 @@ def twc_date(date: datetime) -> str:
                 month += 1
             else:
                 break
-    return f'{month:02}/{day:02} ({abbr.weekday[weekday]})'
+    return f'{month:02}/{day:02} {abbr.weekday[weekday]}#{day//7+1}'
 
 
 def and_date(date: datetime) -> str:
@@ -76,7 +76,7 @@ def and_date(date: datetime) -> str:
             else:
                 exit_loop = True
                 break
-    return f'{month:02}/{day:02} ({abbr.annus_day[weekday]})'
+    return f'{month:02}/{day:02} {abbr.annus_day[weekday]}#{day//5+1}'
 
 
 if __name__ == '__main__':
