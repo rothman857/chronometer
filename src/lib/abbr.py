@@ -15,3 +15,7 @@ annus_day = [
     "QUA",
     "QUI"
 ]
+
+
+if __name__ == '__main__':
+    pass

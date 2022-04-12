@@ -79,24 +79,5 @@ def and_date(date: datetime) -> str:
     return f'{month:02}/{day:02} ({abbr.annus_day[weekday]})'
 
 
-def jul_to_greg(J: float) -> datetime:
-    J += .5
-    _J = int(J)
-    f = _J + 1401 + (((4 * _J + 274277) // 146097) * 3) // 4 - 38
-    e = 4 * f + 3
-    g = (e % 1461) // 4
-    h = 5 * g + 2
-    day = (h % 153) // 5 + 1
-    month = ((h // 153 + 2) % 12) + 1
-    year = (e // 1461) - 4716 + (12 + 2 - month) // 12
-    return (
-        datetime(
-            year=year,
-            day=day,
-            month=month
-        ) + timedelta(seconds=86400 * (J - _J))
-    )
-
-
 if __name__ == '__main__':
     pass

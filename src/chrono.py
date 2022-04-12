@@ -6,75 +6,13 @@ import time
 import json
 import os
 import random
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 import pytz
 from enum import Enum, auto
+import shutil
+import configparser
 
 random.seed()
-
-
-default_config = {
-    'coordinates': {
-        '# Note': 'Decimal notation only.  West longitude is negative.',
-        'latitude': 40.7128,
-        'longitude': -74.0060},
-    'refresh': 0.001,
-    'timezones': {
-        '# Note': 'Format = label: time_zone. (time_zone must be a valid pytz time zone name.  10 times zones are required.)',
-        'Pacific': 'US/Pacific',
-        'Eastern': 'US/Eastern',
-        'Israel': 'Israel',
-        'London': 'Europe/London',
-        'Sydney': 'Australia/Sydney',
-        'Germany': 'Europe/Berlin',
-        'Hong Kong': 'Asia/Hong_Kong',
-        'India': 'Asia/Kolkata',
-        'Japan': 'Asia/Tokyo',
-        'Singapore': 'Singapore',
-    }
-}
-
-
-here = os.path.dirname(os.path.realpath(__file__))
-config_file_path = os.path.join(here, '..', '.config')
-if os.path.isfile(config_file_path):
-    with open(config_file_path) as f:
-        running_config = json.load(f)
-
-else:
-    with open(config_file_path, 'w+') as f:
-        json.dump(default_config, f, indent=2, sort_keys=True)
-        running_config = default_config
-        print(
-            """Initial .config file generated.  
-            Please update it with coordinates and desired timezones 
-            before running chronometer.py again.""")
-        exit()
-
-
-try:
-    lat = float(running_config['coordinates']['latitude'])
-    lon = float(running_config['coordinates']['longitude'])
-    refresh = float(running_config['refresh'])
-    time_zone_list: List[Tuple[str, pytz.tzinfo.DstTzInfo]] = []
-    for tz in running_config['timezones']:
-        if tz[0] == '#':
-            continue
-        time_zone_list.append((tz.upper(), pytz.timezone(running_config['timezones'][tz])))
-
-    time_zone_list.sort(key=lambda tz: tz[1].utcoffset(datetime.now()))
-    _time_zone_list = [None] * len(time_zone_list)
-
-    for i in range(0, len(time_zone_list), 2):
-        _time_zone_list[i] = time_zone_list[i // 2][:10]
-        _time_zone_list[i + 1] = time_zone_list[i // 2 + 5][:10]
-
-    time_zone_list = _time_zone_list
-
-
-except KeyError as e:
-    print(f"Error reading .config ({e}).  Please correct or reset utrig.sing --reset.")
-    exit()
 
 
 class Bar(Enum):
@@ -87,7 +25,6 @@ class Bar(Enum):
     CENTURY = auto()
 
 
-# Terminal coloring
 class Color:
     class BG:
         BLACK = "\x1b[40m"
@@ -131,6 +68,39 @@ class ProgressBar:
             f'{self.bar_empty_char * (self.width - level)}'
         )
 
+def load_config() -> Dict[str, Any]:
+    here = os.path.dirname(os.path.realpath(__file__))
+    config_file_path = os.path.join(here, '..', 'chrono_config.ini')
+
+    if not os.path.isfile(config_file_path):
+        shutil.copyfile(os.path.join(here, 'default_config.ini'), config_file_path)
+        print(
+            """Initial .config file generated.  
+            Please update it with coordinates and desired timezones 
+            before running chrono.py again."""
+        )
+        exit()
+
+    try:
+        parser = configparser.ConfigParser()
+        parser.read(config_file_path)
+        time_zone_data = [
+            (
+                tz.upper().replace('_', ' ')[:10],
+                pytz.timezone(parser['timezones'][tz])
+            ) for tz in parser['timezones']
+        ]
+    except configparser.ParsingError as e:
+        print(f"Error reading chrono_config ({e}).")
+        exit()
+
+    return {
+        'tz_data': time_zone_data,
+        'lon': float(parser.get('settings', 'longitude')),
+        'lat': float(parser.get('settings', 'latitude')),
+        'refresh': float(parser.get('settings', 'refresh')),
+    }
+
 
 def float_width(value: float, width: int, signed: bool = False) -> str:
     sign = "+" if signed else ""
@@ -138,6 +108,13 @@ def float_width(value: float, width: int, signed: bool = False) -> str:
 
 
 def main() -> None:
+    data = load_config()
+    time_zone_data_temp = data['tz_data']
+    time_zone_data_temp.sort(key=lambda tz: tz[1].utcoffset(datetime.now()))
+    
+    lat = data['lat']
+    lon = data['lon']
+    refresh = data['refresh']
     loop_time = timedelta()
     cal_str = ["", "", "", ""]
     v_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL}'
@@ -191,7 +168,7 @@ def main() -> None:
                 )
 
             days_this_month = (
-                now.replace(month = now.month % 12 +1, day = 1)-timedelta(days=1)
+                now.replace(month=now.month % 12 + 1, day=1)-timedelta(days=1)
             ).day
             days_this_year = 365 + timeutil.is_leap_year(now)
             time_table[Bar.SECOND].value = now.second + u_second + random.randint(0, 9999) / 10**10
@@ -278,9 +255,9 @@ def main() -> None:
                 f'ND{time_list[4]}'
             ]
 
-            for i in range(0, len(time_zone_list), 2):
-                time0 = now.astimezone(time_zone_list[i][1])
-                time1 = now.astimezone(time_zone_list[i + 1][1])
+            for i, j in [(_, _ + 5) for _ in range(5)]:
+                time0 = now.astimezone(time_zone_data[i][1])
+                time1 = now.astimezone(time_zone_data[j][1])
 
                 flash0 = False
                 flash1 = False
@@ -322,14 +299,14 @@ def main() -> None:
                 screen += (
                     f'{v_bar} '
                     f'{highlight[flash0]}'
-                    f'{time_zone_list[i][0]:<10}'
+                    f'{time_zone_data[i][0]:<10}'
                     f'{time_str0:6}'
                     f'{highlight[0]} '
                     f'{b_var_single}'
                 )
                 screen += (
                     f' {highlight[flash1]}'
-                    f'{time_zone_list[i + 1][0]:<10}'
+                    f'{time_zone_data[i + 1][0]:<10}'
                     f'{time_str1:6}'
                     f'{highlight[0]} '
                     f'{padding}'

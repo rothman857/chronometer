@@ -2,5 +2,5 @@
 *.swp
 *.log
 .vscode/
-.config
 .venv
+chrono_config.ini

@@ -24,3 +24,5 @@ def tan(deg: float) -> float:
     return math.tan(math.radians(deg))
 
 
+if __name__ == '__main__':
+    pass

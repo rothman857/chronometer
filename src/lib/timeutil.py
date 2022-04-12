@@ -5,14 +5,6 @@ import pytz
 from enum import Enum, auto
 
 
-class SunEvent(Enum):
-    SUNRISE = auto()
-    SUNSET = auto()
-    NOON = auto()
-    DAYLIGHT = auto()
-    NIGHTTIME = auto()
-
-
 def is_leap_year(dt: datetime) -> bool:
     year = dt.year
     if year % 400 == 0:
@@ -79,7 +71,7 @@ def leapage(dt: datetime) -> float:
 
 
 class Sun:
-    def __init__(self, date: datetime, lon: float, lat: float) -> None:
+    def __init__(self, date: Optional[datetime], lon: float, lat: float) -> None:
         self.lon = lon
         self.lat = lat
         self._date = date
