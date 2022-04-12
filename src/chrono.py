@@ -12,7 +12,6 @@ import shutil
 import configparser
 
 random.seed()
-tz_obj_type = (pytz._UTCclass | pytz.tzinfo.StaticTzInfo | pytz.tzinfo.DstTzInfo)
 
 
 class Bar(Enum):
@@ -73,7 +72,7 @@ class ChronoConfig:
     latitude: float = 0
     longitude: float = 0
     refresh: float = 0
-    time_zones: List[Tuple[str, tz_obj_type]] = []
+    time_zones: List[Tuple[str, Any]] = []
 
 
 def load_config(filename: str = 'chrono_config.ini') -> ChronoConfig:
