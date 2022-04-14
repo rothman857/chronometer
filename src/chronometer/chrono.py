@@ -87,7 +87,7 @@ def load_config(filename: str = '.chrono_config') -> ChronoConfig:
             "Please update \'chrono_config.ini\' with coordinates and desired timezones.  "
             "before running chrono.py again."
         )
-        chrono_exit()
+        console.show_cursor()
 
     try:
         parser = configparser.ConfigParser()
@@ -447,10 +447,6 @@ class Chronometer:
         self.loop_time = datetime.now(pytz.utc) - start_time
         return screen
 
-def chrono_exit():
-    console.clear_screen()
-    console.show_cursor()
-    exit()
 
 def run():
     console.clear_screen()
@@ -462,10 +458,8 @@ def run():
             time.sleep(c.refresh)
         except KeyboardInterrupt:
             print(Theme.default, end="")
-            chrono_exit()
-
-
-    
+            console.clear_screen()
+            console.show_cursor()
 
 
 
