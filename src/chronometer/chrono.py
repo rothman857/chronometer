@@ -450,6 +450,7 @@ class Chronometer:
 def chrono_exit():
     console.clear_screen()
     console.show_cursor()
+    exit()
 
 def run():
     console.clear_screen()
@@ -462,7 +463,7 @@ def run():
         except KeyboardInterrupt:
             print(Theme.default, end="")
             chrono_exit()
-            break
+
 
     
 
