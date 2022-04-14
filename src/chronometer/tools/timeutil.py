@@ -1,8 +1,7 @@
 from datetime import datetime, date, timedelta
-from typing import Optional, Tuple, Union
+from typing import Optional
 from . import trig, cal
 import pytz
-from enum import Enum, auto
 
 
 def is_leap_year(dt: datetime) -> bool:

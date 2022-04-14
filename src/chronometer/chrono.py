@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta
-from lib import console, ntp, timeutil, clock, cal
+from tools import console, ntp, timeutil, clock, cal
 import time
 import os
 import random
@@ -75,10 +75,10 @@ class ChronoConfig:
     time_zones: List[Tuple[str, Any]] = []
 
 
-def load_config(filename: str = 'chrono_config.ini') -> ChronoConfig:
+def load_config(filename: str = '.chrono_config') -> ChronoConfig:
     config = ChronoConfig()
     here = os.path.dirname(os.path.realpath(__file__))
-    config_file_path = os.path.join(here, '..', filename)
+    config_file_path = os.path.join(os.path.expanduser('~'), filename)
 
     if not os.path.isfile(config_file_path):
         shutil.copyfile(os.path.join(here, 'files', 'default_config.ini'), config_file_path)

@@ -3,6 +3,8 @@ import setuptools
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+
+
 setuptools.setup(
     name="chronometer",
     version="1.0.0",
@@ -21,6 +23,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     package_dir={"": "src"},
-    packages=setuptools.find_packages(where="src"),
+    packages=setuptools.find_packages('src'),
     python_requires=">=3.8",
+    install_requires=['pytz']
 )
