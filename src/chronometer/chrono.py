@@ -157,7 +157,6 @@ class Chronometer:
         is_daylight_savings = time.localtime().tm_isdst
         current_tz = time.tzname[is_daylight_savings]
         screen = ""
-        console.reset_cursor()
         hour_binary = divmod(now.hour, 10)
         minute_binary = divmod(now.minute, 10)
         second_binary = divmod(now.second, 10)
@@ -456,6 +455,7 @@ def run():
     while True:
         try:
             print(c.render(), end='')
+            console.reset_cursor()
             time.sleep(c.refresh)
         except KeyboardInterrupt:
             print(Theme.default, end="")
