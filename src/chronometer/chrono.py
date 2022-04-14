@@ -121,12 +121,11 @@ def flatten(l: Iterable):
 
 class Chronometer:
     def __init__(self, *, width: int = 0) -> None:
-        config = load_config()
-        time_zone_data_temp = config.time_zones
+        self.config = load_config()
+        self.lon = self.config.longitude
+        self.lat = self.config.latitude
+        time_zone_data_temp = self.config.time_zones
         time_zone_data_temp.sort(key=lambda tz: tz[1].utcoffset(datetime.now()))
-        self.lat = config.latitude
-        self.lon = config.longitude
-        self.refresh = config.refresh
         self.loop_time = timedelta()
         self.cal_str = ["", "", "", ""]
         self.v_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL}'
@@ -149,6 +148,7 @@ class Chronometer:
         self.time_table = {
             b: ProgressBar(min=0, max=1, width=self.columns - 19, value=0) for b in Bar
         }
+        
 
     def render(self):
         ntp_id_str = ntp.peer.server_id
@@ -455,9 +455,9 @@ def run():
     c = Chronometer()
     while True:
         try:
-            print(c.render(), end='')
+            print(c.render(), end='\n' * (c.rows - 22))
             console.reset_cursor()
-            time.sleep(c.refresh)
+            time.sleep(c.config.refresh)
         except KeyboardInterrupt:
             print(Theme.default, end="")
             console.clear_screen()
