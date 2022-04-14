@@ -88,6 +88,7 @@ def load_config(filename: str = '.chrono_config') -> ChronoConfig:
             "before running chrono.py again."
         )
         console.show_cursor()
+        exit()
 
     try:
         parser = configparser.ConfigParser()
@@ -460,6 +461,7 @@ def run():
             print(Theme.default, end="")
             console.clear_screen()
             console.show_cursor()
+            break
 
 
 
