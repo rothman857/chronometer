@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="chronometer-rothman857",
+    name="chronometer",
     version="1.0.0",
     author="rothman857",
     author_email="rothman857@gmail.com",
