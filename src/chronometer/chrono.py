@@ -84,7 +84,7 @@ def load_config(filename: str = '.chrono_config') -> ChronoConfig:
         shutil.copyfile(os.path.join(here, 'files', 'default_config.ini'), config_file_path)
         print(
             "Initial config file generated.  "
-            "Please update \'chrono_config.ini\' with coordinates and desired timezones.  "
+            "Please update \'~/.chrono_config\' with coordinates and desired timezones.  "
             "before running chrono.py again."
         )
         console.show_cursor()
