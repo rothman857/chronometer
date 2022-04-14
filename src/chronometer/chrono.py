@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta
-from tools import console, ntp, timeutil, clock, cal
+from .tools import console, ntp, timeutil, clock, cal
 import time
 import os
 import random
@@ -447,8 +447,7 @@ class Chronometer:
         self.loop_time = datetime.now(pytz.utc) - start_time
         return screen
 
-
-if __name__ == "__main__":
+def run():
     console.clear_screen()
     console.show_cursor(False)
     c = Chronometer()
@@ -458,7 +457,13 @@ if __name__ == "__main__":
             time.sleep(c.refresh)
         except KeyboardInterrupt:
             print(Theme.default, end="")
+            console.clear_screen()
+            console.show_cursor()
             break
 
-    console.clear_screen()
-    console.show_cursor()
+    
+
+
+
+if __name__ == "__main__":
+    run()
