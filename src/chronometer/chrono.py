@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from datetime import datetime, timedelta
-from .tools import console, ntp, timeutil, clock, cal
+from chronometer.tools import console, ntp, timeutil, clock, cal
 import time
 import os
 import random
@@ -120,7 +120,7 @@ def flatten(l: Iterable):
 
 
 class Chronometer:
-    def __init__(self, * , width: int = 0) -> None:
+    def __init__(self, *, width: int = 0) -> None:
         config = load_config()
         time_zone_data_temp = config.time_zones
         time_zone_data_temp.sort(key=lambda tz: tz[1].utcoffset(datetime.now()))
@@ -146,8 +146,9 @@ class Chronometer:
         self.columns = os.get_terminal_size().columns if width < 60 else width
         self.sun = timeutil.Sun(date=None, lon=self.lon, lat=self.lat)
         self.time_zone_data = [time_zone_data_temp[i] for i in flatten((_, _+5) for _ in range(5))]
-        self.time_table = {b: ProgressBar(min=0, max=1, width=self.columns - 19, value=0) for b in Bar}
-
+        self.time_table = {
+            b: ProgressBar(min=0, max=1, width=self.columns - 19, value=0) for b in Bar
+        }
 
     def render(self):
         ntp_id_str = ntp.peer.server_id
@@ -462,7 +463,6 @@ def run():
             console.clear_screen()
             console.show_cursor()
             break
-
 
 
 if __name__ == "__main__":

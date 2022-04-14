@@ -1,9 +1,12 @@
 import setuptools
 import pathlib
-
+import sys
 
 here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / "README.md").read_text(encoding="utf-8")
+install_requires = ['pytz']
+if sys.version_info.minor == 6:
+    install_requires.append('dataclasses')
 
 setuptools.setup(
     name="chronometer",
@@ -24,8 +27,8 @@ setuptools.setup(
     ],
     package_dir={"": "src"},
     packages=setuptools.find_packages('src'),
-    python_requires=">=3.8",
-    install_requires=['pytz'],
+    python_requires=">=3.6",
+    install_requires=install_requires,
     package_data={'': ['files/*']},
     include_package_data=True
 )
