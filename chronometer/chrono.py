@@ -5,7 +5,7 @@ from lib import console, ntp, timeutil, clock, cal
 import time
 import os
 import random
-from typing import Any, Iterable, List, Tuple, Type
+from typing import Any, Iterable, List, Tuple
 import pytz
 from enum import Enum, auto
 import shutil
