@@ -25,5 +25,7 @@ setuptools.setup(
     package_dir={"": "src"},
     packages=setuptools.find_packages('src'),
     python_requires=">=3.8",
-    install_requires=['pytz']
+    install_requires=['pytz'],
+    package_data={'': ['files/*']},
+    include_package_data=True
 )
