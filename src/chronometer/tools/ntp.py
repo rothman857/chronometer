@@ -22,6 +22,7 @@ class ServiceStatus(Enum):
     INACTIVE = 768
     NOTFOUND = 1024
 
+
 service_status = ServiceStatus.NOTFOUND
 
 
@@ -92,8 +93,6 @@ def ntp_daemon() -> None:
     global peer
 
     while(True):
-
-
         try:
             ntpq_full = subprocess.run(
                 ['ntpq', '-pw'], stdout=subprocess.PIPE
@@ -125,7 +124,7 @@ def ntp_daemon() -> None:
         time.sleep(3)
 
 
-def main() -> None:
+def run() -> None:
     global service_status
     ntp_service_response = os.system('systemctl status ntp')
     time.sleep(1)
@@ -137,7 +136,6 @@ def main() -> None:
     else:
         service_status = ServiceStatus.NOTFOUND
 
-
     if service_status == ServiceStatus.ACTIVE:
         thread = threading.Thread(target=ntp_daemon)
         thread.setDaemon(True)
@@ -147,4 +145,4 @@ def main() -> None:
 if __name__ == '__main__':
     pass
 else:
-    main()
+    run()
