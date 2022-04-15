@@ -120,40 +120,47 @@ def flatten(l: Iterable):
 
 
 class Chronometer:
-    def __init__(self, *, width: int = 0) -> None:
-        self.config = load_config()
-        self.lon = self.config.longitude
-        self.lat = self.config.latitude
-        time_zone_data_temp = self.config.time_zones
-        time_zone_data_temp.sort(key=lambda tz: tz[1].utcoffset(datetime.now()))
-        self.loop_time = timedelta()
-        self.cal_str = ["", "", "", ""]
-        self.v_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL}'
-        self.b_var_single = Theme.border + '\N{BOX DRAWINGS LIGHT VERTICAL}'
-        self.h_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE HORIZONTAL}'
-        self.h_bar_up_connect = Theme.border + '\N{BOX DRAWINGS DOUBLE UP AND HORIZONTAL}'
-        self.h_bar_down_connect = Theme.border + '\N{BOX DRAWINGS DOUBLE DOWN AND HORIZONTAL}'
-        self.corner_ll = Theme.border + '\N{BOX DRAWINGS DOUBLE UP AND RIGHT}'
-        self.corner_lr = Theme.border + '\N{BOX DRAWINGS DOUBLE UP AND LEFT}'
-        self.corner_ul = Theme.border + '\N{BOX DRAWINGS DOUBLE DOWN AND RIGHT}'
-        self.corner_ur = Theme.border + '\N{BOX DRAWINGS DOUBLE DOWN AND LEFT}'
-        self.center_l = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL AND RIGHT}'
-        self.center_r = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL AND LEFT}'
-        self.binary = ("-", '\N{BLACK MEDIUM SQUARE}')
-        self.highlight = (Theme.text, Theme.highlight)
-        self.rows = os.get_terminal_size().lines
-        self.columns = os.get_terminal_size().columns if width < 60 else width
-        self.sun = timeutil.Sun(date=None, lon=self.lon, lat=self.lat)
-        self.time_zone_data = [time_zone_data_temp[i] for i in flatten((_, _+5) for _ in range(5))]
-        self.time_table = {
-            b: ProgressBar(min=0, max=1, width=self.columns - 19, value=0) for b in Bar
-        }
-        
+    config = load_config()
+    lon = config.longitude
+    lat = config.latitude
+    time_zone_data_temp = config.time_zones
+    time_zone_data_temp.sort(key=lambda tz: tz[1].utcoffset(datetime.now()))
+    loop_time = timedelta()
+    cal_str = ["", "", "", ""]
+    v_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL}'
+    b_var_single = Theme.border + '\N{BOX DRAWINGS LIGHT VERTICAL}'
+    h_bar = Theme.border + '\N{BOX DRAWINGS DOUBLE HORIZONTAL}'
+    h_bar_up_connect = Theme.border + '\N{BOX DRAWINGS DOUBLE UP AND HORIZONTAL}'
+    h_bar_down_connect = Theme.border + '\N{BOX DRAWINGS DOUBLE DOWN AND HORIZONTAL}'
+    corner_ll = Theme.border + '\N{BOX DRAWINGS DOUBLE UP AND RIGHT}'
+    corner_lr = Theme.border + '\N{BOX DRAWINGS DOUBLE UP AND LEFT}'
+    corner_ul = Theme.border + '\N{BOX DRAWINGS DOUBLE DOWN AND RIGHT}'
+    corner_ur = Theme.border + '\N{BOX DRAWINGS DOUBLE DOWN AND LEFT}'
+    center_l = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL AND RIGHT}'
+    center_r = Theme.border + '\N{BOX DRAWINGS DOUBLE VERTICAL AND LEFT}'
+    binary = ("-", '\N{BLACK MEDIUM SQUARE}')
+    highlight = (Theme.text, Theme.highlight)
+    rows = os.get_terminal_size().lines
+    columns = os.get_terminal_size().columns  # if width < 60 else width
+    sun = timeutil.Sun(date=None, lon=lon, lat=lat)
 
-    def render(self):
-        ntp_id_str = ntp.peer.server_id
+    time_zone_data = []
+    for i in flatten((_, _+5) for _ in range(5)):
+        time_zone_data.append(time_zone_data_temp[i])
+
+    time_table = {}
+    for b in Bar:
+        time_table.update({b: ProgressBar(min=0, max=1, width=columns - 19, value=0)})
+
+    @classmethod
+    def set_width(cls, w):
+        if w > 60:
+            cls.colums = w
+
+    @classmethod
+    def render(cls):
         start_time = datetime.now().astimezone()
-        now = start_time + self.loop_time
+        now = start_time + cls.loop_time
         u_second = now.microsecond / 1000000
         is_daylight_savings = time.localtime().tm_isdst
         current_tz = time.tzname[is_daylight_savings]
@@ -173,61 +180,61 @@ class Chronometer:
         b_clockdisp = ['', '', '', '']
         for i, row in enumerate(b_clock_mat_t):
             b_clockdisp[i] = Theme.text + (
-                ''.join(row).replace("0", self.binary[0]).replace("1", self.binary[1])
+                ''.join(row).replace("0", cls.binary[0]).replace("1", cls.binary[1])
             )
 
         days_this_month = (
             now.replace(month=now.month % 12 + 1, day=1) - timedelta(days=1)
         ).day
         days_this_year = 365 + timeutil.is_leap_year(now)
-        self.time_table[Bar.SECOND].value = now.second + u_second + random.randint(0, 9999) / 10**10
-        self.time_table[Bar.MINUTE].value = (
-            now.minute + self.time_table[Bar.SECOND].value / 60 + random.randint(0, 99) / 10**9
+        cls.time_table[Bar.SECOND].value = now.second + u_second + random.randint(0, 9999) / 10**10
+        cls.time_table[Bar.MINUTE].value = (
+            now.minute + cls.time_table[Bar.SECOND].value / 60 + random.randint(0, 99) / 10**9
         )
-        self.time_table[Bar.HOUR].value = now.hour + self.time_table[Bar.MINUTE].value / 60
-        self.time_table[Bar.DAY].value = now.day + self.time_table[Bar.HOUR].value / 24
-        self.time_table[Bar.MONTH].value = now.month + \
-            (self.time_table[Bar.DAY].value - 1) / days_this_month
-        self.time_table[Bar.YEAR].value = (
+        cls.time_table[Bar.HOUR].value = now.hour + cls.time_table[Bar.MINUTE].value / 60
+        cls.time_table[Bar.DAY].value = now.day + cls.time_table[Bar.HOUR].value / 24
+        cls.time_table[Bar.MONTH].value = now.month + \
+            (cls.time_table[Bar.DAY].value - 1) / days_this_month
+        cls.time_table[Bar.YEAR].value = (
             now.year + (
                 timeutil.day_of_year(now) +
-                self.time_table[Bar.DAY].value -
-                int(self.time_table[Bar.DAY].value)
+                cls.time_table[Bar.DAY].value -
+                int(cls.time_table[Bar.DAY].value)
             ) / days_this_year
         )
-        self.time_table[Bar.CENTURY].value = (self.time_table[Bar.YEAR].value - 1) / 100 + 1
+        cls.time_table[Bar.CENTURY].value = (cls.time_table[Bar.YEAR].value - 1) / 100 + 1
         screen += Theme.header
-        screen += f"{f'{now: %I:%M:%S %p {current_tz} - %A %B %d, %Y}': ^{self.columns}}\n".upper()
-        screen += f'{self.corner_ul}{self.h_bar * (self.columns - 2)}{self.corner_ur}\n'
+        screen += f"{f'{now: %I:%M:%S %p {current_tz} - %A %B %d, %Y}': ^{cls.columns}}\n".upper()
+        screen += f'{cls.corner_ul}{cls.h_bar * (cls.columns - 2)}{cls.corner_ur}\n'
         for i, bar in enumerate(Bar):
-            percent = self.time_table[bar].value - int(self.time_table[bar].value)
-            self.time_table[bar].value = percent
+            percent = cls.time_table[bar].value - int(cls.time_table[bar].value)
+            cls.time_table[bar].value = percent
             screen += (
-                f'{self.v_bar} {Theme.text}{bar.name[0].upper()} '
-                f'{self.time_table[bar]}'
-                f'{Theme.text} {100 * (percent):011.8f}% {self.v_bar}\n'
+                f'{cls.v_bar} {Theme.text}{bar.name[0].upper()} '
+                f'{cls.time_table[bar]}'
+                f'{Theme.text} {100 * (percent):011.8f}% {cls.v_bar}\n'
             )
 
         screen += (
-            f'{self.center_l}'
-            f'{self.h_bar * (self.columns - 23)}'
-            f'{self.h_bar_down_connect}'
-            f'{self.h_bar * 20}'
-            f'{self.center_r}\n'
+            f'{cls.center_l}'
+            f'{cls.h_bar * (cls.columns - 23)}'
+            f'{cls.h_bar_down_connect}'
+            f'{cls.h_bar * 20}'
+            f'{cls.center_r}\n'
         )
 
-        self.cal_str[0] = f'{Theme.text}IFC {cal.int_fix_date(now)}'
-        self.cal_str[1] = f'{Theme.text}TWC {cal.twc_date(now)}'
-        self.cal_str[2] = f'{Theme.text}AND {cal.and_date(now)}'
-        self.cal_str[3] = (
+        cls.cal_str[0] = f'{Theme.text}IFC {cal.int_fix_date(now)}'
+        cls.cal_str[1] = f'{Theme.text}TWC {cal.twc_date(now)}'
+        cls.cal_str[2] = f'{Theme.text}AND {cal.and_date(now)}'
+        cls.cal_str[3] = (
             f'{Theme.text}'
             f'JUL {float_width(cal.julian_date(date=now, reduced=False), 11, False)}'
         )
 
-        self.sun.date = now
-        self.sun.refresh()
-        sol_str = f'{Theme.text}SOL {self.sun.solar_noon:%H:%M:%S}'
-        lst_str = f'{Theme.text}LST {clock.sidereal_time(now, self.lon)}'
+        cls.sun.date = now
+        cls.sun.refresh()
+        sol_str = f'{Theme.text}SOL {cls.sun.solar_noon:%H:%M:%S}'
+        lst_str = f'{Theme.text}LST {clock.sidereal_time(now, cls.lon)}'
         met_str = f'{Theme.text}MET {clock.metric_time(now)}'
         hex_str = f'{Theme.text}HEX {clock.hex_time(now)}'
         net_str = f'{Theme.text}NET {clock.new_earth_time(now)}'
@@ -235,18 +242,18 @@ class Chronometer:
         utc_str = f'{Theme.text}UTC {clock.utc_time(now)}'
         unx_str = f'{Theme.text}UNX {clock.unix_time(now)}'
 
-        sunrise = self.sun.sunrise_timer
-        sunset = self.sun.sunset_timer
-        self.sun.refresh(fixed=True)
-        daytime = self.sun.daylight
-        nighttime = self.sun.nighttime
+        sunrise = cls.sun.sunrise_timer
+        sunset = cls.sun.sunset_timer
+        cls.sun.refresh(fixed=True)
+        daytime = cls.sun.daylight
+        nighttime = cls.sun.nighttime
 
         if sunset > 0 and sunrise > 0:
-            self.sun.refresh(offset=1)
-            sunrise = self.sun.sunrise_timer
+            cls.sun.refresh(offset=1)
+            sunrise = cls.sun.sunrise_timer
         elif sunset < 0 and sunrise < 0:
-            self.sun.refresh(offset=-1)
-            sunset = self.sun.sunset_timer
+            cls.sun.refresh(offset=-1)
+            sunset = cls.sun.sunset_timer
 
         leap_drift = timeutil.leap_drift(now)
 
@@ -271,9 +278,9 @@ class Chronometer:
             f'ND{time_list[4]}'
         ]
 
-        for i in range(0, len(self.time_zone_data), 2):
-            time0 = now.astimezone(self.time_zone_data[i][1])
-            time1 = now.astimezone(self.time_zone_data[i + 1][1])
+        for i in range(0, len(cls.time_zone_data), 2):
+            time0 = now.astimezone(cls.time_zone_data[i][1])
+            time1 = now.astimezone(cls.time_zone_data[i + 1][1])
 
             flash0 = False
             flash1 = False
@@ -311,153 +318,155 @@ class Chronometer:
 
             time_str0 = f'{sign0}{time0:%H:%M}'
             time_str1 = f'{sign1}{time1:%H:%M}'
-            padding = (self.columns - 60) * ' '
+            padding = (cls.columns - 60) * ' '
             screen += (
-                f'{self.v_bar}'
-                f'{self.highlight[flash0]} '
-                f'{self.time_zone_data[i][0]:<10}'
+                f'{cls.v_bar}'
+                f'{cls.highlight[flash0]} '
+                f'{cls.time_zone_data[i][0]:<10}'
                 f'{time_str0:6} '
-                f'{self.highlight[0]}'
-                f'{self.b_var_single}'
+                f'{cls.highlight[0]}'
+                f'{cls.b_var_single}'
             )
             screen += (
-                f'{self.highlight[flash1]} '
-                f'{self.time_zone_data[i + 1][0]:<10}'
+                f'{cls.highlight[flash1]} '
+                f'{cls.time_zone_data[i + 1][0]:<10}'
                 f'{time_str1:6} '
-                f'{self.highlight[0]}'
+                f'{cls.highlight[0]}'
                 f'{padding}'
-                f'{self.v_bar} '
+                f'{cls.v_bar} '
                 f'{Theme.text}{leap_stats[i//2]} '
-                f'{self.v_bar}'
+                f'{cls.v_bar}'
             )
             screen += "\n"
 
         screen += (
-            f'{self.center_l}'
-            f'{self.h_bar * (self.columns - 29)}'
-            f'{self.h_bar_down_connect}'
-            f'{self.h_bar * 5}'
-            f'{self.h_bar_up_connect}'
-            f'{self.h_bar * 2}'
-            f'{self.h_bar_down_connect}'
-            f'{self.h_bar * 17}'
-            f'{self.center_r}\n'
+            f'{cls.center_l}'
+            f'{cls.h_bar * (cls.columns - 29)}'
+            f'{cls.h_bar_down_connect}'
+            f'{cls.h_bar * 5}'
+            f'{cls.h_bar_up_connect}'
+            f'{cls.h_bar * 2}'
+            f'{cls.h_bar_down_connect}'
+            f'{cls.h_bar * 17}'
+            f'{cls.center_r}\n'
         )
 
         screen += (
-            f'{self.v_bar} '
+            f'{cls.v_bar} '
             f'{utc_str} '
-            f'{self.b_var_single} '
+            f'{cls.b_var_single} '
             f'{unx_str}'
-            f'{" " * (self.columns - len(met_str + unx_str + b_clockdisp[0]) + 3)}'
-            f'{self.v_bar} '
+            f'{" " * (cls.columns - len(met_str + unx_str + b_clockdisp[0]) + 3)}'
+            f'{cls.v_bar} '
             f'{b_clockdisp[0]} '
-            f'{self.v_bar} '
-            f'{self.cal_str[0]} '
-            f'{self.v_bar}\n'
+            f'{cls.v_bar} '
+            f'{cls.cal_str[0]} '
+            f'{cls.v_bar}\n'
         )
 
         screen += (
-            f'{self.v_bar} '
+            f'{cls.v_bar} '
             f'{met_str} '
-            f'{self.b_var_single} '
+            f'{cls.b_var_single} '
             f'{sit_str}'
-            f'{" " * (self.columns - len(met_str + sit_str + b_clockdisp[1]) + 3)}'
-            f'{self.v_bar} '
+            f'{" " * (cls.columns - len(met_str + sit_str + b_clockdisp[1]) + 3)}'
+            f'{cls.v_bar} '
             f'{b_clockdisp[1]} '
-            f'{self.v_bar} '
-            f'{self.cal_str[1]} '
-            f'{self.v_bar}\n'
+            f'{cls.v_bar} '
+            f'{cls.cal_str[1]} '
+            f'{cls.v_bar}\n'
         )
 
         screen += (
-            f'{self.v_bar} '
+            f'{cls.v_bar} '
             f'{sol_str} '
-            f'{self.b_var_single} '
+            f'{cls.b_var_single} '
             f'{hex_str}'
-            f'{" " * (self.columns - len(sol_str + net_str + b_clockdisp[2]) + 3)}'
-            f'{self.v_bar} '
+            f'{" " * (cls.columns - len(sol_str + net_str + b_clockdisp[2]) + 3)}'
+            f'{cls.v_bar} '
             f'{b_clockdisp[2]} '
-            f'{self.v_bar} '
-            f'{self.cal_str[2]} '
-            f'{self.v_bar}\n'
+            f'{cls.v_bar} '
+            f'{cls.cal_str[2]} '
+            f'{cls.v_bar}\n'
         )
 
         screen += (
-            f'{self.v_bar} '
+            f'{cls.v_bar} '
             f'{lst_str} '
-            f'{self.b_var_single} '
+            f'{cls.b_var_single} '
             f'{net_str}'
-            f'{" " * (self.columns - len(lst_str + hex_str + b_clockdisp[3]) + 3)}'
-            f'{self.v_bar} '
+            f'{" " * (cls.columns - len(lst_str + hex_str + b_clockdisp[3]) + 3)}'
+            f'{cls.v_bar} '
 
             f'{b_clockdisp[3]} '
-            f'{self.v_bar} '
-            f'{self.cal_str[3]} '
-            f'{self.v_bar}\n'
+            f'{cls.v_bar} '
+            f'{cls.cal_str[3]} '
+            f'{cls.v_bar}\n'
         )
 
         screen += (
-            f'{self.corner_ll}'
-            f'{self.h_bar * (self.columns - 29)}'
-            f'{self.h_bar_up_connect}'
-            f'{self.h_bar * 8}'
-            f'{self.h_bar_up_connect}'
-            f'{self.h_bar * 17}'
-            f'{self.corner_lr}\n'
+            f'{cls.corner_ll}'
+            f'{cls.h_bar * (cls.columns - 29)}'
+            f'{cls.h_bar_up_connect}'
+            f'{cls.h_bar * 8}'
+            f'{cls.h_bar_up_connect}'
+            f'{cls.h_bar * 17}'
+            f'{cls.corner_lr}\n'
         )
 
-        ntpid_temp = ntp_id_str
+        if ntp.service_status == ntp.ServiceStatus.ACTIVE:
+            ntp_id_str = ntp.peer.server_id
+            ntpid_temp = ntp_id_str
 
-        ntp_str_right = (
-            f'ST {ntp.peer.stratum} '
-            f'DLY {float_width(float(ntp.peer.delay), 6, False)} '
-            f'OFF{float_width(float(ntp.peer.offset), 7, True)}'
-        )
+            ntp_str_right = (
+                f'ST {ntp.peer.stratum} '
+                f'DLY {float_width(float(ntp.peer.delay), 6, False)} '
+                f'OFF{float_width(float(ntp.peer.offset), 7, True)}'
+            )
 
-        if ntp.peer.source:
-            ntp_str_right = f'REF {ntp.peer.source} {ntp_str_right}'
+            if ntp.peer.source:
+                ntp_str_right = f'REF {ntp.peer.source} {ntp_str_right}'
 
-        ntpid_max_width = self.columns - len(ntp_str_right) - 3
+            ntpid_max_width = cls.columns - len(ntp_str_right) - 3
 
-        # Calculate NTP server ID scrolling if string is too large
-        if(len(ntp_id_str) > ntpid_max_width):
+            # Calculate NTP server ID scrolling if string is too large
+            if(len(ntp_id_str) > ntpid_max_width):
 
-            stages = 16 + len(ntp_id_str) - ntpid_max_width
-            current_stage = int(now.timestamp() / .25) % stages
+                stages = 16 + len(ntp_id_str) - ntpid_max_width
+                current_stage = int(now.timestamp() / .25) % stages
 
-            if(current_stage < 8):
-                ntpid_temp = ntp_id_str[0:ntpid_max_width]
-            elif(current_stage >= (stages - 8)):
-                ntpid_temp = ntp_id_str[(len(ntp_id_str) - ntpid_max_width):]
-            else:
-                ntpid_temp = (
-                    ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
-                )
-        ntp_str_left = f'{ntpid_temp}'
+                if(current_stage < 8):
+                    ntpid_temp = ntp_id_str[0:ntpid_max_width]
+                elif(current_stage >= (stages - 8)):
+                    ntpid_temp = ntp_id_str[(len(ntp_id_str) - ntpid_max_width):]
+                else:
+                    ntpid_temp = (
+                        ntp_id_str[(current_stage - 8):(current_stage - 8 + ntpid_max_width)]
+                    )
+            ntp_str_left = f'{ntpid_temp}'
 
-        screen += (Theme.header if ntp.peer.state == ntp.State.PEER else Theme.header_alert)
+            screen += (Theme.header if ntp.peer.state == ntp.State.PEER else Theme.header_alert)
 
-        screen += (
-            f' {ntp_str_left}'
-            f'{" " * (self.columns - len(ntp_str_left + ntp_str_right)-2)}'
-            f'{ntp_str_right} '
-        )
+            screen += (
+                f' {ntp_str_left}'
+                f'{" " * (cls.columns - len(ntp_str_left + ntp_str_right)-2)}'
+                f'{ntp_str_right} '
+            )
         screen += Theme.text
 
-        self.loop_time = datetime.now(pytz.utc) - start_time
+        cls.loop_time = datetime.now(pytz.utc) - start_time
         return screen
 
 
 def run():
     console.clear_screen()
     console.show_cursor(False)
-    c = Chronometer()
+    Chronometer.set_width(75)
     while True:
         try:
-            print(c.render(), end='\n' * (c.rows - 22))
+            print(Chronometer.render(), end='\n' * (Chronometer.rows - 22))
             console.reset_cursor()
-            time.sleep(c.config.refresh)
+            time.sleep(Chronometer.config.refresh)
         except KeyboardInterrupt:
             print(Theme.default, end="")
             console.clear_screen()

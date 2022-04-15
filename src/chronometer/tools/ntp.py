@@ -4,6 +4,7 @@ import time
 import threading
 from enum import Enum
 from dataclasses import dataclass
+import os
 
 
 class State(Enum):
@@ -14,6 +15,14 @@ class State(Enum):
     PREFERRED = '+'
     PEER = '*'
     PPSPEER = 'o'
+
+
+class ServiceStatus(Enum):
+    ACTIVE = 0
+    INACTIVE = 768
+    NOTFOUND = 1024
+
+service_status = ServiceStatus.NOTFOUND
 
 
 class RegexPattern:
@@ -83,6 +92,8 @@ def ntp_daemon() -> None:
     global peer
 
     while(True):
+
+
         try:
             ntpq_full = subprocess.run(
                 ['ntpq', '-pw'], stdout=subprocess.PIPE
@@ -115,9 +126,22 @@ def ntp_daemon() -> None:
 
 
 def main() -> None:
-    thread = threading.Thread(target=ntp_daemon)
-    thread.setDaemon(True)
-    thread.start()
+    global service_status
+    ntp_service_response = os.system('systemctl status ntp')
+    time.sleep(1)
+
+    if ntp_service_response == 0:
+        service_status = ServiceStatus.ACTIVE
+    elif ntp_service_response == 768:
+        service_status = ServiceStatus.INACTIVE
+    else:
+        service_status = ServiceStatus.NOTFOUND
+
+
+    if service_status == ServiceStatus.ACTIVE:
+        thread = threading.Thread(target=ntp_daemon)
+        thread.setDaemon(True)
+        thread.start()
 
 
 if __name__ == '__main__':
