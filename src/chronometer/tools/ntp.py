@@ -126,7 +126,7 @@ def ntp_daemon() -> None:
 
 def run() -> None:
     global service_status
-    ntp_service_response = os.system('systemctl status ntp')
+    ntp_service_response = os.system('systemctl --no-pager status ntp')
     time.sleep(1)
 
     if ntp_service_response == 0:
