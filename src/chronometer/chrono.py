@@ -24,26 +24,14 @@ class Bar(Enum):
     CENTURY = auto()
 
 
-class Color:
-    class BG:
-        BLACK = "\x1b[40m"
-        BRIGHT_BLUE = "\x1b[104m"
-        RED = "\x1b[41m"
-
-    class FG:
-        WHITE = "\x1b[97m"
-        BRIGHT_BLUE = "\x1b[94m"
-        DARK_GRAY = "\x1b[90m"
-
-
 class Theme:
-    text = Color.BG.BLACK + Color.FG.WHITE
-    header = Color.BG.BRIGHT_BLUE + Color.FG.WHITE
-    border = Color.BG.BLACK + Color.FG.BRIGHT_BLUE
-    bar_empty = Color.BG.BLACK + Color.FG.DARK_GRAY
-    bar_full = Color.BG.BLACK + Color.FG.WHITE
-    highlight = Color.BG.BRIGHT_BLUE + Color.FG.WHITE
-    header_alert = Color.BG.RED + Color.FG.WHITE
+    text = console.Color.BG.BLACK + console.Color.FG.WHITE
+    header = console.Color.BG.BRIGHT_BLUE + console.Color.FG.WHITE
+    border = console.Color.BG.BLACK + console.Color.FG.BRIGHT_BLUE
+    bar_empty = console.Color.BG.BLACK + console.Color.FG.DARK_GRAY
+    bar_full = console.Color.BG.BLACK + console.Color.FG.WHITE
+    highlight = console.Color.BG.BRIGHT_BLUE + console.Color.FG.WHITE
+    header_alert = console.Color.BG.RED + console.Color.FG.WHITE
     default = text
 
 
@@ -145,7 +133,7 @@ class Chronometer:
     sun = timeutil.Sun(date=None, lon=lon, lat=lat)
 
     time_zone_data = []
-    for i in flatten((_, _+5) for _ in range(5)):
+    for i in flatten((_, _ + 5) for _ in range(5)):
         time_zone_data.append(time_zone_data_temp[i])
 
     time_table = {}
