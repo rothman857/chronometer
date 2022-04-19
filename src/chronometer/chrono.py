@@ -141,11 +141,6 @@ class Chronometer:
         time_table.update({b: ProgressBar(min=0, max=1, width=columns - 19, value=0)})
 
     @classmethod
-    def set_width(cls, w):
-        if w > 60:
-            cls.colums = w
-
-    @classmethod
     def render(cls):
         start_time = datetime.now().astimezone()
         now = start_time + cls.loop_time
@@ -449,7 +444,7 @@ class Chronometer:
 def run():
     console.clear_screen()
     console.show_cursor(False)
-    Chronometer.set_width(75)
+
     while True:
         try:
             print(Chronometer.render(), end='\n' * (Chronometer.rows - 22))
