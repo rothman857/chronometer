@@ -1,11 +1,11 @@
 weekday = [
-    "SAT",
     "SUN",
     "MON",
     "TUE",
     "WED",
     "THU",
-    "FRI"
+    "FRI",
+    "SAT",
 ]
 
 

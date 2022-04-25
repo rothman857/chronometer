@@ -30,7 +30,7 @@ def int_fix_date(date: datetime) -> str:
     month, day = divmod(ordinal - 1, 28)
     day += 1
     week = ordinal % 7
-    return f' {abbr.weekday[week]} {abbr.Month.ifc[month]} {day:02}'
+    return f'{abbr.weekday[week]} {abbr.Month.ifc[month]} {day:02}'
 
 
 def twc_date(date: datetime) -> str:
@@ -46,7 +46,7 @@ def twc_date(date: datetime) -> str:
 
     if day == 365:
         return "*YEAR DAY*"
-    weekday = day % 7
+    weekday = (day-1) % 7
     month = 0
     for _ in range(0, 4):
         for j in [31, 30, 30]:
@@ -55,7 +55,7 @@ def twc_date(date: datetime) -> str:
                 month += 1
             else:
                 break
-    return f' {abbr.weekday[weekday]} {abbr.Month.twc[month]} {day:02}'
+    return f'{abbr.weekday[weekday]} {abbr.Month.twc[month]} {day:02}'
 
 
 pax_days = list(
@@ -83,6 +83,7 @@ def pax_date(date: datetime) -> str:
             pax_year = i + 1928
             break
     month, day = divmod(pax_day_of_year, 28)
+    day += 1
     sign = '+' if pax_year > date.year else ' '
     return f'{sign}{abbr.weekday[day%7]} {abbr.Month.pax[month]} {day:02}'
 
