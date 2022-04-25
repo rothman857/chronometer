@@ -208,7 +208,7 @@ class Chronometer:
 
         cls.cal_str[0] = f'{Theme.text}IFC {cal.int_fix_date(now)}'
         cls.cal_str[1] = f'{Theme.text}TWC {cal.twc_date(now)}'
-        cls.cal_str[2] = f'{Theme.text}AND {cal.and_date(now)}'
+        cls.cal_str[2] = f'{Theme.text}PAX {cal.pax_date(now)}'
         cls.cal_str[3] = (
             f'{Theme.text}'
             f'JUL {float_width(cal.julian_date(date=now, reduced=False), 11, False)}'
