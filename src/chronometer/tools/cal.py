@@ -19,7 +19,7 @@ def julian_date(date: datetime, reduced: bool = False) -> float:
 
 
 def int_fix_date(date: datetime) -> str:
-    ordinal = timeutil.day_of_year(date) + 1
+    ordinal = timeutil.day_of_year(date)
     if timeutil.is_leap_year(date):
         if ordinal > 169:
             ordinal -= 1
@@ -29,12 +29,12 @@ def int_fix_date(date: datetime) -> str:
         return "*YEAR DAY*"
     month, day = divmod(ordinal - 1, 28)
     day += 1
-    week = ordinal % 7
+    week = (ordinal - 1) % 7
     return f'{abbr.weekday[week]} {abbr.Month.ifc[month]} {day:02}'
 
 
 def twc_date(date: datetime) -> str:
-    day = timeutil.day_of_year(date) + 1
+    day = timeutil.day_of_year(date)
 
     if timeutil.is_leap_year(date):
         if day == 366:
@@ -85,7 +85,7 @@ def pax_date(date: datetime) -> str:
     month, day = divmod(pax_day_of_year, 28)
     day += 1
     sign = '+' if pax_year > date.year else ' '
-    return f'{sign}{abbr.weekday[day%7]} {abbr.Month.pax[month]} {day:02}'
+    return f'{sign}{abbr.weekday[(day - 1) %7]} {abbr.Month.pax[month]} {day:02}'
 
 
 if __name__ == '__main__':

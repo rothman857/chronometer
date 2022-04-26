@@ -20,7 +20,7 @@ def is_leap_year(dt: Union[datetime, int]) -> bool:
 
 def day_of_year(dt: datetime) -> int:
     dt = dt.replace(tzinfo=None)
-    return (dt - datetime(dt.year, 1, 1)).days
+    return (dt - datetime(dt.year, 1, 1)).days + 1
 
 
 def get_local_date_format() -> str:

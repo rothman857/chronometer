@@ -180,7 +180,7 @@ class Chronometer:
             (cls.time_table[Bar.DAY].value - 1) / days_this_month
         cls.time_table[Bar.YEAR].value = (
             now.year + (
-                timeutil.day_of_year(now) +
+                timeutil.day_of_year(now) -1 +
                 cls.time_table[Bar.DAY].value -
                 int(cls.time_table[Bar.DAY].value)
             ) / days_this_year

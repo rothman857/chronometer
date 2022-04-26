@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, time
-
 import pytz
 from chronometer.tools import cal, abbr, timeutil, clock
+import q
 
 
 def pax_dates(start, dur):
@@ -9,10 +9,10 @@ def pax_dates(start, dur):
     for year in range(start, start + dur):
         for month in abbr.Month.pax[:-1]:
             for day in range(1, 29):
-                pax_dates.append(f'{abbr.weekday[day % 7]} {month} {day:02}')
+                pax_dates.append(f'{abbr.weekday[(day - 1) % 7]} {month} {day:02}')
         if (year % 100 % 6 == 0 or year % 100 == 99) and year % 400 != 0:
             for day in range(1, 8):
-                pax_dates.append(f'{abbr.weekday[day % 7]} PAX {day:02}')
+                pax_dates.append(f'{abbr.weekday[(day - 1) % 7]} PAX {day:02}')
     return pax_dates
 
 
@@ -22,10 +22,11 @@ def ifc_dates(start, dur):
         for month in abbr.Month.ifc:
             for day in range(1, 29):
 
-                ifc_dates.append(f'{abbr.weekday[day % 7]} {month} {day:02}')
+                ifc_dates.append(f'{abbr.weekday[(day - 1) % 7]} {month} {day:02}')
                 if day == 28 and month == 'JUN' and timeutil.is_leap_year(year):
                     ifc_dates.append('*LEAP DAY*')
         ifc_dates.append('*YEAR DAY*')
+    q(ifc_dates[:400])
     return ifc_dates
 
 
@@ -53,8 +54,8 @@ class TestCalendars:
             start_date += timedelta(days=1)
 
     def test_ifc(self):
-        start_date = datetime(year=1000, month=1, day=1)
-        for ifc_date_str in ifc_dates(1000, 500):
+        start_date = datetime(year=2000, month=1, day=1)
+        for ifc_date_str in ifc_dates(2000, 500):
             assert ifc_date_str == cal.int_fix_date(start_date)
             start_date += timedelta(days=1)
 
@@ -92,3 +93,10 @@ class TestClocks:
         assert "@000.00000" == clock.sit_time(
             datetime(year=2000, month=1, day=1, hour=0, tzinfo=pytz.timezone('Etc/GMT-1'))
         )
+
+
+class TestUtils:
+    def test_day_of_week(self):
+        assert 1 == timeutil.day_of_year(datetime(month=1, day=1, year=2000))
+        assert 365 == timeutil.day_of_year(datetime(month=12, day=31, year=1999))
+        assert 366 == timeutil.day_of_year(datetime(month=12, day=31, year=2000))
