@@ -4,7 +4,7 @@ import sys
 
 here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / "README.md").read_text(encoding="utf-8")
-install_requires = ['pytz']
+install_requires = ['pytz', 'types-pytz']
 if sys.version_info.minor == 6:
     install_requires.append('dataclasses')
 

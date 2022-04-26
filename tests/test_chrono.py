@@ -23,7 +23,7 @@ def ifc_dates(start, dur):
             for day in range(1, 29):
 
                 ifc_dates.append(f'{abbr.weekday[day % 7]} {month} {day:02}')
-                if day == 28 and month == 'JUN' and timeutil.is_leap_year(datetime(month=1, day=1, year=year)):
+                if day == 28 and month == 'JUN' and timeutil.is_leap_year(year):
                     ifc_dates.append('*LEAP DAY*')
         ifc_dates.append('*YEAR DAY*')
     return ifc_dates
@@ -39,7 +39,7 @@ def twc_dates(start, dur):
                 twc_dates.append(f'{abbr.weekday[i % 7]} {month} {day:02}')
                 if day == 30 and month == 'DEC':
                     twc_dates.append('*YEAR DAY*')
-                if day == 30 and month == 'JUN' and timeutil.is_leap_year(datetime(month=1, day=1, year=year)):
+                if day == 30 and month == 'JUN' and timeutil.is_leap_year(year):
                     twc_dates.append('*LEAP DAY*')
                 i += 1
     return twc_dates

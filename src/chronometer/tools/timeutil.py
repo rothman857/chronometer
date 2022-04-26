@@ -1,11 +1,14 @@
 from datetime import datetime, date, timedelta
-from typing import Optional
+from typing import Optional, Union
 from . import trig, cal
 import pytz
 
 
-def is_leap_year(dt: datetime) -> bool:
-    year = dt.year
+def is_leap_year(dt: Union[datetime, int]) -> bool:
+    if isinstance(dt, datetime):
+        year = dt.year
+    elif isinstance(dt, int):
+        year = dt
     if year % 400 == 0:
         return True
     if year % 100 == 0:
