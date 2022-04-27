@@ -1,6 +1,6 @@
 from datetime import datetime, date, timedelta
 from typing import Optional, Union
-from . import trig, cal
+from chronometer.tools import trig, cal
 import pytz
 
 
@@ -22,14 +22,6 @@ def day_of_year(dt: datetime) -> int:
     dt = dt.replace(tzinfo=None)
     return (dt - datetime(dt.year, 1, 1)).days + 1
 
-
-def get_local_date_format() -> str:
-    today = date.today()
-    today_str = today.strftime('%x').split('/')
-    if int(today_str[0]) == today.month and int(today_str[1]) == today.day:
-        return "{month:02}/{day:02}"
-    else:
-        return "{day:02}/{month:02}"
 
 
 def leap_drift(dt: datetime) -> float:

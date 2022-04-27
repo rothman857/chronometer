@@ -1,5 +1,5 @@
 from datetime import datetime
-from . import timeutil, abbr
+from chronometer.tools import timeutil, abbr
 from itertools import accumulate
 
 

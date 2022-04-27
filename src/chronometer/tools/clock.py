@@ -1,14 +1,20 @@
-from datetime import datetime, timedelta
-from . import cal
+from datetime import datetime, timedelta, time
+from typing import Union
+from chronometer.tools import cal
 import pytz
 
 
-def _day_percent(dt: datetime):
-    return (dt.hour * 3600 + dt.minute * 60 + dt.second + dt.microsecond / 1_000_000) / 86400
+TimeLike = Union[datetime, time]
+
+
+def _day_percent(t: TimeLike):
+    t = t.time() if isinstance(t, datetime) else t
+    return (t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1_000_000) / 86400
 
 
 def sidereal_time(dt: datetime, lon: float) -> str:
-    offset = dt.utcoffset().total_seconds() / 3600
+    utc_offset = dt.utcoffset()
+    offset = utc_offset.total_seconds() / 3600 if utc_offset else 0
     j = cal.julian_date(dt) - 2451545.0 + .5 - timedelta(hours=offset).total_seconds() / 86400
     l0 = 99.967794687
     l1 = 360.98564736628603
@@ -35,16 +41,18 @@ def sit_time(dt: datetime) -> str:
     return f'@{round(percent_complete*1000, 5):09.5f}'
 
 
-def hex_time(dt: datetime) -> str:
-    percent_complete = _day_percent(dt)
+def hex_time(t: TimeLike) -> str:
+    t = t.time() if isinstance(t, datetime) else t
+    percent_complete = _day_percent(t)
     hours, remainder = divmod(int(percent_complete * 2**28), 2**24)
     minutes, seconds = divmod(remainder, 2 ** 16)
     seconds, subseconds = divmod(seconds, 2 ** 12)
     return f'{hours:1X}_{minutes:02X}_{seconds:1X}.{subseconds:03X}'
 
 
-def metric_time(dt: datetime) -> str:
-    percent_complete = _day_percent(dt)
+def metric_time(t: TimeLike) -> str:
+    t = t.time() if isinstance(t, datetime) else t
+    percent_complete = _day_percent(t)
     hours, remainder = divmod(int(percent_complete * 100_000), 10_000)
     minutes, seconds = divmod(remainder, 100)
     return f'{hours:02}:{minutes:02}:{seconds:02}'

@@ -1,3 +1,3 @@
-from . import chrono
+from chronometer import chrono
 
 chrono.run()

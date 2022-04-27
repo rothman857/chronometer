@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, time
 import pytz
 from chronometer.tools import cal, abbr, timeutil, clock
-import q
 
 
 def pax_dates(start, dur):
@@ -26,7 +25,6 @@ def ifc_dates(start, dur):
                 if day == 28 and month == 'JUN' and timeutil.is_leap_year(year):
                     ifc_dates.append('*LEAP DAY*')
         ifc_dates.append('*YEAR DAY*')
-    q(ifc_dates[:400])
     return ifc_dates
 
 
