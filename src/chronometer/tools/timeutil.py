@@ -23,7 +23,6 @@ def day_of_year(dt: datetime) -> int:
     return (dt - datetime(dt.year, 1, 1)).days + 1
 
 
-
 def leap_drift(dt: datetime) -> float:
     dt = dt.replace(tzinfo=None)
     ratio = 365 / 365.2425

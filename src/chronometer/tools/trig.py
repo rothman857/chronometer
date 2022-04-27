@@ -1,5 +1,6 @@
 import math
 
+
 def acos(x: float) -> float:
     return math.degrees(math.acos(x))
 

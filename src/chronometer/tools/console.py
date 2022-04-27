@@ -15,6 +15,7 @@ def show_cursor(on: bool = True) -> None:
 def clear_screen() -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
 
+
 class Color:
     class BG:
         BLACK = "\x1b[40m"

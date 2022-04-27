@@ -8,10 +8,10 @@
 # exit(0)
 
 # Wait for internet connection
-while :
+while:
 do
   sleep 1
-if (ping -c 4 github.com); then
+if (ping - c 4 github.com); then
     echo "Device is online."
     break
   else
