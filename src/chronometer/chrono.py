@@ -134,7 +134,7 @@ class Chronometer:
     sun = timeutil.Sun(date=None, lon=lon, lat=lat)
 
     time_zone_data = []
-    for i in flatten((_, _ + 5) for _ in range(4)):
+    for i in flatten((_, _ + 4) for _ in range(4)):
         time_zone_data.append(time_zone_data_temp[i])
 
     time_table = {}
