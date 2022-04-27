@@ -1,10 +1,10 @@
 # Raspberry Pi Internet Chronometer
 
-![Chronometer Display](https: // i.imgur.com/Lju7Ows.png "Chronometer Display")
+![Chronometer Display](https://i.imgur.com/Lju7Ows.png "Chronometer Display")
 
-Turn your RaspberryPi in to an[Internet Chronometer](https: // www.reddit.com/r/raspberry_pi/comments/bb8ddc/made_a_rpi_desk_clock_as_a_means_of_learning /) .
+Turn your RaspberryPi in to an[Internet Chronometer](https://www.reddit.com/r/raspberry_pi/comments/bb8ddc/made_a_rpi_desk_clock_as_a_means_of_learning /) .
 
-Display is a[UCTRONICS 3.5 Inch HDMI display](https: // www.amazon.com/gp/product/B076M399XX).
+Display is a[UCTRONICS 3.5 Inch HDMI display](https://www.amazon.com/gp/product/B076M399XX).
 
 # Features:
 
@@ -17,28 +17,28 @@ Display is a[UCTRONICS 3.5 Inch HDMI display](https: // www.amazon.com/gp/produc
 + MIDDLE
    * Left: World Clock
     * Right:
-        * LD - Leap Drift - Current time offset that has to be corrected by the[leap cycle](https: // en.wikipedia.org/wiki/Leap_year)
+        * LD - Leap Drift - Current time offset that has to be corrected by the[leap cycle](https://en.wikipedia.org/wiki/Leap_year)
         * SR - Sunrise Timer
         * SS - Sunset Timer
         * DD - Daytime Duration
         * ND - Nighttime Duration
 + BOTTOM
    * Left: Time Systems
-        * UTC - [Coordinated Universal Time](https: // en.wikipedia.org/wiki/Coordinated_Universal_Time)
-        * MET - [Metric Time](https: // en.wikipedia.org/wiki/Metric_time)
-        * SOL - [Solar Time](https: // en.wikipedia.org/wiki/Solar_time)
-        * LST - [Local Sidereal Time](https: // en.wikipedia.org/wiki/Sidereal_time)
-        * UNX - [Unix Epoch Time](https: // en.wikipedia.org/wiki/Unix_time)
-        * SIT - [Swatch Internet Time](https: // en.wikipedia.org/wiki/Swatch_Internet_Time)
-        * NET - [New Earth Time](https: // en.wikipedia.org/wiki/New_Earth_Time)
-        * HEX - [Hexadecimal Time](https: // en.wikipedia.org/wiki/Hexadecimal_time)
-        * [Binary Clock](https: // en.wikipedia.org/wiki/Binary_clock)
+        * UTC - [Coordinated Universal Time](https://en.wikipedia.org/wiki/Coordinated_Universal_Time)
+        * DEC - [Decimal Time](https://en.wikipedia.org/wiki/Decimal_time)
+        * SOL - [Solar Time](https://en.wikipedia.org/wiki/Solar_time)
+        * LST - [Local Sidereal Time](https://en.wikipedia.org/wiki/Sidereal_time)
+        * UNX - [Unix Epoch Time](https://en.wikipedia.org/wiki/Unix_time)
+        * SIT - [Swatch Internet Time](https://en.wikipedia.org/wiki/Swatch_Internet_Time)
+        * NET - [New Earth Time](https://en.wikipedia.org/wiki/New_Earth_Time)
+        * HEX - [Hexadecimal Time](https://en.wikipedia.org/wiki/Hexadecimal_time)
+        * [Binary Clock](https://en.wikipedia.org/wiki/Binary_clock)
     * Right: Calendar Systems
-        * INTL - [International Fixed Calendar](https: //en.wikipedia.org/wiki/International_Fixed_Calendar)
-        * WRLD - [The World Calendar](https: //en.wikipedia.org/wiki/World_Calendar)
-        * ANNO - [Annus Novus Decimal Calendar](http: //www.atlantium.org/calendaran.html)
-        * JULN - [Julian Date](https: //en.wikipedia.org/wiki/Julian_day)
-    * [NTP](https: //en.wikipedia.org/wiki/Network_Time_Protocol) Status (Server, Stratum, Delay, Offset)
+        * INTL - [International Fixed Calendar](https://en.wikipedia.org/wiki/International_Fixed_Calendar)
+        * WRLD - [The World Calendar](https://en.wikipedia.org/wiki/World_Calendar)
+        * ANNO - [Annus Novus Decimal Calendar](http://www.atlantium.org/calendaran.html)
+        * JULN - [Julian Date](https://en.wikipedia.org/wiki/Julian_day)
+    * [NTP](https://en.wikipedia.org/wiki/Network_Time_Protocol) Status (Server, Stratum, Delay, Offset)
 
 
 # Requirements
@@ -80,4 +80,4 @@ Display is a[UCTRONICS 3.5 Inch HDMI display](https: // www.amazon.com/gp/produc
     ```
 
 # Notes
-* *Sunrise, sunset, daylight duration, and solar time were calculated from the [Sunrise Equation](https: //en.wikipedia.org/wiki/Sunrise_equation), which uses the coordinates provided in .config.  Using the default values for longitude and latitude may result in inaccurate calculations.
+* *Sunrise, sunset, daylight duration, and solar time were calculated from the [Sunrise Equation](https://en.wikipedia.org/wiki/Sunrise_equation), which uses the coordinates provided in .config.  Using the default values for longitude and latitude may result in inaccurate calculations.

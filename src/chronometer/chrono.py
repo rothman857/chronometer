@@ -222,7 +222,7 @@ class Chronometer:
         cls.sun.refresh()
         sol_str = f'{Theme.text}SOL {cls.sun.solar_noon:%H:%M:%S}'
         lst_str = f'{Theme.text}LST {clock.sidereal_time(now, cls.lon)}'
-        met_str = f'{Theme.text}MET {clock.metric_time(now)}'
+        met_str = f'{Theme.text}DEC {clock.metric_time(now)}'
         hex_str = f'{Theme.text}HEX {clock.hex_time(now)}'
         net_str = f'{Theme.text}NET {clock.new_earth_time(now)}'
         sit_str = f'{Theme.text}SIT {clock.sit_time(now)}'
