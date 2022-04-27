@@ -19,6 +19,7 @@ class Bar(Enum):
     MINUTE = auto()
     HOUR = auto()
     DAY = auto()
+    WEEK = auto()
     MONTH = auto()
     YEAR = auto()
     CENTURY = auto()
@@ -133,7 +134,7 @@ class Chronometer:
     sun = timeutil.Sun(date=None, lon=lon, lat=lat)
 
     time_zone_data = []
-    for i in flatten((_, _ + 5) for _ in range(5)):
+    for i in flatten((_, _ + 5) for _ in range(4)):
         time_zone_data.append(time_zone_data_temp[i])
 
     time_table = {}
@@ -176,6 +177,9 @@ class Chronometer:
         )
         cls.time_table[Bar.HOUR].value = now.hour + cls.time_table[Bar.MINUTE].value / 60
         cls.time_table[Bar.DAY].value = now.day + cls.time_table[Bar.HOUR].value / 24
+        cls.time_table[Bar.WEEK].value = (
+            (now.weekday()+1)%7 + cls.time_table[Bar.DAY].value % 1
+            )/7
         cls.time_table[Bar.MONTH].value = now.month + \
             (cls.time_table[Bar.DAY].value - 1) / days_this_month
         cls.time_table[Bar.YEAR].value = (
@@ -258,7 +262,7 @@ class Chronometer:
             f'SR{time_list[1]}',
             f'SS{time_list[2]}',
             f'DD{time_list[3]}',
-            f'ND{time_list[4]}'
+            # f'ND{time_list[4]}'
         ]
 
         for i in range(0, len(cls.time_zone_data), 2):
