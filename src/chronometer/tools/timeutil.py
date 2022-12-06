@@ -98,6 +98,31 @@ def prev_cycle(dt: datetime) -> datetime:
         cycle_year -= 400
     return dt.replace(year=cycle_year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
 
+def prev_per(dt: datetime) -> datetime:
+
+    year = dt.year
+    if is_leap_year(year) and dt>= dt.replace(
+        year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0
+    ):
+        return dt.replace(year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
+    else:
+        year -= 1
+        while not is_leap_year(year):
+            year -= 1
+        return dt.replace(year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
+
+def next_per(dt: datetime) -> datetime:
+    year = dt.year
+    if is_leap_year(year) and dt <= dt.replace(
+        year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0
+    ):
+        return dt.replace(year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
+    else:
+        year += 1
+        while not is_leap_year(year):
+            year += 1
+        return dt.replace(year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
+
 
 class Sun:
     def __init__(self, date: Optional[datetime], lon: float, lat: float) -> None:

@@ -257,14 +257,24 @@ class Chronometer:
         hours, remainder = divmod(remainder, 3600)
         minutes, seconds = divmod(remainder, 60)
         per_progress = (
-            (now - (timeutil.prev_leap(now)+timedelta(days=1)))/(timeutil.next_leap(now) - timeutil.prev_leap(now))
+            (
+                now - timeutil.prev_per(now)
+            ).total_seconds() / (
+                (timeutil.next_per(now)) - timeutil.prev_per(now)
+            ).total_seconds()
         )
         cyc_progress = (now - timeutil.prev_cycle(now)).total_seconds() / ((365 * 400 + 97) * 86400)
         leap_stats = [
+            # f"{timeutil.prev_per(now)}"[:15],
             f"DFT {leap_drift_str}",
             f"NXT -{int(days):04}:{int(hours):02}:{int(minutes):02}:{int(seconds):02}",
             f'PER {100*per_progress:013.10f}%',
             f"CYC {100*cyc_progress:013.10f}%",
+            # f'{timeutil.prev_leap(now).replace(month=3, day=1)}',
+            # f'{(now - (timeutil.prev_leap(now))).total_seconds()}'[:15],
+            # f'{((timeutil.next_leap(now).replace(month=3, day=1)) - timeutil.prev_leap(now).replace(month=3, day=1)).total_seconds()}'[:15],
+            # f"{timeutil.prev_leap(now)}",
+            # f"{((timeutil.next_leap(now)) - timeutil.prev_leap(now)).total_seconds()}",
         ]
 
         for i in range(0, len(cls.time_zone_data), 2):
