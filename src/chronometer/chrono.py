@@ -245,13 +245,13 @@ class Chronometer:
         leap_drift = timeutil.leap_drift(now)
         hours, remainder = divmod(abs(leap_drift), 3600)
         minutes, seconds = divmod(remainder, 60)
-        subs = 10000 * (seconds - int(seconds))
+        subs = seconds - int(seconds)
         leap_drift_str = (
             f'{"-" if leap_drift < 0 else " "}'
             f'{int(hours):02}:'
             f'{int(minutes):02}:'
             f'{int(seconds):02}.'
-            f'{int(subs):02}'
+            f'{int(10000 * subs):04}'
         )
 
         next_leap = timeutil.next_leap(now) - now
