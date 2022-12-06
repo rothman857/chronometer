@@ -257,7 +257,7 @@ class Chronometer:
         hours, remainder = divmod(remainder, 3600)
         minutes, seconds = divmod(remainder, 60)
         per_progress = (
-            (now - timeutil.prev_leap(now))/(timeutil.next_leap(now) - timeutil.prev_leap(now))
+            (now - (timeutil.prev_leap(now)+timedelta(days=1)))/(timeutil.next_leap(now) - timeutil.prev_leap(now))
         )
         cyc_progress = (now - timeutil.prev_cycle(now)).total_seconds() / ((365 * 400 + 97) * 86400)
         leap_stats = [
