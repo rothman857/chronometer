@@ -261,7 +261,6 @@ class Chronometer:
             (now - timeutil.prev_leap(now))/(timeutil.next_leap(now) - timeutil.prev_leap(now))
         )
         cyc_progress = (now - timeutil.prev_cycle(now)).total_seconds() / ((365 * 400 + 97) * 86400)
-
         leap_stats = [
             f"DFT {leap_drift_str}",
             f"NXT -{int(days):04}:{int(hours):02}:{int(minutes):02}:{int(seconds):02}",

@@ -77,11 +77,12 @@ def next_leap(dt: datetime) -> datetime:
 
 def prev_leap(dt: datetime) -> datetime:
     year = dt.year
-    if dt >= dt.replace(
+    if dt>= dt.replace(
         year=year, month=2, day=28, hour=0, minute=0, second=0, microsecond=0
     ) and is_leap_year(year):
         return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
     else:
+        year -= 1
         while not is_leap_year(year):
             year -= 1
         return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
