@@ -253,7 +253,6 @@ class Chronometer:
             f'{int(seconds):02}.'
             f'{int(10000 * subs):04}'
         )
-
         next_leap = timeutil.next_leap(now) - now
         days, remainder = divmod(next_leap.total_seconds(), 86400)
         hours, remainder = divmod(remainder, 3600)

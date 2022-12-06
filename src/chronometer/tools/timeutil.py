@@ -65,28 +65,37 @@ def leapage(dt: datetime) -> float:
 
 def next_leap(dt: datetime) -> datetime:
     year = dt.year
-    if dt <= dt.replace(year=year, month=2, day=28, hour=0, minute=0, second=0, microsecond=0) and is_leap_year(year):
+    if dt <= dt.replace(
+        year=year, month=2, day=28, hour=0, minute=0, second=0, microsecond=0
+    ) and is_leap_year(year):
         return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
     else:
         while not is_leap_year(year):
             year += 1
         return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
 
+
 def prev_leap(dt: datetime) -> datetime:
     year = dt.year
-    if dt >= dt.replace(year=year, month=2, day=28, hour=0, minute=0, second=0, microsecond=0) and is_leap_year(year):
+    if dt >= dt.replace(
+        year=year, month=2, day=28, hour=0, minute=0, second=0, microsecond=0
+    ) and is_leap_year(year):
         return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
     else:
         while not is_leap_year(year):
             year -= 1
         return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
 
+
 def prev_cycle(dt: datetime) -> datetime:
     year = dt.year
     cycle_year = year - year % 400
-    if dt.replace(year=cycle_year) < dt.replace(year=cycle_year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0):
+    if year == cycle_year and dt.replace(year=cycle_year) < dt.replace(
+        year=cycle_year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0
+    ):
         cycle_year -= 400
     return dt.replace(year=cycle_year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
+
 
 class Sun:
     def __init__(self, date: Optional[datetime], lon: float, lat: float) -> None:
@@ -95,7 +104,7 @@ class Sun:
         self._date = date
 
     def refresh(self, offset: int = 0, fixed: bool = False) -> None:
-        n = cal.julian_date(self.date) - 2451545.0 + .5 + .0008
+        n = cal.julian_date(self.date) - 2451545.0 + 0.5 + 0.0008
         n = n if fixed else int(n)
         n += offset
         J_star = n + (-self.lon / 360)
@@ -104,9 +113,8 @@ class Sun:
         λ = (M + C + 180 + 102.9372) % 360
         self.J_transit = 2451545.0 + J_star + 0.0053 * trig.sin(M) - 0.0069 * trig.sin(2 * λ)
         δ = trig.asin(trig.sin(λ) * trig.sin(23.44))
-        temp = (
-            (trig.cos(90.83333) - trig.sin(self.lat) * trig.sin(δ)) /
-            (trig.cos(self.lat) * trig.cos(δ))
+        temp = (trig.cos(90.83333) - trig.sin(self.lat) * trig.sin(δ)) / (
+            trig.cos(self.lat) * trig.cos(δ)
         )
         self.ω0 = trig.acos(temp)
 
@@ -137,13 +145,13 @@ class Sun:
     @property
     def solar_noon(self):
         offset = (self.date - jul_to_greg(self.J_transit)).total_seconds()
-        return self.date.replace(
-            hour=12, minute=0, second=0, microsecond=0
-        ) + timedelta(seconds=offset)
+        return self.date.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(
+            seconds=offset
+        )
 
 
 def jul_to_greg(J: float) -> datetime:
-    J += .5
+    J += 0.5
     _J = int(J)
     f = _J + 1401 + (((4 * _J + 274277) // 146097) * 3) // 4 - 38
     e = 4 * f + 3
@@ -152,14 +160,12 @@ def jul_to_greg(J: float) -> datetime:
     day = (h % 153) // 5 + 1
     month = ((h // 153 + 2) % 12) + 1
     year = (e // 1461) - 4716 + (12 + 2 - month) // 12
-    return (
-        datetime(
-            day=day,
-            month=month,
-            year=year,
-        ) + timedelta(seconds=86400 * (J - _J))
-    )
+    return datetime(
+        day=day,
+        month=month,
+        year=year,
+    ) + timedelta(seconds=86400 * (J - _J))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
