@@ -264,10 +264,10 @@ class Chronometer:
         cyc_progress = (now - timeutil.prev_cycle(now)).total_seconds() / ((365 * 400 + 97) * 86400)
 
         leap_stats = [
-            f'PER {100*per_progress:013.10f}%',
-            f"CYC {100*cyc_progress:013.10f}%",
             f"DFT {leap_drift_str}",
             f"NXT -{int(days):04}:{int(hours):02}:{int(minutes):02}:{int(seconds):02}",
+            f'PER {100*per_progress:013.10f}%',
+            f"CYC {100*cyc_progress:013.10f}%",
         ]
 
         for i in range(0, len(cls.time_zone_data), 2):
