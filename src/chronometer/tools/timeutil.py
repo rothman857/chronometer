@@ -65,7 +65,7 @@ def leapage(dt: datetime) -> float:
 
 def next_leap(dt: datetime) -> datetime:
     year = dt.year
-    if dt <= dt.replace(year=year, month=2, day=28) and is_leap_year(year):
+    if dt <= dt.replace(year=year, month=2, day=28, hour=0, minute=0, second=0, microsecond=0) and is_leap_year(year):
         return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
     else:
         while not is_leap_year(year):
@@ -74,7 +74,7 @@ def next_leap(dt: datetime) -> datetime:
 
 def prev_leap(dt: datetime) -> datetime:
     year = dt.year
-    if dt >= dt.replace(year=year, month=2, day=28) and is_leap_year(year):
+    if dt >= dt.replace(year=year, month=2, day=28, hour=0, minute=0, second=0, microsecond=0) and is_leap_year(year):
         return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
     else:
         while not is_leap_year(year):
@@ -84,8 +84,8 @@ def prev_leap(dt: datetime) -> datetime:
 def prev_cycle(dt: datetime) -> datetime:
     year = dt.year
     cycle_year = year - year % 400
-    if dt.replace(year=cycle_year) < dt.replace(year=cycle_year, month=2, day=29):
-        cycle_year -= 1
+    if dt.replace(year=cycle_year) < dt.replace(year=cycle_year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0):
+        cycle_year -= 400
     return dt.replace(year=cycle_year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
 
 class Sun:
