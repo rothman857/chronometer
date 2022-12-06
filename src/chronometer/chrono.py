@@ -241,7 +241,6 @@ class Chronometer:
         elif sunset < 0 and sunrise < 0:
             cls.sun.refresh(offset=-1)
             sunset = cls.sun.sunset_timer
-
         leap_drift = timeutil.leap_drift(now)
         hours, remainder = divmod(abs(leap_drift), 3600)
         minutes, seconds = divmod(remainder, 60)
