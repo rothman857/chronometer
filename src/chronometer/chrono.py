@@ -192,7 +192,12 @@ class Chronometer:
         cls.time_table[Bar.CENTURY].value = (cls.time_table[Bar.YEAR].value - 1) / 100 + 1
         screen += Theme.header
         screen += f"{f'{now: %I:%M:%S %p {current_tz} - %A %B %d, %Y}': ^{cls.columns}}\n".upper()
-        screen += f'{cls.corner_ul}{cls.h_bar * (cls.columns - 2)}{cls.corner_ur}\n'
+        screen += (
+            f'{cls.corner_ul}'
+            f'{Theme.text}NOW{Theme.border}'
+            f'{cls.h_bar * (cls.columns - 5)}'
+            f'{cls.corner_ur}\n'
+        )
         for i, bar in enumerate(Bar):
             percent = cls.time_table[bar].value - int(cls.time_table[bar].value)
             cls.time_table[bar].value = percent
@@ -204,9 +209,11 @@ class Chronometer:
 
         screen += (
             f'{cls.center_l}'
-            f'{cls.h_bar * (cls.columns - 23)}'
+            f'{Theme.text}WORLD{Theme.border}'
+            f'{cls.h_bar * (cls.columns - 28)}'
             f'{cls.h_bar_down_connect}'
-            f'{cls.h_bar * 20}'
+            f'{Theme.text}LEAP{Theme.border}'
+            f'{cls.h_bar * 16}'
             f'{cls.center_r}\n'
         )
 
@@ -229,18 +236,6 @@ class Chronometer:
         utc_str = f'{Theme.text}UTC {clock.utc_time(now)}'
         unx_str = f'{Theme.text}UNX {clock.unix_time(now)}'
 
-        sunrise = cls.sun.sunrise_timer
-        sunset = cls.sun.sunset_timer
-        cls.sun.refresh(fixed=True)
-        daytime = cls.sun.daylight
-        nighttime = cls.sun.nighttime
-
-        if sunset > 0 and sunrise > 0:
-            cls.sun.refresh(offset=1)
-            sunrise = cls.sun.sunrise_timer
-        elif sunset < 0 and sunrise < 0:
-            cls.sun.refresh(offset=-1)
-            sunset = cls.sun.sunset_timer
         leap_drift = timeutil.leap_drift(now)
         hours, remainder = divmod(abs(leap_drift), 3600)
         minutes, seconds = divmod(remainder, 60)
@@ -265,16 +260,10 @@ class Chronometer:
         )
         cyc_progress = (now - timeutil.prev_cycle(now)).total_seconds() / ((365 * 400 + 97) * 86400)
         leap_stats = [
-            # f"{timeutil.prev_per(now)}"[:15],
             f"DFT {leap_drift_str}",
             f"NXT -{int(days):04}:{int(hours):02}:{int(minutes):02}:{int(seconds):02}",
             f'PER {100*per_progress:013.10f}%',
             f"CYC {100*cyc_progress:013.10f}%",
-            # f'{timeutil.prev_leap(now).replace(month=3, day=1)}',
-            # f'{(now - (timeutil.prev_leap(now))).total_seconds()}'[:15],
-            # f'{((timeutil.next_leap(now).replace(month=3, day=1)) - timeutil.prev_leap(now).replace(month=3, day=1)).total_seconds()}'[:15],
-            # f"{timeutil.prev_leap(now)}",
-            # f"{((timeutil.next_leap(now)) - timeutil.prev_leap(now)).total_seconds()}",
         ]
 
         for i in range(0, len(cls.time_zone_data), 2):
@@ -340,13 +329,14 @@ class Chronometer:
 
         screen += (
             f'{cls.center_l}'
-            f'{cls.h_bar * (cls.columns - 29)}'
-            f'{cls.h_bar_down_connect}'
+            f'{Theme.text}CLOCK{Theme.border}'
+            f'{cls.h_bar * (cls.columns - 33)}'
             f'{cls.h_bar * 5}'
             f'{cls.h_bar_up_connect}'
             f'{cls.h_bar * 2}'
             f'{cls.h_bar_down_connect}'
-            f'{cls.h_bar * 17}'
+            f'{Theme.text}CAL{Theme.border}'
+            f'{cls.h_bar * 14}'
             f'{cls.center_r}\n'
         )
 
@@ -356,7 +346,7 @@ class Chronometer:
             f'{cls.b_var_single} '
             f'{unx_str}'
             f'{" " * (cls.columns - len(met_str + unx_str + b_clockdisp[0]) + 3)}'
-            f'{cls.v_bar} '
+            f'{cls.b_var_single} '
             f'{b_clockdisp[0]} '
             f'{cls.v_bar} '
             f'{cls.cal_str[0]} '
@@ -369,7 +359,7 @@ class Chronometer:
             f'{cls.b_var_single} '
             f'{sit_str}'
             f'{" " * (cls.columns - len(met_str + sit_str + b_clockdisp[1]) + 3)}'
-            f'{cls.v_bar} '
+            f'{cls.b_var_single} '
             f'{b_clockdisp[1]} '
             f'{cls.v_bar} '
             f'{cls.cal_str[1]} '
@@ -382,7 +372,7 @@ class Chronometer:
             f'{cls.b_var_single} '
             f'{hex_str}'
             f'{" " * (cls.columns - len(sol_str + net_str + b_clockdisp[2]) + 3)}'
-            f'{cls.v_bar} '
+            f'{cls.b_var_single} '
             f'{b_clockdisp[2]} '
             f'{cls.v_bar} '
             f'{cls.cal_str[2]} '
@@ -395,8 +385,7 @@ class Chronometer:
             f'{cls.b_var_single} '
             f'{net_str}'
             f'{" " * (cls.columns - len(lst_str + hex_str + b_clockdisp[3]) + 3)}'
-            f'{cls.v_bar} '
-
+            f'{cls.b_var_single} '
             f'{b_clockdisp[3]} '
             f'{cls.v_bar} '
             f'{cls.cal_str[3]} '
@@ -405,8 +394,7 @@ class Chronometer:
 
         screen += (
             f'{cls.corner_ll}'
-            f'{cls.h_bar * (cls.columns - 29)}'
-            f'{cls.h_bar_up_connect}'
+            f'{cls.h_bar * (cls.columns - 28)}'
             f'{cls.h_bar * 8}'
             f'{cls.h_bar_up_connect}'
             f'{cls.h_bar * 17}'
