@@ -59,9 +59,34 @@ def leapage(dt: datetime) -> float:
             pass
 
     if count == 97:
-        count = 0
+        return 0
     return count
 
+
+def next_leap(dt: datetime) -> datetime:
+    year = dt.year
+    if dt <= dt.replace(year=year, month=2, day=28) and is_leap_year(year):
+        return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
+    else:
+        while not is_leap_year(year):
+            year += 1
+        return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
+
+def prev_leap(dt: datetime) -> datetime:
+    year = dt.year
+    if dt >= dt.replace(year=year, month=2, day=28) and is_leap_year(year):
+        return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
+    else:
+        while not is_leap_year(year):
+            year -= 1
+        return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
+
+def prev_cycle(dt: datetime) -> datetime:
+    year = dt.year
+    cycle_year = year - year % 400
+    if dt.replace(year=cycle_year) < dt.replace(year=cycle_year, month=2, day=29):
+        cycle_year -= 1
+    return dt.replace(year=cycle_year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
 
 class Sun:
     def __init__(self, date: Optional[datetime], lon: float, lat: float) -> None:

@@ -243,26 +243,31 @@ class Chronometer:
             sunset = cls.sun.sunset_timer
 
         leap_drift = timeutil.leap_drift(now)
+        hours, remainder = divmod(abs(leap_drift), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        subs = 10000 * (seconds - int(seconds))
+        leap_drift_str = (
+            f'{"-" if leap_drift < 0 else " "}'
+            f'{int(hours):02}:'
+            f'{int(minutes):02}:'
+            f'{int(seconds):02}.'
+            f'{int(subs):02}'
+        )
 
-        time_list = [''] * 5
-        for i, s in enumerate([leap_drift, sunrise, sunset, daytime, nighttime]):
-            hours, remainder = divmod(abs(s), 3600)
-            minutes, seconds = divmod(remainder, 60)
-            subs = 1000000 * (seconds - int(seconds))
-            time_list[i] = (
-                f'{"-" if s < 0 else " "}'
-                f'{int(hours):02}:'
-                f'{int(minutes):02}:'
-                f'{int(seconds):02}.'
-                f'{int(subs):06}'
-            )
+        next_leap = timeutil.next_leap(now) - now
+        days, remainder = divmod(next_leap.total_seconds(), 86400)
+        hours, remainder = divmod(remainder, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        per_progress = (
+            (now - timeutil.prev_leap(now))/(timeutil.next_leap(now) - timeutil.prev_leap(now))
+        )
+        cyc_progress = (now - timeutil.prev_cycle(now)).total_seconds() / ((365 * 400 + 97) * 86400)
 
         leap_stats = [
-            f'LD{time_list[0]}',
-            f'SR{time_list[1]}',
-            f'SS{time_list[2]}',
-            f'DD{time_list[3]}',
-            # f'ND{time_list[4]}'
+            f'PER {100*per_progress:013.10f}%',
+            f"CYC {100*cyc_progress:013.10f}%",
+            f"DFT {leap_drift_str}",
+            f"NXT -{int(days):04}:{int(hours):02}:{int(minutes):02}:{int(seconds):02}",
         ]
 
         for i in range(0, len(cls.time_zone_data), 2):
