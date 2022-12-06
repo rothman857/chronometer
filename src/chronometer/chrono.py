@@ -247,7 +247,7 @@ class Chronometer:
         minutes, seconds = divmod(remainder, 60)
         subs = seconds - int(seconds)
         leap_drift_str = (
-            f'{"-" if leap_drift < 0 else " "}'
+            f'{"-" if leap_drift < 0 else "+"}'
             f'{int(hours):02}:'
             f'{int(minutes):02}:'
             f'{int(seconds):02}.'
