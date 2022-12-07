@@ -207,6 +207,80 @@ class Chronometer:
                 f'{Theme.text} {100 * (percent):011.8f}% {cls.v_bar}\n'
             )
 
+        cls.sun.date = now
+        cls.sun.refresh()
+        sol_str = f'{Theme.text}SOL {cls.sun.solar_noon:%H:%M:%S}'
+        lst_str = f'{Theme.text}LST {clock.sidereal_time(now, cls.lon)}'
+        met_str = f'{Theme.text}DEC {clock.metric_time(now)}'
+        hex_str = f'{Theme.text}HEX {clock.hex_time(now)}'
+        net_str = f'{Theme.text}NET {clock.new_earth_time(now)}'
+        sit_str = f'{Theme.text}SIT {clock.sit_time(now)}'
+        utc_str = f'{Theme.text}UTC {clock.utc_time(now)}'
+        unx_str = f'{Theme.text}UNX {clock.unix_time(now)}'
+        screen += (
+            f'{cls.center_l}'
+            f'{Theme.text}CLOCK{Theme.border}'
+            f'{cls.h_bar * (cls.columns - 32)}'
+            f'{cls.h_bar * 5}'
+            f'{cls.h_bar * 2}'
+            f'{cls.h_bar_down_connect}'
+            f'{Theme.text}CAL{Theme.border}'
+            f'{cls.h_bar * 14}'
+            f'{cls.center_r}\n'
+        )
+
+        screen += (
+            f'{cls.v_bar} '
+            f'{utc_str} '
+            f'{cls.b_var_single} '
+            f'{unx_str} '
+            f'{cls.b_var_single} '
+            f'{b_clockdisp[0]}'
+            f'{" " * (cls.columns - len(met_str + unx_str + b_clockdisp[0]) + 3)}'
+            f'{cls.v_bar} '
+            f'{cls.cal_str[0]} '
+            f'{cls.v_bar}\n'
+        )
+
+        screen += (
+            f'{cls.v_bar} '
+            f'{met_str} '
+            f'{cls.b_var_single} '
+            f'{sit_str} '
+            f'{cls.b_var_single} '
+            f'{b_clockdisp[1]}'
+            f'{" " * (cls.columns - len(met_str + sit_str + b_clockdisp[1]) + 3)}'
+            f'{cls.v_bar} '
+            f'{cls.cal_str[1]} '
+            f'{cls.v_bar}\n'
+        )
+
+        screen += (
+            f'{cls.v_bar} '
+            f'{sol_str} '
+            f'{cls.b_var_single} '
+            f'{hex_str} '
+            f'{cls.b_var_single} '
+            f'{b_clockdisp[2]}'
+            f'{" " * (cls.columns - len(sol_str + net_str + b_clockdisp[2]) + 3)}'
+            f'{cls.v_bar} '
+            f'{cls.cal_str[2]} '
+            f'{cls.v_bar}\n'
+        )
+
+        screen += (
+            f'{cls.v_bar} '
+            f'{lst_str} '
+            f'{cls.b_var_single} '
+            f'{net_str} '
+            f'{cls.b_var_single} '
+            f'{b_clockdisp[3]}'
+            f'{" " * (cls.columns - len(lst_str + hex_str + b_clockdisp[3]) + 3)}'
+            f'{cls.v_bar} '
+            f'{cls.cal_str[3]} '
+            f'{cls.v_bar}\n'
+        )
+
         screen += (
             f'{cls.center_l}'
             f'{Theme.text}WORLD{Theme.border}'
@@ -224,17 +298,6 @@ class Chronometer:
             f'{Theme.text}'
             f'JUL {float_width(cal.julian_date(date=now, reduced=False), 11, False)}'
         )
-
-        cls.sun.date = now
-        cls.sun.refresh()
-        sol_str = f'{Theme.text}SOL {cls.sun.solar_noon:%H:%M:%S}'
-        lst_str = f'{Theme.text}LST {clock.sidereal_time(now, cls.lon)}'
-        met_str = f'{Theme.text}DEC {clock.metric_time(now)}'
-        hex_str = f'{Theme.text}HEX {clock.hex_time(now)}'
-        net_str = f'{Theme.text}NET {clock.new_earth_time(now)}'
-        sit_str = f'{Theme.text}SIT {clock.sit_time(now)}'
-        utc_str = f'{Theme.text}UTC {clock.utc_time(now)}'
-        unx_str = f'{Theme.text}UNX {clock.unix_time(now)}'
 
         leap_drift = timeutil.leap_drift(now)
         hours, remainder = divmod(abs(leap_drift), 3600)
@@ -328,76 +391,10 @@ class Chronometer:
             screen += "\n"
 
         screen += (
-            f'{cls.center_l}'
-            f'{Theme.text}CLOCK{Theme.border}'
-            f'{cls.h_bar * (cls.columns - 33)}'
-            f'{cls.h_bar * 5}'
-            f'{cls.h_bar_up_connect}'
-            f'{cls.h_bar * 2}'
-            f'{cls.h_bar_down_connect}'
-            f'{Theme.text}CAL{Theme.border}'
-            f'{cls.h_bar * 14}'
-            f'{cls.center_r}\n'
-        )
-
-        screen += (
-            f'{cls.v_bar} '
-            f'{utc_str} '
-            f'{cls.b_var_single} '
-            f'{unx_str}'
-            f'{" " * (cls.columns - len(met_str + unx_str + b_clockdisp[0]) + 3)}'
-            f'{cls.b_var_single} '
-            f'{b_clockdisp[0]} '
-            f'{cls.v_bar} '
-            f'{cls.cal_str[0]} '
-            f'{cls.v_bar}\n'
-        )
-
-        screen += (
-            f'{cls.v_bar} '
-            f'{met_str} '
-            f'{cls.b_var_single} '
-            f'{sit_str}'
-            f'{" " * (cls.columns - len(met_str + sit_str + b_clockdisp[1]) + 3)}'
-            f'{cls.b_var_single} '
-            f'{b_clockdisp[1]} '
-            f'{cls.v_bar} '
-            f'{cls.cal_str[1]} '
-            f'{cls.v_bar}\n'
-        )
-
-        screen += (
-            f'{cls.v_bar} '
-            f'{sol_str} '
-            f'{cls.b_var_single} '
-            f'{hex_str}'
-            f'{" " * (cls.columns - len(sol_str + net_str + b_clockdisp[2]) + 3)}'
-            f'{cls.b_var_single} '
-            f'{b_clockdisp[2]} '
-            f'{cls.v_bar} '
-            f'{cls.cal_str[2]} '
-            f'{cls.v_bar}\n'
-        )
-
-        screen += (
-            f'{cls.v_bar} '
-            f'{lst_str} '
-            f'{cls.b_var_single} '
-            f'{net_str}'
-            f'{" " * (cls.columns - len(lst_str + hex_str + b_clockdisp[3]) + 3)}'
-            f'{cls.b_var_single} '
-            f'{b_clockdisp[3]} '
-            f'{cls.v_bar} '
-            f'{cls.cal_str[3]} '
-            f'{cls.v_bar}\n'
-        )
-
-        screen += (
             f'{cls.corner_ll}'
-            f'{cls.h_bar * (cls.columns - 28)}'
-            f'{cls.h_bar * 8}'
+            f'{cls.h_bar * (cls.columns - 23)}'
             f'{cls.h_bar_up_connect}'
-            f'{cls.h_bar * 17}'
+            f'{cls.h_bar * 20}'
             f'{cls.corner_lr}\n'
         )
 
