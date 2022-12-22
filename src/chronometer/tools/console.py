@@ -2,14 +2,14 @@ import os
 
 
 def reset_cursor() -> None:
-    print("\033[0;0H", end="")
+    print("\33[0;0H", end="")
 
 
 def show_cursor(on: bool = True) -> None:
     if on:
-        print("\x1b[?25h")
+        print("\33[?25h")
     else:
-        print("\x1b[?25l")
+        print("\33[?25l")
 
 
 def clear_screen() -> None:
@@ -18,14 +18,16 @@ def clear_screen() -> None:
 
 class Color:
     class BG:
-        BLACK = "\x1b[40m"
-        BRIGHT_BLUE = "\x1b[104m"
-        RED = "\x1b[41m"
+        BLACK = "\33[40m"
+        BRIGHT_BLUE = "\33[104m"
+        RED = "\33[41m"
 
     class FG:
-        WHITE = "\x1b[97m"
-        BRIGHT_BLUE = "\x1b[94m"
-        DARK_GRAY = "\x1b[90m"
+        WHITE = "\33[97m"
+        BRIGHT_BLUE = "\33[94m"
+        DARK_GRAY = "\33[90m"
+    
+    reset = "\33[0m"
 
 
 if __name__ == '__main__':

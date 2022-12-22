@@ -78,7 +78,7 @@ def next_leap(dt: datetime) -> datetime:
 
 def prev_leap(dt: datetime) -> datetime:
     year = dt.year
-    if is_leap_year(year) and dt>= dt.replace(
+    if is_leap_year(year) and dt >= dt.replace(
         year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0
     ):
         return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
@@ -98,10 +98,11 @@ def prev_cycle(dt: datetime) -> datetime:
         cycle_year -= 400
     return dt.replace(year=cycle_year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
 
+
 def prev_per(dt: datetime) -> datetime:
 
     year = dt.year
-    if is_leap_year(year) and dt>= dt.replace(
+    if is_leap_year(year) and dt >= dt.replace(
         year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0
     ):
         return dt.replace(year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -110,6 +111,7 @@ def prev_per(dt: datetime) -> datetime:
         while not is_leap_year(year):
             year -= 1
         return dt.replace(year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
+
 
 def next_per(dt: datetime) -> datetime:
     year = dt.year
@@ -154,27 +156,12 @@ class Sun:
         self._date = dt.astimezone(pytz.utc).replace(tzinfo=None)
 
     @property
-    def daylight(self):
-        return 2 * self.ω0 / 15 * 3600
-
-    @property
-    def nighttime(self):
-        return 2 * (180 - self.ω0) / 15 * 3600
-
-    @property
-    def sunrise_timer(self):
-        return (self.date - jul_to_greg(self.J_transit - (self.ω0 / 360))).total_seconds()
-
-    @property
-    def sunset_timer(self):
-        return (self.date - jul_to_greg(self.J_transit + (self.ω0 / 360))).total_seconds()
-
-    @property
     def solar_noon(self):
-        offset = (self.date - jul_to_greg(self.J_transit)).total_seconds()
-        return self.date.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(
-            seconds=offset
-        )
+        if self.date:
+            offset = (self.date - jul_to_greg(self.J_transit)).total_seconds()
+            return self.date.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(
+                seconds=offset
+            )
 
 
 def jul_to_greg(J: float) -> datetime:

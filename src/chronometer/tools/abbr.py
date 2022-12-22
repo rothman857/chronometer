@@ -22,9 +22,9 @@ class Month:
         "SEP",
         "OCT",
         "NOV",
-        "DEC",
         "COL",
         "PAX",
+        "DEC",
     ]
 
     ifc = [
