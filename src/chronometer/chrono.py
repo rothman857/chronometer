@@ -222,13 +222,11 @@ class Chronometer:
         unx_str = f"{Theme.text}UNX {clock.unix_time(now)}"
         screen += (
             f"{cls.center_l}"
-            f"{Theme.title}CLOCK{Theme.border}"
-            f"{cls.h_bar * (cls.columns - 32)}"
-            f"{cls.h_bar * 5}"
-            f"{cls.h_bar * 2}"
+            f"{Theme.title}TIME{Theme.border}"
+            f"{cls.h_bar * (cls.columns - 24)}"
             f"{cls.h_bar_down_connect}"
-            f"{Theme.title}CAL{Theme.border}"
-            f"{cls.h_bar * 14}"
+            f"{Theme.title}DATE{Theme.border}"
+            f"{cls.h_bar * 13}"
             f"{cls.center_r}\n"
         )
 
