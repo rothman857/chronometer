@@ -130,7 +130,7 @@ class Chronometer:
     highlight = (Theme.text, Theme.highlight)
     rows = os.get_terminal_size().lines
     columns = os.get_terminal_size().columns  # if width < 60 else width
-    sun = timeutil.Sun(date=None, lon=lon, lat=lat)
+    sun = timeutil.Sun(lon=lon, lat=lat)
 
     time_zone_data = []
     for i in flatten((_, _ + 4) for _ in range(4)):

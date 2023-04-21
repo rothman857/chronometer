@@ -43,6 +43,7 @@ def leap_drift(dt: datetime) -> float:
 
 
 def leapage(dt: datetime) -> float:
+    count: float
     years = (dt.year - 1) % 400
     count = years // 4
     count -= years // 100
@@ -127,7 +128,7 @@ def next_per(dt: datetime) -> datetime:
 
 
 class Sun:
-    def __init__(self, date: Optional[datetime], lon: float, lat: float) -> None:
+    def __init__(self, lon: float, lat: float, date: datetime = datetime.now()) -> None:
         self.lon = lon
         self.lat = lat
         self._date = date
