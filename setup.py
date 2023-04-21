@@ -4,9 +4,9 @@ import sys
 
 here = pathlib.Path(__file__).parent.resolve()
 long_description = (here / "README.md").read_text(encoding="utf-8")
-install_requires = ['pytz', 'types-pytz']
+install_requires = ["pytz", "types-pytz"]
 if sys.version_info.minor == 6:
-    install_requires.append('dataclasses')
+    install_requires.append("dataclasses")
 
 setuptools.setup(
     name="chronometer",
@@ -26,9 +26,9 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     package_dir={"": "src"},
-    packages=setuptools.find_packages('src'),
+    packages=setuptools.find_packages("src"),
     python_requires=">=3.6",
     install_requires=install_requires,
-    package_data={'': ['files/*']},
-    include_package_data=True
+    package_data={"": ["files/*"]},
+    include_package_data=True,
 )

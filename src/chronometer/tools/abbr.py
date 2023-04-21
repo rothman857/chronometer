@@ -40,7 +40,8 @@ class Month:
         "SEP",
         "OCT",
         "NOV",
-        "DEC", ]
+        "DEC",
+    ]
 
     twc = [
         "JAN",
@@ -58,5 +59,5 @@ class Month:
     ]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

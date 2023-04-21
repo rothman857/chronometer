@@ -13,7 +13,7 @@ def show_cursor(on: bool = True) -> None:
 
 
 def clear_screen() -> None:
-    os.system('cls' if os.name == 'nt' else 'clear')
+    os.system("cls" if os.name == "nt" else "clear")
 
 
 class Color:
@@ -26,9 +26,9 @@ class Color:
         WHITE = "\33[97m"
         BRIGHT_BLUE = "\33[94m"
         DARK_GRAY = "\33[90m"
-    
+
     reset = "\33[0m"
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass

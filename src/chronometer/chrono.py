@@ -71,7 +71,9 @@ def load_config(filename: str = ".chrono_config") -> ChronoConfig:
     config_file_path = os.path.join(os.path.expanduser("~"), filename)
 
     if not os.path.isfile(config_file_path):
-        shutil.copyfile(os.path.join(here, "files", "default_config.ini"), config_file_path)
+        shutil.copyfile(
+            os.path.join(here, "files", "default_config.ini"), config_file_path
+        )
         print(
             "Initial config file generated.  "
             "Please update '~/.chrono_config' with coordinates and desired timezones.  "
@@ -166,15 +168,21 @@ class Chronometer:
                 "".join(row).replace("0", cls.binary[0]).replace("1", cls.binary[1])
             )
 
-        days_this_month = (now.replace(month=now.month % 12 + 1, day=1) - timedelta(days=1)).day
+        days_this_month = (
+            now.replace(month=now.month % 12 + 1, day=1) - timedelta(days=1)
+        ).day
         days_this_year = 365 + timeutil.is_leap_year(now)
         cls.time_table[Bar.SECOND].value = (
             now.second + u_second + random.randint(0, 9999) / 10**10
         )
         cls.time_table[Bar.MINUTE].value = (
-            now.minute + cls.time_table[Bar.SECOND].value / 60 + random.randint(0, 99) / 10**9
+            now.minute
+            + cls.time_table[Bar.SECOND].value / 60
+            + random.randint(0, 99) / 10**9
         )
-        cls.time_table[Bar.HOUR].value = now.hour + cls.time_table[Bar.MINUTE].value / 60
+        cls.time_table[Bar.HOUR].value = (
+            now.hour + cls.time_table[Bar.MINUTE].value / 60
+        )
         cls.time_table[Bar.DAY].value = now.day + cls.time_table[Bar.HOUR].value / 24
         cls.time_table[Bar.WEEK].value = (
             (now.weekday() + 1) % 7 + cls.time_table[Bar.DAY].value % 1
@@ -192,7 +200,9 @@ class Chronometer:
             )
             / days_this_year
         )
-        cls.time_table[Bar.CENTURY].value = (cls.time_table[Bar.YEAR].value - 1) / 100 + 1
+        cls.time_table[Bar.CENTURY].value = (
+            cls.time_table[Bar.YEAR].value - 1
+        ) / 100 + 1
         screen += Theme.header
         screen += f"{f'{now: %I:%M:%S %p {current_tz} - %A %B %d, %Y}': ^{cls.columns}}\n".upper()
         screen += (
@@ -318,7 +328,9 @@ class Chronometer:
         per_progress = (now - timeutil.prev_per(now)).total_seconds() / (
             (timeutil.next_per(now)) - timeutil.prev_per(now)
         ).total_seconds()
-        cyc_progress = (now - timeutil.prev_cycle(now)).total_seconds() / ((365 * 400 + 97) * 86400)
+        cyc_progress = (now - timeutil.prev_cycle(now)).total_seconds() / (
+            (365 * 400 + 97) * 86400
+        )
         leap_stats = [
             f"DFT {leap_drift_str}",
             f"NXT -{int(days):04}:{int(hours):02}:{int(minutes):02}:{int(seconds):02}",
@@ -426,7 +438,9 @@ class Chronometer:
                     ]
             ntp_str_left = f"{ntpid_temp}"
 
-            screen += Theme.header if ntp.peer.state == ntp.State.PEER else Theme.header_alert
+            screen += (
+                Theme.header if ntp.peer.state == ntp.State.PEER else Theme.header_alert
+            )
 
             screen += (
                 f" {ntp_str_left}"

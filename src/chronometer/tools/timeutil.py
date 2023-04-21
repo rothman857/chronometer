@@ -69,12 +69,16 @@ def next_leap(dt: datetime) -> datetime:
     if is_leap_year(year) and dt <= dt.replace(
         year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0
     ):
-        return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
+        return dt.replace(
+            year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0
+        )
     else:
         year += 1
         while not is_leap_year(year):
             year += 1
-        return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
+        return dt.replace(
+            year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0
+        )
 
 
 def prev_leap(dt: datetime) -> datetime:
@@ -82,12 +86,16 @@ def prev_leap(dt: datetime) -> datetime:
     if is_leap_year(year) and dt >= dt.replace(
         year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0
     ):
-        return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
+        return dt.replace(
+            year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0
+        )
     else:
         year -= 1
         while not is_leap_year(year):
             year -= 1
-        return dt.replace(year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0)
+        return dt.replace(
+            year=year, month=2, day=29, hour=0, minute=0, second=0, microsecond=0
+        )
 
 
 def prev_cycle(dt: datetime) -> datetime:
@@ -97,7 +105,9 @@ def prev_cycle(dt: datetime) -> datetime:
         year=cycle_year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0
     ):
         cycle_year -= 400
-    return dt.replace(year=cycle_year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
+    return dt.replace(
+        year=cycle_year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0
+    )
 
 
 def prev_per(dt: datetime) -> datetime:
@@ -106,12 +116,16 @@ def prev_per(dt: datetime) -> datetime:
     if is_leap_year(year) and dt >= dt.replace(
         year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0
     ):
-        return dt.replace(year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
+        return dt.replace(
+            year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0
+        )
     else:
         year -= 1
         while not is_leap_year(year):
             year -= 1
-        return dt.replace(year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
+        return dt.replace(
+            year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0
+        )
 
 
 def next_per(dt: datetime) -> datetime:
@@ -119,12 +133,16 @@ def next_per(dt: datetime) -> datetime:
     if is_leap_year(year) and dt <= dt.replace(
         year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0
     ):
-        return dt.replace(year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
+        return dt.replace(
+            year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0
+        )
     else:
         year += 1
         while not is_leap_year(year):
             year += 1
-        return dt.replace(year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0)
+        return dt.replace(
+            year=year, month=3, day=1, hour=0, minute=0, second=0, microsecond=0
+        )
 
 
 class Sun:
@@ -141,7 +159,9 @@ class Sun:
         M = (357.5291 + 0.98560028 * J_star) % 360
         C = 1.9148 * trig.sin(M) + 0.0200 * trig.sin(2 * M) + 0.0003 * trig.sin(3 * M)
         λ = (M + C + 180 + 102.9372) % 360
-        self.J_transit = 2451545.0 + J_star + 0.0053 * trig.sin(M) - 0.0069 * trig.sin(2 * λ)
+        self.J_transit = (
+            2451545.0 + J_star + 0.0053 * trig.sin(M) - 0.0069 * trig.sin(2 * λ)
+        )
         δ = trig.asin(trig.sin(λ) * trig.sin(23.44))
         temp = (trig.cos(90.83333) - trig.sin(self.lat) * trig.sin(δ)) / (
             trig.cos(self.lat) * trig.cos(δ)
@@ -160,9 +180,9 @@ class Sun:
     def solar_noon(self):
         if self.date:
             offset = (self.date - jul_to_greg(self.J_transit)).total_seconds()
-            return self.date.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(
-                seconds=offset
-            )
+            return self.date.replace(
+                hour=12, minute=0, second=0, microsecond=0
+            ) + timedelta(seconds=offset)
 
 
 def jul_to_greg(J: float) -> datetime:

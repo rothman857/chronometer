@@ -22,7 +22,9 @@ def list_pax_dates(start_year: int, duration: int):
             else:
                 if month == 12:
                     month = 13
-            pax_dates.append(f"{abbr.weekday[weekday]} {abbr.Month.pax[month]} {d+1:02}")
+            pax_dates.append(
+                f"{abbr.weekday[weekday]} {abbr.Month.pax[month]} {d+1:02}"
+            )
     return pax_dates
 
 
@@ -58,7 +60,6 @@ class TestCalendars:
     def test_pax(self):
         start_date = datetime(year=1928, month=1, day=1)
         for pax_date_str in list_pax_dates(1928, 500):
-            # q(pax_date_str)
             assert pax_date_str == cal.pax_date(start_date)[1:]
             start_date += timedelta(days=1)
 
@@ -100,7 +101,9 @@ class TestClocks:
 
     def test_sit_time(self):
         assert "@000.00000" == clock.sit_time(
-            datetime(year=2000, month=1, day=1, hour=0, tzinfo=pytz.timezone("Etc/GMT-1"))
+            datetime(
+                year=2000, month=1, day=1, hour=0, tzinfo=pytz.timezone("Etc/GMT-1")
+            )
         )
 
 
