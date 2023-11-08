@@ -10,7 +10,7 @@ if sys.version_info.minor == 6:
 
 setuptools.setup(
     name="chronometer",
-    version="1.0.3",
+    version="1.0.4",
     author="rothman857",
     author_email="rothman857@gmail.com",
     description="Chronometer Time Display",

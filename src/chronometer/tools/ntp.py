@@ -4,7 +4,6 @@ import time
 import threading
 from enum import Enum
 from dataclasses import dataclass
-import os
 
 
 class State(Enum):
@@ -43,6 +42,10 @@ class RegexPattern:
 
     refid = re.compile(r"^\.(\S+)\.$")
 
+
+def process_run(command: str):
+    result = subprocess.run(command.split(' '), stdout=subprocess.PIPE)
+    return result.returncode, result.stdout.decode("utf-8")
 
 @dataclass
 class NtpPeer:
@@ -94,10 +97,8 @@ def ntp_daemon() -> None:
 
     while True:
         try:
-            ntpq_full = subprocess.run(
-                ["ntpq", "-pw"], stdout=subprocess.PIPE
-            ).stdout.decode("utf-8")
-            ntp_peer_data = RegexPattern.pattern.findall(ntpq_full)
+            ntpq_full = process_run('ntpq -pw')
+            ntp_peer_data = RegexPattern.pattern.findall(ntpq_full[1])
             ntp_servers = [
                 NtpPeer(
                     state=State(p[0]),
@@ -118,21 +119,23 @@ def ntp_daemon() -> None:
             current_peers = [s for s in ntp_servers if s.state == State.PEER]
             if current_peers:
                 peer = current_peers[0]
+                interval = 60
             else:
                 peer = NtpPeer()
+                interval = 10
         except Exception as e:
             peer.server_id = str(e)
-        time.sleep(3)
+        time.sleep(interval)
 
 
 def run() -> None:
     global service_status
-    ntp_service_response = os.system("systemctl --no-pager status ntp")
+    ntp_service_response = process_run("service ntp status")[0]
     time.sleep(1)
 
     if ntp_service_response == 0:
         service_status = ServiceStatus.ACTIVE
-    elif ntp_service_response == 768:
+    elif ntp_service_response == 4:
         service_status = ServiceStatus.INACTIVE
     else:
         service_status = ServiceStatus.NOTFOUND
@@ -141,7 +144,6 @@ def run() -> None:
         thread = threading.Thread(target=ntp_daemon)
         thread.setDaemon(True)
         thread.start()
-
 
 if __name__ == "__main__":
     pass
