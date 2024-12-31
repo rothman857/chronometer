@@ -133,6 +133,7 @@ class Chronometer:
     rows = os.get_terminal_size().lines
     columns = os.get_terminal_size().columns  # if width < 60 else width
     sun = timeutil.Sun(lon=lon, lat=lat)
+    century_days = (36525, 36525, 36525, 36524)
 
     time_zone_data = []
     for i in flatten((_, _ + 4) for _ in range(4)):
@@ -200,9 +201,17 @@ class Chronometer:
             )
             / days_this_year
         )
+        century_elapsed = (
+            now - datetime(
+                year=((((now.year) // 100)-1) * 100)+1,
+                month=1,
+                day=1,
+                tzinfo=now.tzinfo
+            )
+        ).total_seconds()
         cls.time_table[Bar.CENTURY].value = (
-            cls.time_table[Bar.YEAR].value - 1
-        ) / 100 + 1
+            century_elapsed / (cls.century_days[now.year // 100 % 4] * 24 * 60 * 60)
+        )
         screen += Theme.header
         screen += f"{f'{now: %I:%M:%S %p {current_tz} - %A %B %d, %Y}': ^{cls.columns}}\n".upper()
         screen += (
